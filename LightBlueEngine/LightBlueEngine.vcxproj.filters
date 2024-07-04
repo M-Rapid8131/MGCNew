@@ -1,0 +1,603 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="SourceCodes">
+      <UniqueIdentifier>{19ea5fbb-31c3-485a-8a63-4ee9108950cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Audio">
+      <UniqueIdentifier>{7c7315c7-5037-4bf4-833c-d32c158f8213}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Utility">
+      <UniqueIdentifier>{9c57e6e1-7c32-42af-b4ef-54ad3ff65f3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Input">
+      <UniqueIdentifier>{8480122d-5020-42f4-a06e-2f5ffc63edbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Graphics">
+      <UniqueIdentifier>{d02e45da-fe6e-4b1d-837b-3d3c9bb9a266}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\Scene">
+      <UniqueIdentifier>{4838ec46-72e9-46e7-bd4c-d79024e5cc76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\UI">
+      <UniqueIdentifier>{0a23e4db-8db3-4e86-9c51-c5db3cbb1202}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\2D">
+      <UniqueIdentifier>{cbd82d4c-b245-4960-8c16-5c8eb6e588fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\3D">
+      <UniqueIdentifier>{b4486795-6ec8-40d7-bcd1-62aa3dc8dc61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\GameSystem">
+      <UniqueIdentifier>{b657875d-12a3-46be-9db7-c593b91ca7d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\GameObject">
+      <UniqueIdentifier>{f1878892-4b46-45c5-b2e4-edb75cf64626}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGui">
+      <UniqueIdentifier>{bb3d1f24-5e3c-4f57-88e3-8d35a0c65809}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HLSL">
+      <UniqueIdentifier>{f2f3ef69-6906-49a5-be12-820c3db15bed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HLSL\2D">
+      <UniqueIdentifier>{12b9dbda-c0df-4db3-aa1c-28d8be1d1caf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HLSL\Utility">
+      <UniqueIdentifier>{b09e69a9-9fae-4efa-a3a6-9f2391723252}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HLSL\3D">
+      <UniqueIdentifier>{2912d110-8c9f-4159-b85b-7c90d926b99b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HLSL\3D\Extension">
+      <UniqueIdentifier>{877d429e-5dca-4e44-adf4-e2551da7eb2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HLSL\3D\3DUtility">
+      <UniqueIdentifier>{cff25e00-ad29-4434-97c8-576536910060}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HLSL\Skymap">
+      <UniqueIdentifier>{e635dfef-6a43-445c-b2e0-7e9ce02f4188}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HLSL\Particle">
+      <UniqueIdentifier>{0dd6448c-0197-498b-95ca-852afc806fc3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Memo">
+      <UniqueIdentifier>{28eb4664-4dfe-4149-a752-a0203d224f05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DirectXTK-Audio">
+      <UniqueIdentifier>{832d959b-7920-4451-a7df-ef92f216eec4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceCodes\外部ソース">
+      <UniqueIdentifier>{a6b1f89f-f460-4eb5-a2fa-5f0667488b9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HLSL\2D\Bloom">
+      <UniqueIdentifier>{f7cd4714-b1ba-4ac8-9494-5076bb57bc52}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="sources\input\game_pad.cpp">
+      <Filter>SourceCodes\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\input\input.cpp">
+      <Filter>SourceCodes\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\input\mouse.cpp">
+      <Filter>SourceCodes\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\audio\audio.cpp">
+      <Filter>SourceCodes\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\audio\audio_source.cpp">
+      <Filter>SourceCodes\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\graphics\particle_system.cpp">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\graphics\graphics.cpp">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\graphics\light.cpp">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\graphics\primitive_renderer.cpp">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\graphics\skymap.cpp">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\graphics\texture.cpp">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\scene\scene_manager.cpp">
+      <Filter>SourceCodes\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\UI\font_renderer.cpp">
+      <Filter>SourceCodes\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\UI\number_renderer.cpp">
+      <Filter>SourceCodes\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\2D\framebuffer.cpp">
+      <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\2D\framebuffer_manager.cpp">
+      <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\2D\fullscreen_quad.cpp">
+      <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\2D\sprite.cpp">
+      <Filter>SourceCodes\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\shader.cpp">
+      <Filter>SourceCodes\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\3D\game_model.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\game_system\gamesystem_input.cpp">
+      <Filter>SourceCodes\GameSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\game_object\game_object.cpp">
+      <Filter>SourceCodes\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\3D\shadow_map.cpp">
+      <Filter>SourceCodes\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\random_noise.cpp">
+      <Filter>SourceCodes\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\game_system\gamesystem_timer.cpp">
+      <Filter>SourceCodes\GameSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-docking\imgui.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-docking\imgui_demo.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-docking\imgui_draw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-docking\imgui_freetype.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-docking\imgui_impl_dx11.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-docking\imgui_impl_win32.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-docking\imgui_ja_gryph_ranges.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-docking\imgui_stdlib.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-docking\imgui_tables.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-docking\imgui_widgets.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-docking\ImGuiFileDialog.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\game_system\gamesystem_director.cpp">
+      <Filter>SourceCodes\GameSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\imgui_renderer.cpp">
+      <Filter>SourceCodes\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DirectXTK-Audio\AudioEngine.cpp">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DirectXTK-Audio\DynamicSoundEffectInstance.cpp">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DirectXTK-Audio\pch.cpp">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DirectXTK-Audio\SoundCommon.cpp">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DirectXTK-Audio\SoundEffect.cpp">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DirectXTK-Audio\SoundEffectInstance.cpp">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DirectXTK-Audio\SoundStreamInstance.cpp">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DirectXTK-Audio\WaveBank.cpp">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DirectXTK-Audio\WaveBankReader.cpp">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DirectXTK-Audio\WAVFileReader.cpp">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\scene\scene_loading.cpp">
+      <Filter>SourceCodes\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\audio\audio_manager.cpp">
+      <Filter>SourceCodes\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\UI\value_UI.cpp">
+      <Filter>SourceCodes\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\UI\sprite_UI.cpp">
+      <Filter>SourceCodes\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\json_editor.cpp">
+      <Filter>SourceCodes\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\graphics\bloom_effect.cpp">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-docking\implot.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-docking\implot_demo.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui-docking\implot_items.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\graphics\camera.cpp">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sources\input\game_pad.h">
+      <Filter>SourceCodes\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\input\input.h">
+      <Filter>SourceCodes\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\input\mouse.h">
+      <Filter>SourceCodes\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\audio\audio.h">
+      <Filter>SourceCodes\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\audio\audio_source.h">
+      <Filter>SourceCodes\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\graphics\particle_system.h">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\graphics\graphics.h">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\graphics\light.h">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\graphics\primitive_renderer.h">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\graphics\skymap.h">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\graphics\texture.h">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\singleton.h">
+      <Filter>SourceCodes\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\xmfloat_calclation.h">
+      <Filter>SourceCodes\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\scene\scene.h">
+      <Filter>SourceCodes\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\scene\scene_manager.h">
+      <Filter>SourceCodes\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\UI\font_renderer.h">
+      <Filter>SourceCodes\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\UI\number_renderer.h">
+      <Filter>SourceCodes\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\2D\framebuffer.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\2D\framebuffer_manager.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\2D\fullscreen_quad.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\2D\sprite.h">
+      <Filter>SourceCodes\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\shader.h">
+      <Filter>SourceCodes\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\3D\game_model.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\game_system\gamesystem_input.h">
+      <Filter>SourceCodes\GameSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\game_object\game_object.h">
+      <Filter>SourceCodes\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\3D\shadow_map.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\random_noise.h">
+      <Filter>SourceCodes\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\game_system\gamesystem_timer.h">
+      <Filter>SourceCodes\GameSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\engine_utility.h">
+      <Filter>SourceCodes\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui-docking\imconfig.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui-docking\imgui.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui-docking\imgui_freetype.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui-docking\imgui_impl_dx11.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui-docking\imgui_impl_win32.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui-docking\imgui_internal.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui-docking\imgui_stdlib.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui-docking\ImGuiFileDialog.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui-docking\ImGuiFileDialogConfig.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui-docking\imstb_rectpack.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui-docking\imstb_textedit.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui-docking\imstb_truetype.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\game_system\gamesystem_director.h">
+      <Filter>SourceCodes\GameSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\imgui_renderer.h">
+      <Filter>SourceCodes\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DirectXTK-Audio\Audio.h">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DirectXTK-Audio\DirectXHelpers.h">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DirectXTK-Audio\pch.h">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DirectXTK-Audio\PlatformHelpers.h">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DirectXTK-Audio\SoundCommon.h">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DirectXTK-Audio\WaveBankReader.h">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DirectXTK-Audio\WAVFileReader.h">
+      <Filter>DirectXTK-Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\scene\scene_loading.h">
+      <Filter>SourceCodes\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\audio\audio_manager.h">
+      <Filter>SourceCodes\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\UI\value_UI.h">
+      <Filter>SourceCodes\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\UI\sprite_UI.h">
+      <Filter>SourceCodes\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\json_editor.h">
+      <Filter>SourceCodes\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\graphics\bloom_effect.h">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui-docking\implot.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui-docking\implot_internal.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\graphics\camera.h">
+      <Filter>SourceCodes\Graphics</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="HLSL\2D\2d_header.hlsli">
+      <Filter>HLSL\2D</Filter>
+    </None>
+    <None Include="HLSL\common.hlsli">
+      <Filter>HLSL\Utility</Filter>
+    </None>
+    <None Include="HLSL\filter_functions.hlsli">
+      <Filter>HLSL\Utility</Filter>
+    </None>
+    <None Include="HLSL\3D\primitive_renderer.hlsli">
+      <Filter>HLSL\3D</Filter>
+    </None>
+    <None Include="HLSL\3D\3d_header.hlsli">
+      <Filter>HLSL\3D</Filter>
+    </None>
+    <None Include="HLSL\3D\Extension\clearcoat.hlsli">
+      <Filter>HLSL\3D\Extension</Filter>
+    </None>
+    <None Include="HLSL\3D\Extension\transform.hlsli">
+      <Filter>HLSL\3D\Extension</Filter>
+    </None>
+    <None Include="HLSL\3D\Extension\transmission.hlsli">
+      <Filter>HLSL\3D\Extension</Filter>
+    </None>
+    <None Include="HLSL\Skymap\skymap_header.hlsli">
+      <Filter>HLSL\Skymap</Filter>
+    </None>
+    <None Include="HLSL\Particle\particle_header.hlsli">
+      <Filter>HLSL\Particle</Filter>
+    </None>
+    <None Include="HLSL\3D\3D_utility\brdf.hlsli">
+      <Filter>HLSL\3D\3DUtility</Filter>
+    </None>
+    <None Include="HLSL\3D\3D_utility\image_based_lighting.hlsli">
+      <Filter>HLSL\3D\3DUtility</Filter>
+    </None>
+    <None Include="HLSL\3D\3D_utility\material.hlsli">
+      <Filter>HLSL\3D\3DUtility</Filter>
+    </None>
+    <None Include="HLSL\3D\3D_utility\material_data.hlsli">
+      <Filter>HLSL\3D\3DUtility</Filter>
+    </None>
+    <None Include="HLSL\3D\3D_utility\physically_based_rendering.hlsli">
+      <Filter>HLSL\3D\3DUtility</Filter>
+    </None>
+    <None Include="HLSL\3D\3D_utility\shading_functions.hlsli">
+      <Filter>HLSL\3D\3DUtility</Filter>
+    </None>
+    <None Include="HLSL\2D\bloom\bloom_header.hlsli">
+      <Filter>HLSL\2D\Bloom</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="HLSL\2D\2d_base_ps.hlsl">
+      <Filter>HLSL\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\2D\2d_base_vs.hlsl">
+      <Filter>HLSL\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\2D\fullscreen_quad_ps.hlsl">
+      <Filter>HLSL\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\2D\fullscreen_quad_vs.hlsl">
+      <Filter>HLSL\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\2D\blur_ps.hlsl">
+      <Filter>HLSL\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\2D\luminance_extraction_ps.hlsl">
+      <Filter>HLSL\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\3D\extract_emissive_model_ps.hlsl">
+      <Filter>HLSL\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\3D\ghost_block_ps.hlsl">
+      <Filter>HLSL\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\3D\gltf_shadowmap_caster_vs.hlsl">
+      <Filter>HLSL\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\3D\primitive_renderer_ps.hlsl">
+      <Filter>HLSL\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\3D\primitive_renderer_vs.hlsl">
+      <Filter>HLSL\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\3D\3d_base_ps.hlsl">
+      <Filter>HLSL\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\3D\3d_base_vs.hlsl">
+      <Filter>HLSL\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Skymap\skybox_ps.hlsl">
+      <Filter>HLSL\Skymap</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Skymap\skybox_texturecube_ps.hlsl">
+      <Filter>HLSL\Skymap</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Skymap\skymap_ps.hlsl">
+      <Filter>HLSL\Skymap</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Skymap\skymap_texturecube_gs.hlsl">
+      <Filter>HLSL\Skymap</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Skymap\skymap_texturecube_ps.hlsl">
+      <Filter>HLSL\Skymap</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Skymap\skymap_texturecube_vs.hlsl">
+      <Filter>HLSL\Skymap</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Skymap\skymap_vs.hlsl">
+      <Filter>HLSL\Skymap</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Particle\accumulate_particle_ps.hlsl">
+      <Filter>HLSL\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Particle\block_particle_cs.hlsl">
+      <Filter>HLSL\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Particle\particle_cs.hlsl">
+      <Filter>HLSL\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Particle\particle_gs.hlsl">
+      <Filter>HLSL\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Particle\particle_initializer_cs.hlsl">
+      <Filter>HLSL\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Particle\particle_ps.hlsl">
+      <Filter>HLSL\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Particle\particle_vs.hlsl">
+      <Filter>HLSL\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\2D\color_extraction_ps.hlsl">
+      <Filter>HLSL\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\2D\screen_effect_ps.hlsl">
+      <Filter>HLSL\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\3D\3d_base_cs.hlsl">
+      <Filter>HLSL\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\3D\3d_base_initializer_cs.hlsl">
+      <Filter>HLSL\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\2D\bloom\glow_extraction_ps.hlsl">
+      <Filter>HLSL\2D\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\2D\bloom\downsampling_ps.hlsl">
+      <Filter>HLSL\2D\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\2D\bloom\horizontal_ps.hlsl">
+      <Filter>HLSL\2D\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\2D\bloom\vertical_ps.hlsl">
+      <Filter>HLSL\2D\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\2D\bloom\upsampling_ps.hlsl">
+      <Filter>HLSL\2D\Bloom</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="memo\LightBlueEngineとは.txt">
+      <Filter>Memo</Filter>
+    </Text>
+    <Text Include="memo\命名規則覚え書き的ななにか.txt">
+      <Filter>Memo</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

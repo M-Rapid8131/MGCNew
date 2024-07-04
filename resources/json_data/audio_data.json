@@ -1,0 +1,35 @@
+{
+    "BGM": [
+        "./resources/audio/BGM/bgm_low_speed1.mp3",
+        "./resources/audio/BGM/bgm_low_speed2.mp3",
+        "./resources/audio/BGM/bgm_hi_speed1.mp3",
+        "./resources/audio/BGM/bgm_hi_speed2.mp3",
+        "./resources/audio/BGM/bgm_hi_speed3.mp3",
+        "./resources/audio/BGM/bgm_impact_speed1.mp3",
+        "./resources/audio/BGM/bgm_impact_speed2.mp3",
+        "./resources/audio/BGM/bgm_standby.mp3"
+    ],
+    "SE": [
+		"./resources/audio/SE/se_count_down.mp3",
+		"./resources/audio/SE/se_start.mp3",
+		"./resources/audio/SE/se_level_up.mp3",
+		"./resources/audio/SE/se_stand.mp3",
+		"./resources/audio/SE/se_rotate.mp3",
+		"./resources/audio/SE/se_put.mp3",
+		"./resources/audio/SE/se_erase.mp3"
+    ],
+    "VOICE": [
+		"./resources/audio/Voice/voice_count_down.mp3",
+		"./resources/audio/Voice/voice_level_up.mp3",
+		"./resources/audio/Voice/voice_level.mp3",
+		"./resources/audio/Voice/voice_ten.mp3",
+		"./resources/audio/Voice/voice_twenty.mp3",
+		"./resources/audio/Voice/voice_thirty.mp3",
+		"./resources/audio/Voice/voice_fourty.mp3",
+		"./resources/audio/Voice/voice_fifty.mp3",
+		"./resources/audio/Voice/voice_sixty.mp3",
+		"./resources/audio/Voice/voice_seventy.mp3",
+		"./resources/audio/Voice/voice_eighty.mp3",
+		"./resources/audio/Voice/voice_ninety.mp3"
+    ]
+}

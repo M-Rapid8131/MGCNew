@@ -1,0 +1,28 @@
+// インクルード
+#include "skymap_header.hlsli"
+
+// 関数
+VS_OUT_SM ShaderMain(in uint vertexid : SV_VERTEXID)
+{
+	VS_OUT_SM vout;
+	const float2 position[4] =
+	{
+		{ -1, +1 },
+		{ +1, +1 },
+		{ -1, -1 },
+		{ +1, -1 },
+	};
+
+	const float2 texcoord[4] =
+	{
+		{ 0, 0 },
+		{ 1, 0 },
+		{ 0, 1 },
+		{ 1, 1 },
+	};
+
+	vout.position = float4(position[vertexid], 0, 1);
+	vout.texcoord = texcoord[vertexid];
+	
+	return vout;
+}

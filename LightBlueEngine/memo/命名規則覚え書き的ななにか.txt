@@ -1,0 +1,318 @@
+//////////    変数、関数などの命名について    //////////
+１．全ての変数、引数はスネークケースで表記する。例："sample_variable"
+２．クラス内、構造体内の関数はパスカルケースで表記する。例："SampleFunction()"
+３．クラス名、構造体名もパスカルケースで表記する。例：class "Sample"
+４. Enumには、名前の先頭にEnumを付ける。 例：enum class "EnumSample"
+５．整数値を扱う変数の場合、値がマイナスになることがないと考えられる変数にはsize_t、またはUINTを用いる。
+６．constや、static constが付く定数は、原則アッパースネークケースで表記する。例："SAMPLE_CONSTANTS"
+	(関数の引数として用いる場合や、for each文のローカル変数は例外で、スネークケースで表記する。)
+７．DirectX::XMVECTORを用いる変数には変数名の前に"v_"、DirectX::XMMATRIXを用いる変数には変数名の前に"m_"を付ける。
+
+//////////    クラスの構成    //////////
+class Example
+{
+private:
+	// private:定数
+
+	// private:構造体
+	struct Example
+	{
+		
+	};
+
+public:
+	// public:コンストラクタ・デストラクタ
+	Example();
+	~Example();
+
+	// public:通常関数
+
+	// public:ゲッター関数
+
+	// public:セッター関数
+
+private:
+	// private:変数
+
+};
+その他特殊なメンバに関してはその都度判断するものとする。
+
+//////////    構造体の構成    //////////
+基本的にはクラスと同じだが、publicに関してはアクセス指定子の表記はしないものとする。
+struct Example
+{
+	// 定数
+
+	// 構造体
+	struct Example2
+	{
+
+	};
+
+	// 通常関数
+
+	// ゲッター関数
+
+	// セッター関数
+
+	// 変数
+
+private:
+
+	// private:変数
+
+}
+
+//////////    クラスのアクセス指定子について    //////////
+抽象クラスの場合、コンストラクタ、デストラクタ、変数はprotected、それ以外のクラスの場合、privateとする。
+
+//////////    クラスのメンバ変数の初期化ルール    //////////
+変数の初期化は、原則ヘッダーファイル内のクラス定義コード内で行う。
+
+//////////    キャストについて    //////////
+キャストをする際は、基本的に~~~_castのものを用いる。
+なお、engine_utility.hに、コードの長さを短くするために作成したマクロがある。
+SCast(type, num) -> static_cast<type>(num)
+CCast(type, num) -> const_cast<type>(num)
+RCast(type, num) -> reinterpret_cast<type>(num)
+
+//////////    コンスタントバッファ    //////////
+----------< オブジェクト別 >----------
+register b0	>>>>>>>>>>>>>>>>>>
+2D : UI_CONSTANT_BUFFER
+3D : PRIMITIVE_CONSTANT_BUFFER
+SKYMAP : SKYMAP_CONSTANT_BUFFER
+
+register b1	>>>>>>>>>>>>>>>>>>
+2D : SCROLL_CONSTANT_BUFFER
+3D : PRIMITIVE_JOINT_CONSTANT_BUFFER
+
+register b2	>>>>>>>>>>>>>>>>>>
+2D : DISSOLVE_CONSTANT_BUFFER
+3D : OBJECT_COLOR_CONSTANT_BUFFER
+
+register b3	>>>>>>>>>>>>>>>>>>
+PARTICLE : PARTICLE_CONSTANT_BUFFER
+
+register b4	>>>>>>>>>>>>>>>>>>
+PARTICLE : PARTICLE_INITIALIZE_CONSTANT_BUFFER
+
+register b5	>>>>>>>>>>>>>>>>>>
+PARTICLE : PARTICLE_FLOCK_CONSTANT_BUFFER
+
+----------< 共通 >----------
+9		SCENE_CONSTANT_BUFFER
+{
+	row_major float4x4		view;
+	row_major float4x4		projection;
+	float3					camera_position;
+	
+	float					cbscene_pad;
+}
+
+10		LIGHT_CONSTANT_BUFFER
+{
+	float4 ambient_color					= { 0.2f, 0.2f, 0.2f, 0.2f };
+	float4 directional_light_color		= { 1.0f, 1.0f, 1.0f, 1.0f };
+	float3 directional_light_direction	= { 0.0f, 0.0f, 1.0f };
+	float radiance						= 1.0f;
+	float3 directional_light_focus		= { 0.0f, 0.0f, 0.0f };
+	float cblight_pad;
+}
+
+11		SKY_COLOR_CONSTANT_BUFFER
+{
+	float3 sky_color_base;
+	float3 sky_color_dest;
+	
+	float2 cbsky_color_pad;
+}
+
+12		COLOR_FILTER_CONSTANT_BUFFER
+{
+	float hueShift;
+	float saturation;
+	float brightness;
+	float alpha;
+}
+
+13		SHADOWMAP_CONSTANT_BUFFER
+{
+	row_major float4x4	light_view_projection;
+	float3				shadow_color		= {	0.3f,0.3f,0.3f };
+	float				shadow_bias		= 0.008f;
+}
+
+//////////    テクスチャバッファ    //////////
+register t0	>>>>>>>>>>>>>>>>>>
+2D-BASE : color_map_2d
+2D-FULLSCREEN_QUAD : color_map_2d
+2D-BLUR : color_maps_2d[0]
+3D-MATERIAL : materials
+
+register t1	>>>>>>>>>>>>>>>>>>
+2D-BLUR : color_maps_2d[1]
+
+register t2	>>>>>>>>>>>>>>>>>>
+2D-BLUR : color_maps_2d[2]
+
+register t3	>>>>>>>>>>>>>>>>>>
+2D-BLUR : color_maps_2d[3]
+
+register t4-15
+空き
+
+register t16	 >>>>>>>>>>>>>>>>>>
+3D-MATERIAL : material_textures[0]
+
+register t17 >>>>>>>>>>>>>>>>>>
+3D-MATERIAL : material_textures[1]
+
+register t18	 >>>>>>>>>>>>>>>>>>
+3D-MATERIAL : material_textures[2]
+
+register t19 >>>>>>>>>>>>>>>>>>
+3D-MATERIAL : material_textures[3]
+
+register t20 >>>>>>>>>>>>>>>>>>
+3D-MATERIAL : material_textures[4]
+
+register t21 >>>>>>>>>>>>>>>>>>
+3D-MATERIAL : material_textures[5]
+
+register t22 >>>>>>>>>>>>>>>>>>
+3D-MATERIAL : material_textures[6]
+
+register t23 >>>>>>>>>>>>>>>>>>
+3D-MATERIAL : material_textures[7]
+
+register t24 >>>>>>>>>>>>>>>>>>
+3D-MATERIAL : material_textures[8]
+
+register t25 >>>>>>>>>>>>>>>>>>
+3D-MATERIAL : material_textures[9]
+
+register t26 >>>>>>>>>>>>>>>>>>
+3D-MATERIAL : material_textures[10]
+
+register t27-29
+空き
+
+register t30 >>>>>>>>>>>>>>>>>>
+3D : model_mask_texture
+
+register t32 >>>>>>>>>>>>>>>>>>
+IBL : skybox
+
+register t33 >>>>>>>>>>>>>>>>>>
+IBL : diffuse_iem
+
+register t34 >>>>>>>>>>>>>>>>>>
+IBL : specular_pmrem
+
+register t35 >>>>>>>>>>>>>>>>>>
+IBL : lut_ggx
+
+register t36-39
+空き
+
+register t40 >>>>>>>>>>>>>>>>>>
+COMMON : mask_texture
+
+register t41 >>>>>>>>>>>>>>>>>>
+COMMON : noise_texture
+
+//////////    ファイル内の要素の順番    //////////
+---------- プリプロセッサ ----------
+1.  (ヘッダーファイルのみ) #ifndef __(ファイル名(大文字))__
+2.  (ヘッダーファイルのみ) #define __(ファイル名(大文字))__
+3.  <>インクルード
+4.  ""インクルード
+5.  #defineなど
+6.  その他プリプロセッサ
+
+---------- 本文 ----------
+7.  その他
+8.  using、typedef
+9.  enum (class)
+10.  グローバル変数、定数、関数
+11. struct
+12. class
+|
+(ヘッダーファイルのみ) #endif // __(ファイル名(大文字))__
+
+//////////    メンバ変数の順番    //////////
+1. bool
+2. int、floatなどの通常の型指定子
+3. UINTやFLOATなどのtypedef、usingを使った型指定子
+4. stringなどのSTL内の型指定子
+5. ComPtrやDirectX関係の型指定子(ただし構造体優先)
+6. 1~5に当てはまらない型指定子
+
+7. []やarrayなどの固定長配列
+8. vectorやmapなどのSTL内の可変長配列
+9. 7以外の可変長配列
+※ただし、glTF関係の構造体を除く
+※メモリのレイアウトに無駄な空白があった場合は、順番が
+　前後する可能性がある
+
+//////////    軽量化のため使用停止中のシェーダー関数    //////////
+float3 CalcFlockParticle(uint index)
+{
+	// 自パーティクルの位置を取得
+	float3	position	= particle_buffer[index].position;
+	int		count		= 0;
+	
+	// 必要な変数
+	float	nearest_dist			= FLT_MAX;
+	float3	nearset_position		= float3(0, 0, 0);
+	float3	total_position		= float3(0, 0, 0);
+	float3	total_velocity		= float3(0, 0, 0);
+	float3	result;
+	
+	// 判定開始
+	for (int other_index = 0; other_index < particle_count; other_index++)
+	{
+		float3 other_position = particle_buffer[other_index].position;
+		
+		// 距離を算出
+		float dist = distance(other_position, position);
+		
+		if (dist > 50.0f)
+			continue;
+		
+		if(dist != 0.0f)
+		{
+			// 最近点更新
+			if(nearest_dist > dist)
+			{
+				nearest_dist = dist;
+				nearset_position = particle_buffer[other_index].position;
+			}
+		}
+		
+		// 合計値に加算
+		total_position += particle_buffer[other_index].position;
+		total_velocity += particle_buffer[other_index].velocity;
+
+		count++;
+	}
+	if(count != 0)
+	{
+		float3 average_position = total_position / float(count);
+		result = normalize(average_position - position) * position_weight;
+		
+		// velocityはゼロチェックをしておく
+		if(length(total_velocity) > 0.0f)
+			result += normalize(total_velocity) * velocity_weight;
+		
+		result += normalize(nearset_position - position) * flee_weight;
+	}
+	else
+	{
+		result = float3(0, 0, 0);
+	}
+	
+	return result;
+}
+

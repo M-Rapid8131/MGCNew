@@ -1,0 +1,26 @@
+{
+    "NORMAL": {
+        "InitLevel": 1,
+        "MaxLevel": 50,
+        "SpeedIncrease": 0.4,
+        "StandDecrease": 0.0
+    },
+    "IMPACT": {
+        "InitLevel": 31,
+        "MaxLevel": 70,
+        "SpeedIncrease": 1.0,
+        "StandDecrease": 0.01
+    },
+    "ENDLESS": {
+        "InitLevel": 1,
+        "MaxLevel": 999,
+        "SpeedIncrease": 0.1,
+        "StandDecrease": 0.0
+    },
+    "ULTIMATE": {
+        "InitLevel": 51,
+        "MaxLevel": 70,
+        "SpeedIncrease": 2.0,
+        "StandDecrease": 0.03
+    }
+}
