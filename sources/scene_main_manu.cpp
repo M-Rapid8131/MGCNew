@@ -288,7 +288,7 @@ void SceneMainManu::Render()
 		framebuffer_manager->Activate("emissive_renderer");
 		{
 			graphics->SetDepthStencilState(EnumDepthState::ZT_ON_ZW_ON);
-			graphics->SetRasterizerState(EnumRasterizerState::CULL_NONE);
+			graphics->SetRasterizerState(EnumRasterizerState::SOLID);
 			graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
 			model->Render(false, matrix, rgb_color, graphics->GetPixelShader(EnumPixelShader::EXTRACT_EMISSIVE).Get());
 
