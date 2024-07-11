@@ -16,15 +16,20 @@ void ShaderMain( uint3 dtid : SV_DispatchThreadID )
 
 	// ランダム値取得
 	float3 random_f3 = GetNoiseFactor(index + noise_gap);
+	
 	// 最大数チェック
 	if (index < emit_amounts)
 	{				
 		// スタートまでの時間は何もしない
 		if(particle.start_time > 0.0f)
 		{
-			particle.position = emit_position.xyz + CONVERT_TO_SNORM(random_f3) * emit_amplitude.xyz;
-			particle.start_time -= delta_time;
-			particle.color = emit_color;
+			particle.position = emit_position + CONVERT_TO_SNORM(random_f3) * emit_radius;
+			
+			if(!disable)
+				particle.start_time -= delta_time;
+			
+			if(!random_color)
+				particle.color = emit_color;
 			particle_buffer[index]	= particle;
 			return;
 		}
@@ -36,12 +41,12 @@ void ShaderMain( uint3 dtid : SV_DispatchThreadID )
 		particle.size = lerp(0.0f, emit_size, GetLifeRate(particle.life));
 		particle.life -= delta_time;
 		
-		// accelerationをvelocityに加算し、velocityをpositionに加算
-		particle.acceleration	=	emit_direction.xyz * emit_accel * delta_time;
-		particle.acceleration	*=	accel_attenuation;
-		particle.velocity		+=	particle.acceleration * delta_time;
+		// accelerationをvelocityに加算し、velocityをpositionに加算	
+		particle.acceleration	= (CalcEmitDirection(index) * emit_accel) * delta_time;
+		particle.velocity		+= (particle.acceleration + emit_force * CONVERT_TO_SNORM(random_f3)) * delta_time;
+		particle.velocity		*=	accel_attenuation;
 		particle.position		+=	particle.velocity * delta_time;
-		
+
 		// パーティクルのスピード制限処理
 		if(length(particle.velocity) > MAX_SPEED)
 		{
@@ -52,14 +57,18 @@ void ShaderMain( uint3 dtid : SV_DispatchThreadID )
 		// パーティクル再配置処理
 		if (particle.life < 0.0f)
 		{
-			particle.acceleration	= CalcEmitDirection(index) * emit_accel;
-			particle.velocity		= CalcEmitDirection(index) * emit_speed;
-			particle.position		= emit_position.xyz + CONVERT_TO_SNORM(random_f3) * emit_amplitude.xyz;
-			particle.life			= life_time;
-			particle.color			= emit_color;
+			if(!disable)
+			{
+				particle.acceleration	= CalcEmitDirection(index) * emit_accel;
+				particle.velocity		= CalcEmitDirection(index) * emit_speed;
+				particle.position		= emit_position + CONVERT_TO_SNORM(random_f3) * emit_radius;
+				particle.life			= life_time;
+				if (!random_color)
+					particle.color = emit_color;
+				else
+					particle.color = float4(random_f3, emit_color.a);
+			}		
 		}
-		// 色変更に対応
-		//particle.color = float4(random_f3, emit_color.a);
 		
 		particle_buffer[index] = particle;
 	}

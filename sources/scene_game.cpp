@@ -28,18 +28,20 @@ const DirectX::XMFLOAT4 DEFAULT_CAMERA_DIRECTION	= { 0.0f,0.0f,-1.0f, 0.0f };
 
 const ParticleSystem::CbParticleEmitter DEFAULT_EMITTER_SETTING = {
 	10000,							// emit_amounts
-	{ 0, 0, 0 },					// dummy
-	{ 0.0f, 0.0f, 50.0f, 0.0f },	// emit_position
-	{ 0.0f, 0.0f, 0.0f, 0.0f },		// emit_amplitude
-	{ 0.0f, 0.0f, -1.0f, 0.0f },	// emit_direction
-	{ 1.0f, 1.0f, 1.0f, 1.0f },		// emit_color
-	0.4f,							// spread_rate
-	0.2f,							// emit_size
+	true,							// random_color
+	false,							// disable
+	0,								// dummy
+	{ 0.0f, 0.0f, 50.0f },			// emit_position
 	10.0f,							// emit_speed
-	5.0f,							// emit_accel
+	{ 0.0f, 0.0f, 0.0f },			// emit_force
+	100.0f,							// emit_accel
+	{ 0.0f, 0.0f, -1.0f },			// emit_direction
+	0.3f,							// spread_rate
+	{ 1.0f, 1.0f, 1.0f, 1.0f },		// emit_color
+	0.2f,							// emit_size
 	10.0f,							// life_time
-	0.01f,							// start_diff
-	{ 0.0f, 0.0f }					// dummy
+	0.03f,							// start_diff
+	0.5f							// emit_radius
 };
 
 const BloomEffect::CbBloom DEFAULT_MAIN_BLOOM = {

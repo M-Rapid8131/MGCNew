@@ -17,7 +17,7 @@
 //-------------------------------------
 
 // コンストラクタ
-ParticleSystem::ParticleSystem(CbParticleEmitter emitter_setting, bool use_accumulate_ps,const char* accumulate_ps_csoname)
+ParticleSystem::ParticleSystem(const CbParticleEmitter emitter_setting, bool use_accumulate_ps,const char* accumulate_ps_csoname)
 {
 	Graphics*				graphics		= Graphics::GetInstance();
 	std::lock_guard<std::mutex> lock(graphics->GetMutex());
@@ -55,9 +55,9 @@ ParticleSystem::ParticleSystem(CbParticleEmitter emitter_setting, bool use_accum
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	D3D11_SUBRESOURCE_DATA subresource_data = {};
-	subresource_data.pSysMem = &particle_emitter_constants;
-	subresource_data.SysMemPitch = 0;
-	subresource_data.SysMemSlicePitch = 0;
+	subresource_data.pSysMem			= &particle_emitter_constants;
+	subresource_data.SysMemPitch		= 0;
+	subresource_data.SysMemSlicePitch	= 0;
 
 	buffer_desc.ByteWidth = SCast(UINT, sizeof(CbParticleEmitter));
 	hr = device->CreateBuffer(&buffer_desc, &subresource_data, particle_emitter_cbuffer.GetAddressOf());
@@ -117,7 +117,6 @@ ParticleSystem::ParticleSystem(CbParticleEmitter emitter_setting, bool use_accum
 	if(use_accumulate_ps)
 	{
 		// モデルに沿ってパーティクル生成する場合はここで初期化
-		particle_constants.accel_attenuation	= DEFAULT_ACCEL_ATTENUATION;
 
 		// count_buffer
 		buffer_desc.ByteWidth			= SCast(UINT, sizeof(uint32_t));
@@ -188,11 +187,11 @@ void ParticleSystem::Update(float elapsed_time, ID3D11ComputeShader* replaced_cs
 
 	// パーティクル移動方向の正規化
 	DirectX::XMVECTOR v_emit_direction
-		= DirectX::XMLoadFloat4(&particle_emitter_constants.emit_direction);
+		= DirectX::XMLoadFloat3(&particle_emitter_constants.emit_direction);
 
 	v_emit_direction = DirectX::XMVector3Normalize(v_emit_direction);
 
-	DirectX::XMStoreFloat4(&particle_emitter_constants.emit_direction,
+	DirectX::XMStoreFloat3(&particle_emitter_constants.emit_direction,
 		v_emit_direction);
 
 	// UAVをセット
@@ -224,17 +223,33 @@ void ParticleSystem::DebugGUI()
 	if (ImGui::CollapsingHeader("ParticleSystem"))
 	{
 		ImGui::DragFloat("Accel Attenuation", &particle_constants.accel_attenuation, 0.01f,-2.0f,2.0f);
+		ImGui::InputFloat("Particle Deltatime", &particle_constants.delta_time);
 		ImGui::Separator();
-		ImGui::DragFloat3("Emit Position", &particle_emitter_constants.emit_position.x, 0.05f);
-		ImGui::DragFloat3("Emit Amplitude", &particle_emitter_constants.emit_amplitude.x, 0.05f);
-		ImGui::DragFloat3("Emit Direction", &particle_emitter_constants.emit_direction.x, 0.05f);
-		ImGui::ColorEdit3("Emit Color", &particle_emitter_constants.emit_color.x);
-		ImGui::DragFloat("Spread Rate", &particle_emitter_constants.spread_rate, 0.05f, 0.0f, 1.0f);
-		ImGui::DragFloat("Emit Size", &particle_emitter_constants.emit_size, 0.05f, 0.0f, 1.0f);
-		ImGui::DragFloat("Emit Speed", &particle_emitter_constants.emit_speed, 0.05f, 0.0f, 10.0f);
-		ImGui::DragFloat("Emit Accel", &particle_emitter_constants.emit_accel, 0.05f, 0.0f, 10.0f);
-		ImGui::DragFloat("Life Time", &particle_emitter_constants.life_time, 0.05f, 0.1f, 10.0f);
-		ImGui::DragFloat("Start Diff", &particle_emitter_constants.start_diff, 0.05f, 0.05f, 10.0f);
+		ImGui::DragFloat3("Emit Position", &particle_emitter_constants.emit_position.x, 0.01f);
+		ImGui::DragFloat("Emit Speed", &particle_emitter_constants.emit_speed, 0.01f, 0.0f, 100.0f);
+		ImGui::DragFloat3("Emit Force", &particle_emitter_constants.emit_force.x, 0.01f);
+		ImGui::DragFloat("Emit Accel", &particle_emitter_constants.emit_accel, 0.01f, 0.0f, 10.0f);
+		ImGui::InputInt("Noise Gap", &particle_constants.noise_gap);
+
+		if(ImGui::DragFloat3("Emit Direction", &particle_emitter_constants.emit_direction.x, 0.01f, -1.0f, +1.0f))		
+		{
+			DirectX::XMVECTOR v_emit_direction
+				= DirectX::XMLoadFloat3(&particle_emitter_constants.emit_direction);
+
+			v_emit_direction = DirectX::XMVector3Normalize(v_emit_direction);
+
+			DirectX::XMStoreFloat3(&particle_emitter_constants.emit_direction,
+				v_emit_direction);
+		}
+
+		ImGui::DragFloat("Spread Rate", &particle_emitter_constants.spread_rate, 0.01f, 0.0f, 1.0f);
+
+		ImGui::ColorEdit4("Emit Color", &particle_emitter_constants.emit_color.x);
+
+		ImGui::DragFloat("Emit Size", &particle_emitter_constants.emit_size, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("Life Time", &particle_emitter_constants.life_time, 0.01f, 0.1f, 10.0f);
+		ImGui::DragFloat("Start Diff", &particle_emitter_constants.start_diff, 0.01f, 0.01f, 10.0f);
+		ImGui::DragFloat("Emit Radius", &particle_emitter_constants.emit_radius, 0.01f, 0.0f, 10.0f);
 	}
 }
 

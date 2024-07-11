@@ -17,20 +17,22 @@ const float				DEFAULT_CAMERA_DISTANCE = 80.0f;
 const DirectX::XMFLOAT3 DEFAULT_CAMERA_TARGET = { 0.0f,0.0f,50.0f };
 const DirectX::XMFLOAT4 DEFAULT_CAMERA_DIRECTION = { 0.0f,0.0f,-1.0f, 0.0f };
 
-ParticleSystem::CbParticleEmitter DEFAULT_EMITTER_SETTING = {
-	100000,							// emit_amounts
-	{ 0, 0, 0 },					// dummy
-	{ 0.0f, 0.0f, 50.0f, 0.0f },	// emit_position
-	{ 0.0f, 0.0f, 0.0f, 0.0f },		// emit_amplitude
-	{ 0.0f, 0.0f, -1.0f, 0.0f },	// emit_direction
-	{ 1.0f, 1.0f, 1.0f, 0.8f },		// emit_color
-	1.0f,							// spread_rate
-	0.15f,							// emit_size
-	10.0f,							// emit_speed
-	0.0f,							// emit_accel
-	10.0f,							// life_time
-	0.002f,							// start_diff
-	{ 0.0f, 0.0f }					// dummy
+const ParticleSystem::CbParticleEmitter DEFAULT_EMITTER_SETTING = {
+	100000,								// emit_amounts
+	false,								// random_color
+	false,								// disable
+	0,									// dummy
+	{ 0.0f, 0.0f, 50.0f },				// emit_position
+	0.0f,								// emit_speed
+	{ 0.0f, 3.0f, 0.0f },				// emit_force
+	100.0f,								// emit_accel
+	{ 0.0f, -1.0f, 0.0f },				// emit_direction
+	0.5f,								// spread_rate
+	{ 1.0f, 1.0f, 1.0f, NormC(100)},	// emit_color
+	0.2f,								// emit_size
+	10.0f,								// life_time
+	0.01f,								// start_diff
+	3.0f								// emit_radius
 };
 
 const BloomEffect::CbBloom DEFAULT_MAIN_BLOOM = {
@@ -68,7 +70,7 @@ DirectX::XMFLOAT3 HSV2RGB(const DirectX::XMFLOAT3 hsv)
 
 		
 		float hsv_x = fmodf(hsv.x, 360.0f);
-		float huei = (int)(hsv_x / 60);
+		float huei = (int)(hsv_x / 60.0f);
 		float huef = hsv_x / 60 - huei;
 		float p = v_max * (1.0f - hsv.y);
 		float q = v_max * (1.0f - hsv.y * huef);

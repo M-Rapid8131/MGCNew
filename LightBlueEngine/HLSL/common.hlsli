@@ -13,8 +13,8 @@ static const int 	SS_POINT		= 0;
 static const int 	SS_LINEAR		= 1;
 static const int 	SS_ANISOTROPIC	= 2;
 static const int 	SS_BORDER	= 3;
-static const int	SCREEN_WIDTH	= 1280;
-static const int	SCREEN_HEIGHT	= 720;
+static const int	SCREEN_WIDTH	= 1920;
+static const int	SCREEN_HEIGHT	= 1080;
 
 static const float	GAMMA			= 2.2f;
 static const float	INV_GAMMA		= 1.0f / 2.2f;

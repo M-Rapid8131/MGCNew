@@ -31,6 +31,7 @@ private:
 	// private:ïœêî
 	DirectX::XMFLOAT3					hsv_color = { 0.0f, 1.0f, 1.0f };
 	std::unique_ptr<Sprite>				logo;
+	std::unique_ptr<Sprite>				menu_key;
 	std::unique_ptr<ParticleSystem>		background_particle;
 	std::unique_ptr<GameModel>			model;
 	std::unique_ptr<BloomEffect>		main_bloom;

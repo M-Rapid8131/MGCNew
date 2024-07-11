@@ -60,7 +60,7 @@ dcl_temps 2
 #line 9 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\bloom\glow_extraction_ps.hlsl"
 sample_indexable(texture2d)(float,float,float,float) r0.xyzw, v2.xyxx, t0.xyzw, s0  // r0.x <- sampled_color.x; r0.y <- sampled_color.y; r0.z <- sampled_color.z; r0.w <- sampled_color.w
 
-#line 10
+#line 11
 max r1.x, r0.z, r0.y
 max r1.x, r0.x, r1.x
 mov r1.y, -cb8[1].x

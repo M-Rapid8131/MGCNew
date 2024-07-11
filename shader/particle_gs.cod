@@ -29,8 +29,8 @@
 //       float size;                    // Offset:   16
 //       float4 color;                  // Offset:   20
 //       float3 velocity;               // Offset:   36
-//       float3 normal;                 // Offset:   48
-//       float3 acceleration;           // Offset:   60
+//       float3 acceleration;           // Offset:   48
+//       float3 normal;                 // Offset:   60
 //       float life;                    // Offset:   72
 //       float start_time;              // Offset:   76
 //
@@ -93,9 +93,9 @@ ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r
 ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r1.y, v[0][0].x, l(24), t1.xxxx  // r1.y <- particle.color.y
 ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r1.z, v[0][0].x, l(28), t1.xxxx  // r1.z <- particle.color.z
 ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r1.w, v[0][0].x, l(32), t1.xxxx  // r1.w <- particle.color.w
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r2.y, v[0][0].x, l(48), t1.xxxx  // r2.y <- particle.normal.x
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r2.z, v[0][0].x, l(52), t1.xxxx  // r2.z <- particle.normal.y
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r2.w, v[0][0].x, l(56), t1.xxxx  // r2.w <- particle.normal.z
+ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r2.y, v[0][0].x, l(60), t1.xxxx  // r2.y <- particle.normal.x
+ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r2.z, v[0][0].x, l(64), t1.xxxx  // r2.z <- particle.normal.y
+ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r2.w, v[0][0].x, l(68), t1.xxxx  // r2.w <- particle.normal.z
 
 #line 16
 mov r0.xyz, r0.xyzx  // r0.x <- particle_position.x; r0.y <- particle_position.y; r0.z <- particle_position.z

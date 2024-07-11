@@ -269,21 +269,22 @@ ObjectBlock::ObjectBlock(bool obstacle, ObjectBoard* parent_board)
 	primitive_renderer	= std::make_unique<PrimitiveRenderer>();
 
 	ParticleSystem::CbParticleEmitter emitter = {};
-	emitter.emit_amounts		= 500;
+	emitter.emit_amounts		= 300;
+	emitter.disable				= true;
 	emitter.emit_position.x		= translation.x;
 	emitter.emit_position.y		= translation.y - BLOCK_SIZE * 0.5f;
 	emitter.emit_position.z		= translation.z - BLOCK_SIZE * 0.25f;
-	emitter.emit_amplitude.y	= 0.0f;
 	emitter.emit_color.x		= block_color_factor.x;
 	emitter.emit_color.y		= block_color_factor.y;
 	emitter.emit_color.z		= block_color_factor.z;
 
 	emitter.emit_size	= 0.2f;
 	emitter.spread_rate = 0.0f;
-	emitter.emit_speed	= 1.0f;
-	emitter.emit_accel	= 0.0f;
+	emitter.emit_speed	= parent_board->GetCurrentSpeed();
+	emitter.emit_accel	= -3.0f;
 	emitter.life_time	= PARTICLE_LIFE;
 	emitter.start_diff	= 0.01f;
+	emitter.emit_radius = BLOCK_SIZE * 0.5f;
 	block_particle		= std::make_unique<ParticleSystem>(emitter , true, "accumulate_particle_ps.cso");
 
 	flag_system.SetFlag(EnumBlockFlags::OBSTACLE_BLOCK, obstacle);
@@ -313,7 +314,6 @@ void ObjectBlock::Update(float elapsed_time)
 
 	if (parent_board.GetBoardState().state == EnumBoardState::GAME_OVER)
 	{
-		// ゲームオーバーになったらブロックカラーの値を黒に設定する
 		block_state.TransitionEraseState();
 	}
 
@@ -323,9 +323,9 @@ void ObjectBlock::Update(float elapsed_time)
 	emitter.emit_position.y = translation.y + BLOCK_SIZE * 0.5f;
 
 	if (flag_system.GetFlag(EnumBlockFlags::FIRING_PARTICLE))
-		emitter.life_time = PARTICLE_LIFE;
+		emitter.disable = false;
 	else
-		emitter.life_time = 0.0f;
+		emitter.disable = true;
 
 	block_particle->Update(elapsed_time);
 
@@ -342,6 +342,7 @@ void ObjectBlock::ErasingUpdate(float elapsed_time)
 	float& disolve_factor = model->GetDisolveFactor();
 	disolve_factor -= elapsed_time;
 	
+	block_particle->Update(elapsed_time);
 	if (disolve_factor < 0.0f)
 		block_state.TransitionDisappearedState();
 }

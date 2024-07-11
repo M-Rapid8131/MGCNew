@@ -151,8 +151,8 @@ private:
 	static const int		CORNER_COUNT		= 2;
 	static const int		MAX_TRAIL_BUFFER	= 10;
 	static constexpr float	DROP_SPEED			= 0.5f;
-	static constexpr float	BLINK_SPEED			= 3.0f;
-	static constexpr float	PARTICLE_LIFE		= 0.5f;
+	static constexpr float	BLINK_SPEED			= 2.0f;
+	static constexpr float	PARTICLE_LIFE		= 1.0f;
 
 	// struct >> ObjectBlock >> [BlockState]
 	struct BlockState

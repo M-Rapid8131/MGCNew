@@ -82,7 +82,7 @@ void ShaderMain(uint3 dtid : SV_DispatchThreadID)
 		particle.acceleration = normalize(particle.normal);
 		
 		// acceleration‚ðvelocity‚É‰ÁŽZ‚µAvelocity‚ðposition‚É‰ÁŽZ
-		particle.velocity += particle.acceleration * delta_time * 3.0f;
+		particle.velocity += (particle.acceleration + CONVERT_TO_SNORM(random_f3)) * delta_time * 3.0f;
 		particle.position += particle.velocity * delta_time;
 		
 		if (length(particle.velocity) > MAX_SPEED)

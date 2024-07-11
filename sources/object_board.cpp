@@ -51,12 +51,12 @@ const DirectX::XMFLOAT2 UI_SPRITE_CENTER_POS	= { 70.0f,	60.0f };
 const DirectX::XMFLOAT2 UI_SPRITE_SIZE			= { 60.0f,	60.0f };
 const DirectX::XMFLOAT2 UI_GAME_MODE_SIZE		= { 250.0f, 50.0f };
 
-const float UI_LEFT_X		= Graphics::GetInstance()->GetScreenWidth() * 0.19f;
-const float UI_RIGHT_X		= Graphics::GetInstance()->GetScreenWidth() * 0.65f;
-const float UI_NEXT_BLOCK_Y = Graphics::GetInstance()->GetScreenHeight() * 0.05f;
-const float UI_TOP_Y		= Graphics::GetInstance()->GetScreenHeight() * 0.5f;
-const float UI_CENTER_Y		= Graphics::GetInstance()->GetScreenHeight() * 0.65f;
-const float UI_UNDER_Y		= Graphics::GetInstance()->GetScreenHeight() * 0.8f;
+const float UI_LEFT_X		= SCast(float, Graphics::GetInstance()->GetScreenWidth()) * 0.19f;
+const float UI_RIGHT_X		= SCast(float, Graphics::GetInstance()->GetScreenWidth()) * 0.7f;
+const float UI_NEXT_BLOCK_Y = SCast(float, Graphics::GetInstance()->GetScreenHeight()) * 0.05f;
+const float UI_TOP_Y		= SCast(float, Graphics::GetInstance()->GetScreenHeight()) * 0.5f;
+const float UI_CENTER_Y		= SCast(float, Graphics::GetInstance()->GetScreenHeight()) * 0.65f;
+const float UI_UNDER_Y		= SCast(float, Graphics::GetInstance()->GetScreenHeight()) * 0.8f;
 
 //---------------------------------
 // ObjectBoard ƒƒ“ƒoŠÖ”

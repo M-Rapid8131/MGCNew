@@ -1,5 +1,6 @@
 // <>インクルード
 #include <imgui.h>
+#include <implot.h>
 
 // ""インクルード
 // LightBlueEngine
@@ -22,9 +23,9 @@ void GamesystemDirector::Initialize(HWND hwnd, EnumCameraMode& start_mode)
 {
 	// 各必須クラスオブジェクトの初期化
 	Graphics* graphics = Graphics::GetInstance();
-	graphics->Initialize(hwnd, !fullscreen_mode);
+	graphics->Initialize(hwnd, windowed);
 
-	GamesystemInput::GetInstance()->Initialize(hwnd);
+	GamesystemInput::GetInstance()->Initialize(graphics->GetHWND());
 
 	audio					= std::make_unique<Audio>();
 	audio_manager			= std::make_unique<AudioManager>();
@@ -79,12 +80,50 @@ void GamesystemDirector::DebugGUI()
 		framebuffer_manager->DebugGUI();
 		if (using_class_flag.GetFlag(EnumUsingClass::SHADOW_MAP))
 			shadow_map->DebugGUI();
+		Graphics::GetInstance()->DebugGUI();
 		camera->DebugGUI();
 		light->DebugGUI();
 		scene_manager->DebugGUI();
 		if (using_class_flag.GetFlag(EnumUsingClass::RANDOM_NOISE))
 			random_noise->DebugGUI();
 		GamesystemInput::GetInstance()->DebugGUI();
+
+#if 1
+		if (ImPlot::BeginPlot("step_graph"))
+		{
+			float x_data[1000];
+			float step_y_data[1000];
+			float smoothstep_y_data[1000];
+
+			auto smooth_step = [](float a, float b, float x) {
+				if (x < a)	return 0.0f;
+				else if (x > b)	return 1.0f;
+
+				float t = (std::clamp)((x - a) / (b - a), 0.0f, 1.0f);
+				return t * t * (3 - 2 * t);
+				};
+
+			auto step = [](float a, float x)
+				{
+					if (a < x) return 1.0f;
+					else return 0.0f;
+				};
+
+			for (int i = 0; i < 1000; i++)
+			{
+				x_data[i] = (float)i * 0.01f;
+				step_y_data[i] = step(step_a, x_data[i]);
+				smoothstep_y_data[i] = smooth_step(step_a, step_b, x_data[i]);
+			}
+
+			ImPlot::PlotLine("step", x_data, step_y_data, 1000);
+			ImPlot::PlotLine("smoothstep", x_data, smoothstep_y_data, 1000);
+			ImPlot::EndPlot();
+		}
+
+		ImGui::DragFloat("Step A", &step_a, 0.01f, 0.1f);
+		ImGui::DragFloat("Step B", &step_b, 0.01f, 0.1f);
+#endif
 	}
 	ImGui::End();
 }

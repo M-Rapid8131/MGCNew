@@ -115,7 +115,11 @@ private:
 
 	FlagSystem<EnumUsingClass>			using_class_flag;
 
-	BOOL								fullscreen_mode = TRUE;
+	BOOL								windowed = FALSE;
+
+	float step_a = 0.0f;
+	float step_b = 1.0f;
+	float step_x = 0.5f;
 };
 
 #endif // __GAMESYSTEM_DIRECTOR_H__

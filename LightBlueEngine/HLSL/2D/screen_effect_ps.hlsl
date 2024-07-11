@@ -40,7 +40,6 @@ float4 ShaderMain(VS_OUT_2D pin) : SV_TARGET
 		float weight = lerp(start, end, rate);
 		
 		blur_color += color_map_2d.Sample(sampler_states[SS_LINEAR], blur_texcoord) * weight;
-
 	}
 	
 	// 色収差とブリーチバイパスを計算

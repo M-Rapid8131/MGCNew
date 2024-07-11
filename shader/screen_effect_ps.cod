@@ -63,7 +63,7 @@ dcl_temps 6
 mov r0.x, l(0.003000)  // r0.x <- COLOR_GAP_FACTOR
 
 #line 6
-mov r0.yz, l(0,0.000391,0.000694,0)  // r0.y <- VIEWPORT_OFFSET.x; r0.z <- VIEWPORT_OFFSET.y
+mov r0.yz, l(0,0.000260,0.000463,0)  // r0.y <- VIEWPORT_OFFSET.x; r0.z <- VIEWPORT_OFFSET.y
 
 #line 16
 sample_indexable(texture2d)(float,float,float,float) r1.xyzw, v2.xyxx, t0.xyzw, s1  // r1.x <- base_color.x; r1.y <- base_color.y; r1.z <- base_color.z; r1.w <- base_color.w
@@ -134,11 +134,11 @@ loop
   mul r5.xyzw, r3.wwww, r5.xyzw
   add r4.xyzw, r4.xyzw, r5.xyzw
 
-#line 44
+#line 43
   iadd r3.z, r3.z, l(1)
 endloop 
 
-#line 47
+#line 46
 nop 
 nop 
 mov r0.yz, v2.xxyx
@@ -179,10 +179,10 @@ mov r2.z, r2.z  // r2.z <- color.z
 #line 80
 mov r2.xyz, r2.xyzx  // r2.x <- <ApplyChromaticAberrationRG return value>.x; r2.y <- <ApplyChromaticAberrationRG return value>.y; r2.z <- <ApplyChromaticAberrationRG return value>.z
 
-#line 47 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\screen_effect_ps.hlsl"
+#line 46 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\screen_effect_ps.hlsl"
 mov r2.xyz, r2.xyzx  // r2.x <- chromatic_color.x; r2.y <- chromatic_color.y; r2.z <- chromatic_color.z
 
-#line 48
+#line 47
 nop 
 mov r1.xyz, r1.xyzx
 
@@ -305,23 +305,23 @@ mov r3.x, r3.x  // r3.x <- <ApplyBleachBypass return value>.x
 mov r3.y, r3.y  // r3.y <- <ApplyBleachBypass return value>.y
 mov r3.z, r3.z  // r3.z <- <ApplyBleachBypass return value>.z
 
-#line 48 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\screen_effect_ps.hlsl"
+#line 47 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\screen_effect_ps.hlsl"
 mov r3.xyz, r3.xyzx  // r3.x <- bleach_bypass_color.x; r3.y <- bleach_bypass_color.y; r3.z <- bleach_bypass_color.z
 
-#line 51
+#line 50
 mov r0.xyz, -r3.xyzx
 add r0.xyz, r0.xyzx, r2.xyzx
 mul r0.xyz, r0.xyzx, l(0.750000, 0.750000, 0.750000, 0.000000)
 add r1.xyz, r0.xyzx, r3.xyzx  // r1.x <- color.x; r1.y <- color.y; r1.z <- color.z
 mov r1.w, r1.w  // r1.w <- color.w
 
-#line 53
+#line 52
 mov r0.xyzw, -r4.xyzw
 add r0.xyzw, r0.xyzw, r1.xyzw
 mul r0.xyzw, r0.xyzw, l(0.500000, 0.500000, 0.500000, 0.500000)
 add r0.xyzw, r0.xyzw, r4.xyzw  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z; r0.w <- color.w
 
-#line 55
+#line 54
 mov o0.xyzw, r0.xyzw
 ret 
 // Approximately 148 instruction slots used
