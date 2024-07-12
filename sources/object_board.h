@@ -274,6 +274,8 @@ protected:
 	EnumGameMode						game_mode				= EnumGameMode::UNDEFINE;
 	BoardState							board_state;						// ”Õ–Ê‚Ìó‘Ô
 	StateUpdate							state_update;						// ó‘Ô‚²‚Æ‚Ìˆ—‚ğŠi”[‚·‚éŠÖ”ƒ|ƒCƒ“ƒ^
+
+	std::string chech_time;
 };
 
 #endif // __OBJECT_BOARD_H__

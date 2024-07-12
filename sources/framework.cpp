@@ -123,6 +123,9 @@ void Framework::CalculateFrameStats()
 // 初期化処理
 bool Framework::Initialize()
 {
+	Py_Initialize();
+	//np_cpp::initialize();
+
 	srand(SCast(unsigned int, time(NULL)));
 
 	// シングルトンクラスの初期化処理
@@ -130,6 +133,7 @@ bool Framework::Initialize()
 
 	EnumCameraMode init_mode = EnumCameraMode::THIRD_PERSON_VIEW;
 	GamesystemDirector::GetInstance()->Initialize(hwnd, init_mode);
+
 	return true;
 }
 

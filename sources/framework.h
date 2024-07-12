@@ -5,6 +5,8 @@
 #include <vector>
 #include <wrl.h>
 #include <memory>
+#include <boost/python.hpp>
+//#include <boost/python/numpy.hpp>
 
 // ""インクルード
 // LightBlueEngine
@@ -13,6 +15,10 @@
 // using
 using namespace std;
 using namespace Microsoft::WRL;
+
+// namespace
+namespace py_cpp = boost::python;
+//namespace np_cpp = boost::python::numpy;
 
 // class >> [Framework]
 class Framework

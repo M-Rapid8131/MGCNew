@@ -1,5 +1,11 @@
 // <>インクルード
 #include <imgui.h>
+#include <boost/python.hpp>
+//#include <boost/python/numpy.hpp>
+
+#ifdef _DEBUG
+#include <chrono>
+#endif
 
 // ""インクルード
 // LightBlueEngine
@@ -269,6 +275,11 @@ void ObjectBoard::BoardState::TransitionLandingState()
 	obj->state_update = &ObjectBoard::UpdateLandingState;
 	obj->standing_time = 0.0f;
 
+#ifdef _DEBUG
+	std::chrono::system_clock::time_point  start, end;
+	start = std::chrono::system_clock::now(); // 計測開始時間
+#endif
+
 	for (UINT row = 1; row <= MAX_ROW; row++)
 	{
 		obj->VerticalLineCheck(row);
@@ -278,6 +289,13 @@ void ObjectBoard::BoardState::TransitionLandingState()
 	{
 		obj->HorizontalLineCheck(column);
 	}
+
+#ifdef _DEBUG
+	end = std::chrono::system_clock::now();  // 計測終了時間
+	float elapsed = SCast(float, std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()) * 10e-6;
+
+	obj->chech_time = "Check Time : " + std::to_string(elapsed);
+#endif 
 
 	obj->flag_system.SetFlag(EnumBoardFlags::RESULT, obj->MoveToDeletedBlockList());
 
@@ -779,6 +797,7 @@ void ObjectBoard::DebugGUI()
 {
 	if (ImGui::CollapsingHeader("ObjectBoard"))
 	{
+		ImGui::Text(chech_time.c_str());
 		ImGui::InputFloat("Current Speed", &current_speed);
 		ImGui::InputFloat("Rigidity Time", &standing_time);
 		ImGui::InputFloat("Rigidity Time Limit", &standing_time_limit);
@@ -1104,7 +1123,7 @@ void ObjectBoard::VerticalLineCheck(const UINT row_line)
 		}
 
 		// ブロックが存在していたが、色が違っていた場合
-		else if (last_color != (*block_itr)->GetBlockColor())
+		if (last_color != (*block_itr)->GetBlockColor())
 		{
 			last_color = (*block_itr)->GetBlockColor();
 			UINT push_count = continuous_color;
