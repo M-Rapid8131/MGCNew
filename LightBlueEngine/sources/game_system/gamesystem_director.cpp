@@ -29,7 +29,7 @@ void GamesystemDirector::Initialize(HWND hwnd, EnumCameraMode& start_mode)
 
 	audio					= std::make_unique<Audio>();
 	audio_manager			= std::make_unique<AudioManager>();
-	camera					= std::make_unique<Camera>(start_mode);
+	camera					= std::make_unique<GameCamera>(start_mode);
 	framebuffer_manager		= std::make_unique<FramebufferManager>();
 	imgui_renderer			= std::make_unique<ImGuiRenderer>(hwnd);
 	light					= std::make_unique<Light>();

@@ -79,7 +79,7 @@ void SceneGame::Initialize()
 	Graphics* graphics = Graphics::GetInstance();
 
 	// ÉJÉÅÉâçÏê¨
-	Camera::TPVData tpv_init = {};
+	GameCamera::TPVData tpv_init = {};
 	tpv_init.tpv_target		= DEFAULT_CAMERA_TARGET;
 	tpv_init.tpv_direction	= DEFAULT_CAMERA_DIRECTION;
 	tpv_init.tpv_distance	= DEFAULT_CAMERA_DISTANCE;

@@ -65,7 +65,7 @@ public:
 	Audio*				GetAudio()				{ return audio.get(); }
 	AudioManager*		GetAudioManager()		{ return audio_manager.get(); }
 	
-	Camera*				GetCamera()				{ return camera.get(); }
+	GameCamera*				GetCamera()				{ return camera.get(); }
 
 	Light*				GetLight()				{ return light.get(); }
 	SkyMap*				GetSkyMap()				{ return sky_map.get(); }
@@ -98,7 +98,7 @@ private:
 	std::unique_ptr<AudioManager>		audio_manager;		// •K{
 
 	// Graphics
-	std::unique_ptr<Camera>				camera;				// •K{ update‚ ‚è
+	std::unique_ptr<GameCamera>				camera;				// •K{ update‚ ‚è
 	std::unique_ptr<Light>				light;				// •K{ update‚ ‚è
 	std::unique_ptr<SkyMap>				sky_map;			// render‚ ‚è
 

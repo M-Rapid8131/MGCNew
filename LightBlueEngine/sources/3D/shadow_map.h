@@ -8,7 +8,7 @@
 #include <DirectXMath.h>
 
 // ‘O•ûéŒ¾
-class Camera;
+class GameCamera;
 class Light;
 
 // using
@@ -45,7 +45,7 @@ public:
 
 	// public:’ÊíŠÖ”
 	void DebugGUI();
-	void Clear(Camera*, Light*, float = 1);
+	void Clear(GameCamera*, Light*, float = 1);
 	void Activate(D3D11_VIEWPORT*);
 	void Deactivate(D3D11_VIEWPORT*);
 

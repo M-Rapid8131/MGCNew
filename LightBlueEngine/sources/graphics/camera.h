@@ -31,7 +31,7 @@ static const DirectX::XMFLOAT4	DEFAULT_TPV_DIRECTION	= { 0.0f, 0.0f, 1.0f, 0.0f 
 static const float				DEFAULT_TPV_DISTANCE	= 1.0f;
 
 // class >> [Camera]
-class Camera
+class GameCamera
 {
 private:
 	// private:定数
@@ -70,8 +70,8 @@ public:
 	};
 
 	// public:コンストラクタ・デストラクタ
-	Camera(EnumCameraMode&);
-	~Camera() {};
+	GameCamera(EnumCameraMode&);
+	~GameCamera() {};
 
 	// public:通常関数
 	void Update();

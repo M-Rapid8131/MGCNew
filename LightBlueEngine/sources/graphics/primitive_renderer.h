@@ -48,7 +48,7 @@ public:
 
 	// public:通常関数
 	void AddVertex(const DirectX::XMFLOAT3&, const DirectX::XMFLOAT3&,float);
-	void Render(Camera*, D3D11_PRIMITIVE_TOPOLOGY);
+	void Render(GameCamera*, D3D11_PRIMITIVE_TOPOLOGY);
 
 	// public:セッター関数
 	void SetRootPosition(DirectX::XMFLOAT3 p_root_position) { root_position = p_root_position; }

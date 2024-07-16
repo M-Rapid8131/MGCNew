@@ -53,11 +53,11 @@ MaterialData GetMaterialData(SbMaterial material, float2 texcoord)
 	MaterialData material_data;
 	
 	// ‰Šú‰»
-	material_data.f0						= 0.04;
+	material_data.f0					= 0.04;
 	material_data.f90					= 1.0;
 	material_data.ior					= 1.5;
 	material_data.alpha_roughness		= 1.0;
-	material_data.c_diff					= 1.0;
+	material_data.c_diff				= 1.0;
 	
 	material_data.basecolor_factor		= 1.0;
 	
@@ -110,10 +110,10 @@ MaterialData GetMaterialData(SbMaterial material, float2 texcoord)
 	material_data.roughness_factor	= roughness;
 	material_data.metallic_factor	= metallic;
 	
-	material_data.f0					= lerp(material_data.f0, material_data.basecolor_factor.rgb, material_data.metallic_factor);
+	material_data.f0				= lerp(material_data.f0, material_data.basecolor_factor.rgb, material_data.metallic_factor);
 	material_data.f90				= 1.0;
 	material_data.alpha_roughness	= material_data.roughness_factor * material_data.roughness_factor;
-	material_data.c_diff				= lerp(material_data.basecolor_factor.rgb, 0.0, material_data.metallic_factor);
+	material_data.c_diff			= lerp(material_data.basecolor_factor.rgb, 0.0, material_data.metallic_factor);
 	
 	// emissive >> rgb
 	float3	emissive				= material.emissive_factor;
@@ -212,9 +212,9 @@ MaterialData GetMaterialData(SbMaterial material, float2 texcoord)
 	material_data.specular_color_factor = specular_color;
 	
 	float3 dielectric_specular_f0	= min(material_data.f0 * specular_color, 1.0);
-	material_data.f0					= lerp(dielectric_specular_f0, material_data.basecolor_factor.rgb, material_data.metallic_factor);
+	material_data.f0				= lerp(dielectric_specular_f0, material_data.basecolor_factor.rgb, material_data.metallic_factor);
 	material_data.specular_factor	= specular;
-	material_data.c_diff				= lerp(material_data.basecolor_factor.rgb, 0, material_data.metallic_factor);
+	material_data.c_diff			= lerp(material_data.basecolor_factor.rgb, 0, material_data.metallic_factor);
 	
 	return material_data;
 }

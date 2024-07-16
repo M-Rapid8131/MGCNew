@@ -1003,8 +1003,8 @@ bool ObjectBoard::MoveToDeletedBlockList()
 void ObjectBoard::CameraZoom(float elapsed_time)
 {
 	GamePad* game_pad = GamesystemInput::GetInstance()->GetGamePad();
-	Camera* camera = GamesystemDirector::GetInstance()->GetCamera();
-	Camera::TPVData* tpv = camera->GetTPVCamera();
+	GameCamera* camera = GamesystemDirector::GetInstance()->GetCamera();
+	GameCamera::TPVData* tpv = camera->GetTPVCamera();
 
 	if (!tpv)	return;
 
@@ -1018,8 +1018,8 @@ void ObjectBoard::CameraZoom(float elapsed_time)
 
 void ObjectBoard::CameraMove(float elapsed_time)
 {
-	Camera*				camera		= GamesystemDirector::GetInstance()->GetCamera();
-	Camera::TPVData*	tpv			= camera->GetTPVCamera();
+	GameCamera*				camera		= GamesystemDirector::GetInstance()->GetCamera();
+	GameCamera::TPVData*	tpv			= camera->GetTPVCamera();
 	GamePad*			game_pad	= GamesystemInput::GetInstance()->GetGamePad();
 
 	if (!tpv)	return;

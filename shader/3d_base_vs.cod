@@ -43,8 +43,8 @@
 //
 // Name                 Index   Mask Register SysValue  Format   Used
 // -------------------- ----- ------ -------- -------- ------- ------
-// POSITION                 0   xyzw        0     NONE   float   xyz 
-// NORMAL                   0   xyzw        1     NONE   float   xyz 
+// POSITION                 0   xyz         0     NONE   float   xyz 
+// NORMAL                   0   xyz         1     NONE   float   xyz 
 // TANGENT                  0   xyzw        2     NONE   float   xyzw
 // TEXCOORD                 0   xy          3     NONE   float   xy  
 // JOINTS                   0   xyzw        4     NONE    uint       
@@ -76,11 +76,11 @@ dcl_output o2.xyzw
 dcl_output o3.xyzw
 dcl_output o4.xy
 dcl_output o5.xyz
-dcl_temps 13
+dcl_temps 12
 //
 // Initial variable locations:
-//   v0.x <- vin.position.x; v0.y <- vin.position.y; v0.z <- vin.position.z; v0.w <- vin.position.w; 
-//   v1.x <- vin.normal.x; v1.y <- vin.normal.y; v1.z <- vin.normal.z; v1.w <- vin.normal.w; 
+//   v0.x <- vin.position.x; v0.y <- vin.position.y; v0.z <- vin.position.z; 
+//   v1.x <- vin.normal.x; v1.y <- vin.normal.y; v1.z <- vin.normal.z; 
 //   v2.x <- vin.tangent.x; v2.y <- vin.tangent.y; v2.z <- vin.tangent.z; v2.w <- vin.tangent.w; 
 //   v3.x <- vin.texcoord.x; v3.y <- vin.texcoord.y; 
 //   v4.x <- vin.joints.x; v4.y <- vin.joints.y; v4.z <- vin.joints.z; v4.w <- vin.joints.w; 
@@ -124,9 +124,6 @@ else
 endif 
 
 #line 27
-itof r1.w, l(1)  // r1.w <- vin.position.w
-
-#line 28
 mul r2.xyzw, cb9[1].xxxx, cb9[5].xyzw
 mul r3.xyzw, cb9[1].yyyy, cb9[6].xyzw
 add r2.xyzw, r2.xyzw, r3.xyzw
@@ -188,55 +185,50 @@ mul r4.xyzw, r7.xyzw, v0.yyyy
 add r3.xyzw, r3.xyzw, r4.xyzw
 mul r4.xyzw, r8.xyzw, v0.zzzz
 add r3.xyzw, r3.xyzw, r4.xyzw
-mul r2.xyzw, r1.wwww, r2.xyzw
+mul r2.xyzw, r2.xyzw, l(1.000000, 1.000000, 1.000000, 1.000000)
 add r2.xyzw, r2.xyzw, r3.xyzw  // r2.x <- vout.position.x; r2.y <- vout.position.y; r2.z <- vout.position.z; r2.w <- vout.position.w
 
-#line 29
+#line 28
 mul r3.xyzw, v0.xxxx, cb0[0].xyzw
 mul r4.xyzw, v0.yyyy, cb0[1].xyzw
 add r3.xyzw, r3.xyzw, r4.xyzw
 mul r4.xyzw, v0.zzzz, cb0[2].xyzw
-add r3.xyzw, r3.xyzw, r4.xyzw
-mul r4.xyzw, r1.wwww, cb0[3].xyzw
 add r3.xyzw, r3.xyzw, r4.xyzw  // r3.x <- vout.w_position.x; r3.y <- vout.w_position.y; r3.z <- vout.w_position.z; r3.w <- vout.w_position.w
 
-#line 31
-itof r4.x, l(0)  // r4.x <- vin.normal.w
-
-#line 32
-mul r5.xyzw, r0.yyyy, cb0[0].xyzw
-mul r6.xyzw, r0.zzzz, cb0[1].xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, r0.wwww, cb0[2].xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r4.xyzw, r4.xxxx, cb0[3].xyzw
+#line 30
+mul r4.xyzw, r0.yyyy, cb0[0].xyzw
+mul r5.xyzw, r0.zzzz, cb0[1].xyzw
+add r4.xyzw, r4.xyzw, r5.xyzw
+mul r5.xyzw, r0.wwww, cb0[2].xyzw
+add r4.xyzw, r4.xyzw, r5.xyzw
+mul r5.xyzw, cb0[3].xyzw, l(0.000000, 0.000000, 0.000000, 0.000000)
 add r4.xyzw, r4.xyzw, r5.xyzw
 dp4 r0.y, r4.xyzw, r4.xyzw
 rsq r0.y, r0.y
 mul r4.xyzw, r0.yyyy, r4.xyzw  // r4.x <- vout.w_normal.x; r4.y <- vout.w_normal.y; r4.z <- vout.w_normal.z; r4.w <- vout.w_normal.w
 
-#line 34
+#line 32
 itof r0.y, l(0)  // r0.y <- vin.tangent.w
 
-#line 35
+#line 33
 mul r5.xyzw, r1.xxxx, cb0[0].xyzw
 mul r6.xyzw, r1.yyyy, cb0[1].xyzw
 add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, r1.zzzz, cb0[2].xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, r0.yyyy, cb0[3].xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw
-dp4 r0.y, r5.xyzw, r5.xyzw
+mul r1.xyzw, r1.zzzz, cb0[2].xyzw
+add r1.xyzw, r1.xyzw, r5.xyzw
+mul r5.xyzw, r0.yyyy, cb0[3].xyzw
+add r1.xyzw, r1.xyzw, r5.xyzw
+dp4 r0.y, r1.xyzw, r1.xyzw
 rsq r0.y, r0.y
-mul r0.yzw, r0.yyyy, r5.xxyz  // r0.y <- vout.w_tangent.x; r0.z <- vout.w_tangent.y; r0.w <- vout.w_tangent.z
+mul r0.yzw, r0.yyyy, r1.xxyz  // r0.y <- vout.w_tangent.x; r0.z <- vout.w_tangent.y; r0.w <- vout.w_tangent.z
 
-#line 36
+#line 34
 mov r0.x, r0.x  // r0.x <- vout.w_tangent.w
 
-#line 38
+#line 36
 mov r1.xy, v3.xyxx  // r1.x <- vout.texcoord.x; r1.y <- vout.texcoord.y
 
-#line 41
+#line 39
 mul r5.xyzw, cb9[1].xxxx, cb9[5].xyzw
 mul r6.xyzw, cb9[1].yyyy, cb9[6].xyzw
 add r5.xyzw, r5.xyzw, r6.xyzw
@@ -279,43 +271,34 @@ mul r11.xyzw, r7.xyzw, cb0[1].zzzz
 add r10.xyzw, r10.xyzw, r11.xyzw
 mul r11.xyzw, r8.xyzw, cb0[1].wwww
 add r10.xyzw, r10.xyzw, r11.xyzw
-mul r11.xyzw, r5.xyzw, cb0[2].xxxx
-mul r12.xyzw, r6.xyzw, cb0[2].yyyy
-add r11.xyzw, r11.xyzw, r12.xyzw
-mul r12.xyzw, r7.xyzw, cb0[2].zzzz
-add r11.xyzw, r11.xyzw, r12.xyzw
-mul r12.xyzw, r8.xyzw, cb0[2].wwww
-add r11.xyzw, r11.xyzw, r12.xyzw
-mul r5.xyzw, r5.xyzw, cb0[3].xxxx
-mul r6.xyzw, r6.xyzw, cb0[3].yyyy
+mul r5.xyzw, r5.xyzw, cb0[2].xxxx
+mul r6.xyzw, r6.xyzw, cb0[2].yyyy
 add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, r7.xyzw, cb0[3].zzzz
+mul r6.xyzw, r7.xyzw, cb0[2].zzzz
 add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, r8.xyzw, cb0[3].wwww
+mul r6.xyzw, r8.xyzw, cb0[2].wwww
 add r5.xyzw, r5.xyzw, r6.xyzw
 mul r6.xyzw, r9.xyzw, v0.xxxx
 mul r7.xyzw, r10.xyzw, v0.yyyy
 add r6.xyzw, r6.xyzw, r7.xyzw
-mul r7.xyzw, r11.xyzw, v0.zzzz
-add r6.xyzw, r6.xyzw, r7.xyzw
-mul r5.xyzw, r1.wwww, r5.xyzw
+mul r5.xyzw, r5.xyzw, v0.zzzz
 add r5.xyzw, r5.xyzw, r6.xyzw  // r5.x <- wvpPos.x; r5.y <- wvpPos.y; r5.z <- wvpPos.z; r5.w <- wvpPos.w
 
-#line 42
+#line 40
 div r5.xyz, r5.xyzx, r5.wwww
 
-#line 43
+#line 41
 mov r5.w, -r5.y  // r5.w <- wvpPos.y
 
-#line 44
+#line 42
 mul r1.zw, r5.xxxw, l(0.000000, 0.000000, 0.500000, 0.500000)
 add r5.xy, r1.zwzz, l(0.500000, 0.500000, 0.000000, 0.000000)  // r5.y <- wvpPos.y
 
-#line 45
+#line 43
 mov r5.xy, r5.xyxx  // r5.x <- vout.shadow_texcoord.x; r5.y <- vout.shadow_texcoord.y
 mov r5.z, r5.z  // r5.z <- vout.shadow_texcoord.z
 
-#line 47
+#line 45
 mov o0.xyzw, r2.xyzw
 mov o1.xyzw, r3.xyzw
 mov o2.xyzw, r4.xyzw
@@ -324,4 +307,4 @@ mov o3.w, r0.x
 mov o5.xyz, r5.xyzx
 mov o4.xy, r1.xyxx
 ret 
-// Approximately 193 instruction slots used
+// Approximately 180 instruction slots used

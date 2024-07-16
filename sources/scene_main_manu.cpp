@@ -23,16 +23,16 @@ const ParticleSystem::CbParticleEmitter DEFAULT_EMITTER_SETTING = {
 	false,								// disable
 	0,									// dummy
 	{ 0.0f, 0.0f, 50.0f },				// emit_position
-	0.0f,								// emit_speed
+	10.0f,								// emit_speed
 	{ 0.0f, 3.0f, 0.0f },				// emit_force
-	100.0f,								// emit_accel
+	10.0f,								// emit_accel
 	{ 0.0f, -1.0f, 0.0f },				// emit_direction
-	0.5f,								// spread_rate
-	{ 1.0f, 1.0f, 1.0f, NormC(100)},	// emit_color
+	1.0f,								// spread_rate
+	{ 1.0f, 1.0f, 1.0f, NormC(200)},	// emit_color
 	0.2f,								// emit_size
-	10.0f,								// life_time
-	0.01f,								// start_diff
-	3.0f								// emit_radius
+	7.0f,								// life_time
+	0.02f,								// start_diff
+	0.0f								// emit_radius
 };
 
 const BloomEffect::CbBloom DEFAULT_MAIN_BLOOM = {
@@ -133,7 +133,7 @@ void SceneMainManu::Initialize()
 	audio_manarger->PlayBGM(EnumBGMBank::STANDBY, 0.3f);
 
 	// ƒJƒƒ‰ì¬
-	Camera::TPVData tpv_init = {};
+	GameCamera::TPVData tpv_init = {};
 	tpv_init.tpv_target		= DEFAULT_CAMERA_TARGET;
 	tpv_init.tpv_direction	= DEFAULT_CAMERA_DIRECTION;
 	tpv_init.tpv_distance	= DEFAULT_CAMERA_DISTANCE;
@@ -186,9 +186,9 @@ void SceneMainManu::Update(float elapsed_time)
 		break;
 	}
 
-	Camera*				camera	= GamesystemDirector::GetInstance()->GetCamera();
+	GameCamera*				camera	= GamesystemDirector::GetInstance()->GetCamera();
 	Light*				light	= GamesystemDirector::GetInstance()->GetLight();
-	Camera::TPVData*	tpv		= camera->GetTPVCamera();
+	GameCamera::TPVData*	tpv		= camera->GetTPVCamera();
 
 	DirectX::XMFLOAT3	camera_rot = { 0.0f, 0.2f, 0.0f };
 

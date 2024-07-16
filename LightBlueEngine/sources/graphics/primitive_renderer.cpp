@@ -82,7 +82,7 @@ void PrimitiveRenderer::AddVertex(const DirectX::XMFLOAT3& position, const Direc
 }
 
 // •`‰æˆ—
-void PrimitiveRenderer::Render(Camera* camera, D3D11_PRIMITIVE_TOPOLOGY primitive_topology)
+void PrimitiveRenderer::Render(GameCamera* camera, D3D11_PRIMITIVE_TOPOLOGY primitive_topology)
 {
 	Graphics*				graphics		= Graphics::GetInstance();
 	ID3D11DeviceContext*	device_context	= graphics->GetDeviceContext().Get();

@@ -6,16 +6,19 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <tiny_gltf.h>
 
 // ""インクルード
 // LightBlueEngine
 #include "graphics/graphics.h"
 #include "engine_utility.h"
+#include "gltf_properties.h"
 
 // template using
 template<typename T>
 using UMapArray = std::unordered_map<int, std::vector<T>>;
+
+// using namespace
+using namespace glTFProperties;
 
 // enum class
 enum class EnumBufferglTFModel
@@ -60,35 +63,37 @@ private:
 	struct Scene
 	{
 		// 変数
-		std::string			name;
-
 		std::vector<int>	nodes; //'root'ノードの配列
+		std::string			name;
 	};
 
 	// struct >> GameModel >> [Node]
 	struct Node
 	{
 		// 変数
-		int					skin = -1;
-		int					mesh = -1;
-		std::string			name;
-
+		int					camera;
 		std::vector<int>	children;
+		int					skin = -1;
 
-		// ローカル座標
-		DirectX::XMFLOAT4	rotation			= { 0,0,0,1 };
-		DirectX::XMFLOAT3	scale				= { 1,1,1 };
-		DirectX::XMFLOAT3	translation			= { 0,0,0 };
 		DirectX::XMFLOAT4X4 global_transform	= {
 			1,0,0,0,
 			0,1,0,0,
 			0,0,1,0,
 			0,0,0,1
 		};
+
+		int					mesh = -1;
+		DirectX::XMFLOAT4	rotation			= { 0,0,0,1 };
+		DirectX::XMFLOAT3	scale				= { 1,1,1 };
+		DirectX::XMFLOAT3	translation			= { 0,0,0 };
+		std::vector<float>	weights;
+		std::string			name;
+
+
 	};
 
 	// struct >> GameModel >> [BufferView]
-	struct BufferView
+	struct ElementBuffer
 	{
 		// 関数
 		size_t Count() const
@@ -112,24 +117,23 @@ private:
 	{
 		// 変数
 		std::string	str;
-		BufferView	buffer_view = {};
+		ElementBuffer	buffer_view = {};
 	};
 
 
 	// struct >> GameModel >> [Mesh]
 	struct Mesh
 	{
-		// struct >> GameModel >> Mesh >> [Primitive]
 		struct Primitive
 		{
 			int									material				= -1;
-			std::map<std::string, BufferView>	vertex_buffer_views;
-			BufferView							index_buffer_view	= {};
+			std::map<std::string, ElementBuffer>	vertex_buffer_views;
+			ElementBuffer							index_buffer_view	= {};
 			
 		};
 
-		// 変数
 		std::vector<Primitive>		primitives;
+		std::vector<float>			weights;
 		std::string					name;
 
 	};
@@ -139,8 +143,9 @@ private:
 	struct Texture
 	{
 		// 変数
-		int			source = -1;
 		std::string	name;
+		int			sampler = -1;
+		int			source = -1;
 	};
 
 	// struct >> GameModel >> [Image]
@@ -240,7 +245,6 @@ private:
 	// struct >> GameModel >> [NormalTextureInfo]
 	struct NormalTextureInfo
 	{
-		// 関数
 		void Init(const tinygltf::Value::Object& object)
 		{
 			for (tinygltf::Value::Object::const_reference value : object)
@@ -264,34 +268,33 @@ private:
 			}
 		}
 
-		// 変数
 		int					index		= -1;
-		int					texcoord		= 0;
+		int					texcoord	= 0;
 		float				scale		= 1.0f;
 
+		// extensions
 		KHRTextureTransform	hkr_texture_transform;
 	};
 
 	// struct >> GameModel >> [OcclussionTextureInfo]
 	struct OcclusionTextureInfo
 	{
-		// 変数
 		int					index = -1;
 		int					texcoord = 0;
 		float				strength = 1;
 
+		// extensions
 		KHRTextureTransform	hkr_texture_transform;
 	};
 
 	// struct >> GameModel >> [PbrMetallicRoughness]
 	struct PBRMetallicRoughness
 	{
-		// 変数
-		float		basecolor_factor[4] = { 1,1,1,1 };
-		TextureInfo basecolor_texture;
-		float		metallic_factor		= 1;
-		float		roughness_factor		= 1;
-		TextureInfo metallic_roughness_texture;
+		TextureInfo				basecolor_texture;
+		DirectX::XMFLOAT4		basecolor_factor = { 1,1,1,1 };
+		float					metallic_factor		= 1;
+		float					roughness_factor		= 1;
+		TextureInfo				metallic_roughness_texture;
 	};
 
 	// struct >> GameModel >> [KHRMaterialsClearcoat]
@@ -338,17 +341,16 @@ private:
 		// struct >> GameModel >> [SbMaterial] register : t0
 		struct SbMaterial
 		{
-			// 変数
-			bool							double_sided = false;
-			int								alpha_mode = 0; //"OPAQUE" : 0, "MASK" : 1, "BLEND" : 2
-			float							alpha_cutoff = 0.5f;
-			float							emissive_factor[3] = { 0,0,0 };
 			PBRMetallicRoughness			pbr_metallic_roughness;
 			NormalTextureInfo				normal_texture;
-			OcclusionTextureInfo			occlusion_texture;
 			TextureInfo						emissive_texture;
+			DirectX::XMFLOAT3				emissive_factor = { 0,0,0 };
+			std::string						alpha_mode = "OPAQUE";
+			float							alpha_cutoff = 0.5f;
+			bool							double_sided = false;
+			OcclusionTextureInfo			occlusion_texture;
 
-			// extension系
+			// extension
 			KHRMaterialsClearcoat			khr_materials_clearcoat;
 			KHRMaterialsTransmission		khr_materials_transmission;
 			KHRMaterialsEmissiveStrength	khr_materials_emissive_strength;
@@ -357,9 +359,9 @@ private:
 		};
 
 		std::string				name;
-		SbMaterial				data;
 		tinygltf::ExtensionMap	extensions;
 		tinygltf::Value			extras;
+		SbMaterial				data;
 	};
 
 	// private:定数バッファ構造体
@@ -408,7 +410,7 @@ public:
 	void			Render(bool, const DirectX::XMFLOAT4X4&, DirectX::XMFLOAT3, ID3D11PixelShader* = nullptr);
 	void			RenderTraverse(size_t, const  DirectX::XMFLOAT4X4, DirectX::XMFLOAT3);
 	void			DebugGUI();
-	BufferView		MakeBufferView(const tinygltf::Accessor&);
+	ElementBuffer		MakeBufferView(const tinygltf::Accessor&);
 
 	// public:ゲッター関数
 	float& GetDisolveFactor() { return disolve_factor; }
@@ -437,6 +439,8 @@ private:
 	ComPtr<ID3D11ShaderResourceView>				mask_srv;
 	ComPtr<ID3D11UnorderedAccessView>				instance_uav;
 
+	std::vector<Accessor>							accessors;
+	std::vector<Buffer>								buffers;
 	std::unique_ptr<SbInstanceModel[]>				instance_model;
 	std::vector<Scene>								scenes;
 	std::vector<Node>								nodes;

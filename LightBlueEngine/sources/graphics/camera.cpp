@@ -12,7 +12,7 @@
 //-----------------------------------------
 
 // コンストラクタ
-Camera::Camera(EnumCameraMode& start_mode) : camera_mode(start_mode)
+GameCamera::GameCamera(EnumCameraMode& start_mode) : camera_mode(start_mode)
 {
 	Graphics*		graphics	= Graphics::GetInstance();
 	ID3D11Device*	device		= graphics->GetDevice().Get();
@@ -79,7 +79,7 @@ Camera::Camera(EnumCameraMode& start_mode) : camera_mode(start_mode)
 }
 
 // 更新処理
-void Camera::Update()
+void GameCamera::Update()
 {
 	Graphics* graphics = Graphics::GetInstance();
 	ID3D11DeviceContext* device_context = graphics->GetDeviceContext().Get();
@@ -193,7 +193,7 @@ void Camera::Update()
 }
 
 // ImGui表示
-void Camera::DebugGUI()
+void GameCamera::DebugGUI()
 {
 	if (ImGui::CollapsingHeader("Camera"))
 	{
@@ -206,6 +206,18 @@ void Camera::DebugGUI()
 		ImGui::InputFloat3("Camera Up", &up.x);
 		ImGui::InputFloat3("Camera Front", &front.x);
 		ImGui::InputFloat3("Camera Right", &right.x);
+
+		for (int i = 0; i < 4; i++)
+		{
+			std::string title = "view matrix##" + std::to_string(i);
+			ImGui::InputFloat4(title.c_str(), view.m[i]);
+		}
+
+		for (int i = 0; i < 4; i++)
+		{
+			std::string title = "projection matrix##" + std::to_string(i);
+			ImGui::InputFloat4(title.c_str(), projection.m[i]);
+		}
 
 		// カメラモード切り替え
 		const char* modes[] = {
@@ -286,7 +298,7 @@ void Camera::DebugGUI()
 }
 
 // 一人称視点カメラ追加
-void Camera::AddFPVCamera(FPVData* fpv_init)
+void GameCamera::AddFPVCamera(FPVData* fpv_init)
 {
 	FPVData& fpv = fpv_data.emplace_back();
 	fpv.fpv_position	= fpv_init ? fpv_init->fpv_position		: DEFAULT_FPV_POSITION;
@@ -294,7 +306,7 @@ void Camera::AddFPVCamera(FPVData* fpv_init)
 }
 
 // 三人称視点カメラ追加
-void Camera::AddTPVCamera(TPVData* tpv_init)
+void GameCamera::AddTPVCamera(TPVData* tpv_init)
 {
 	TPVData& tpv = tpv_data.emplace_back();
 	tpv.tpv_target		= tpv_init ? tpv_init->tpv_target		: DEFAULT_TPV_TARGET;

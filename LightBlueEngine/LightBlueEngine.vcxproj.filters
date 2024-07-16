@@ -428,6 +428,9 @@
     <ClInclude Include="sources\graphics\camera.h">
       <Filter>SourceCodes\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="sources\gltf_properties.h">
+      <Filter>SourceCodes\3D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSL\2D\2d_header.hlsli">

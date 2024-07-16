@@ -50,7 +50,7 @@ float4 CalcPBR(MaterialData material_data, float3 light_vec, float3 view_vec, fl
 	// オクルージョンの適用
 	diffuse		+= lerp(diffuse,	diffuse		* material_data.occulusion_factor, material_data.occulusion_strength);
 	specular	+= lerp(specular,	specular	* material_data.occulusion_factor, material_data.occulusion_strength);
-	clearcoat	+= lerp(clearcoat,	clearcoat * material_data.occulusion_factor, material_data.occulusion_strength);
+	clearcoat	+= lerp(clearcoat,	clearcoat	* material_data.occulusion_factor, material_data.occulusion_strength);
 	
 	// クリアコート
 	float	clearcoat_factor		= material_data.clearcoat_factor;

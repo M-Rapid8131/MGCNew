@@ -76,33 +76,36 @@ GameModel::GameModel(const std::string& init_filename)
 		scene.nodes		= gltf_scene.nodes;
 	}
 
-	// Mesh、Nodes、Material、Textureを読み込む関数
+	Accessor::Fetch(gltf_model, accessors);
+	Buffer::Fetch(gltf_model, buffers);
+
+		// Mesh、Nodes、Material、Textureを読み込む関数
 	FetchMeshes(gltf_model);
 	FetchNodes(gltf_model);
 	FetchMaterials(gltf_model);
 	FetchTextures(gltf_model,init_filename);
 
-	std::vector<std::map<std::string, BufferView>> vertex_buffer_views;
+	std::vector<std::map<std::string, ElementBuffer>> vertex_element_buffers;
 
 	// primitive格納
 	for (Mesh& mesh : meshes) 
 	{
 		for (Mesh::Primitive primitive : mesh.primitives) 
 		{
-			vertex_buffer_views.emplace_back(primitive.vertex_buffer_views);
+			vertex_element_buffers.emplace_back(primitive.vertex_buffer_views);
 		}
 	}
 
 	// 頂点バッファ作成とシェーダー読み込み
-	for (std::map<std::string, BufferView> vertex_buffer_view : vertex_buffer_views) 
+	for (std::map<std::string, ElementBuffer> vertex_element_buffer : vertex_element_buffers) 
 	{
 		D3D11_INPUT_ELEMENT_DESC input_element_desc[] = {
-			{"POSITION",	0,		vertex_buffer_view.at("POSITION").format,		0,	D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0},
-			{"NORMAL",		0,		vertex_buffer_view.at("NORMAL").format,			1,	D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0},
-			{"TANGENT",		0,		vertex_buffer_view.at("TANGENT").format,		2,	D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0},
-			{"TEXCOORD",	0,		vertex_buffer_view.at("TEXCOORD_0").format,		3,	D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0},
-			{"JOINTS",		0,		vertex_buffer_view.at("JOINTS_0").format,		4,	D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0},
-			{"WEIGHTS",		0,		vertex_buffer_view.at("WEIGHTS_0").format,		5,	D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0},
+			{"POSITION",	0,		DXGI_FORMAT_R32G32B32_FLOAT,		0,	0,	D3D11_INPUT_PER_VERTEX_DATA,	0},
+			{"NORMAL",		0,		DXGI_FORMAT_R32G32B32_FLOAT,		1,	0,	D3D11_INPUT_PER_VERTEX_DATA,	0},
+			{"TANGENT",		0,		DXGI_FORMAT_R32G32B32A32_FLOAT,		2,	0,	D3D11_INPUT_PER_VERTEX_DATA,	0},
+			{"TEXCOORD",	0,		DXGI_FORMAT_R32G32_FLOAT,			3,	0,	D3D11_INPUT_PER_VERTEX_DATA,	0},
+			{"JOINTS",		0,		DXGI_FORMAT_R16G16B16A16_UINT,		4,	0,	D3D11_INPUT_PER_VERTEX_DATA,	0},
+			{"WEIGHTS",		0,		DXGI_FORMAT_R32G32B32A32_FLOAT,		5,	0,	D3D11_INPUT_PER_VERTEX_DATA,	0},
 		};
 		Shader::CreateVSFromCso("shader/3d_base_vs.cso", vertex_shader.ReleaseAndGetAddressOf(),
 			input_layout.ReleaseAndGetAddressOf(), input_element_desc, _countof(input_element_desc));
@@ -266,7 +269,7 @@ void GameModel::CumulateTransforms(std::vector<Node>& using_nodes)
 {
 	std::stack<DirectX::XMFLOAT4X4>		parent_global_transforms;
 	std::function<void(int)> traverse =
-		[&](int node_index)->void
+		[&](int node_index)
 		{
 			Node& node = using_nodes.at(node_index);
 
@@ -349,7 +352,7 @@ void GameModel::FetchMeshes(const tinygltf::Model& gltf_model)
 				const tinygltf::Accessor&	gltf_accessor_attr		= gltf_model.accessors.at(gltf_attribute.second);
 				const tinygltf::BufferView& gltf_buffer_view_attr	= gltf_model.bufferViews.at(gltf_accessor_attr.bufferView);
 
-				BufferView vertex_buffer_view = MakeBufferView(gltf_accessor_attr);
+				ElementBuffer vertex_buffer_view = MakeBufferView(gltf_accessor_attr);
 
 				buffer_desc = {};
 				buffer_desc.ByteWidth	= SCast(UINT, vertex_buffer_view.size_in_bytes);
@@ -465,9 +468,9 @@ void GameModel::FetchMaterials(const tinygltf::Model& gltf_model)
 		material.name = gltf_material.name;
 
 		// エミッシブ値
-		material.data.emissive_factor[0] = SCast(float, gltf_material.emissiveFactor.at(0));
-		material.data.emissive_factor[1] = SCast(float, gltf_material.emissiveFactor.at(1));
-		material.data.emissive_factor[2] = SCast(float, gltf_material.emissiveFactor.at(2));
+		material.data.emissive_factor.x = SCast(float, gltf_material.emissiveFactor.at(0));
+		material.data.emissive_factor.y = SCast(float, gltf_material.emissiveFactor.at(1));
+		material.data.emissive_factor.z = SCast(float, gltf_material.emissiveFactor.at(2));
 
 		// アルファモードの設定
 		material.data.alpha_mode = gltf_material.alphaMode ==
@@ -482,13 +485,13 @@ void GameModel::FetchMaterials(const tinygltf::Model& gltf_model)
 		material.data.double_sided = gltf_material.doubleSided ? 1 : 0;
 
 		// ベースカラー値
-		material.data.pbr_metallic_roughness.basecolor_factor[0] =
+		material.data.pbr_metallic_roughness.basecolor_factor.x =
 			SCast(float, gltf_material.pbrMetallicRoughness.baseColorFactor.at(0));
-		material.data.pbr_metallic_roughness.basecolor_factor[1] =
+		material.data.pbr_metallic_roughness.basecolor_factor.y =
 			SCast(float, gltf_material.pbrMetallicRoughness.baseColorFactor.at(1));
-		material.data.pbr_metallic_roughness.basecolor_factor[2] =
+		material.data.pbr_metallic_roughness.basecolor_factor.z =
 			SCast(float, gltf_material.pbrMetallicRoughness.baseColorFactor.at(2));
-		material.data.pbr_metallic_roughness.basecolor_factor[3] =
+		material.data.pbr_metallic_roughness.basecolor_factor.w =
 			SCast(float, gltf_material.pbrMetallicRoughness.baseColorFactor.at(3));
 
 		// ベースカラーのテクスチャ
@@ -957,9 +960,9 @@ void GameModel::DebugGUI()
 }
 
 // buffer_view作成
-GameModel::BufferView GameModel::MakeBufferView(const tinygltf::Accessor& accessor)
+GameModel::ElementBuffer GameModel::MakeBufferView(const tinygltf::Accessor& accessor)
 {
-	BufferView buffer_view;
+	ElementBuffer buffer_view;
 	switch (accessor.type)
 	{
 	case TINYGLTF_TYPE_SCALAR:

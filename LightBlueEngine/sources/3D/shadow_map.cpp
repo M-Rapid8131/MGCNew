@@ -102,7 +102,7 @@ void ShadowMap::DebugGUI()
 }
 
 // シャドウマップ初期化
-void ShadowMap::Clear(Camera* camera, Light* light, float depth)
+void ShadowMap::Clear(GameCamera* camera, Light* light, float depth)
 {
 	Graphics*				graphics		= Graphics::GetInstance();
 	ID3D11DeviceContext*	device_context	= graphics->GetDeviceContext().Get();

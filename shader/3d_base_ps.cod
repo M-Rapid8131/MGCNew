@@ -1053,8 +1053,8 @@ mov r13.xyz, r13.xyzx  // r13.x <- material_data.specular_color_factor.x; r13.y 
 mov r5.yw, r5.yyyw  // r5.y <- material_data.occulusion_strength; r5.w <- material_data.clearcoat_factor
 
 #line 18
-mov r3.xyz, -cb9[9].xyzx
-add r3.xyz, r3.xyzx, v1.xyzx
+mov r3.xyz, -v1.xyzx
+add r3.xyz, r3.xyzx, cb9[9].xyzx
 dp3 r1.w, r3.xyzx, r3.xyzx
 rsq r1.w, r1.w
 mul r3.xyz, r1.wwww, r3.xyzx  // r3.x <- view_vec.x; r3.y <- view_vec.y; r3.z <- view_vec.z
@@ -1065,7 +1065,9 @@ rsq r1.w, r1.w
 mul r4.xyz, r1.wwww, cb10[2].xyzx  // r4.x <- light_vec.x; r4.y <- light_vec.y; r4.z <- light_vec.z
 
 #line 20
-mov r7.xyz, v2.xyzx  // r7.x <- norm_vec.x; r7.y <- norm_vec.y; r7.z <- norm_vec.z
+dp3 r1.w, v2.xyzx, v2.xyzx
+rsq r1.w, r1.w
+mul r7.xyz, r1.wwww, v2.xyzx  // r7.x <- norm_vec.x; r7.y <- norm_vec.y; r7.z <- norm_vec.z
 
 #line 21
 ine r11.xyz, l(0, 0, 0, 0), cb0[4].xxxx
@@ -1715,4 +1717,4 @@ mul r0.w, r0.w, r1.x
 mov o0.xyz, r0.xyzx
 mov o0.w, r0.w
 ret 
-// Approximately 780 instruction slots used
+// Approximately 782 instruction slots used

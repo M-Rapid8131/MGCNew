@@ -24,12 +24,10 @@ VS_OUT_3D ShaderMain(VS_IN_3D vin)
 	
 	VS_OUT_3D vout;
 	
-	vin.position.w = 1;
-	vout.position = mul(vin.position, mul(world, mul(view, projection)));
+	vout.position = mul(float4(vin.position, 1.0f), mul(world, mul(view, projection)));
 	vout.w_position = mul(vin.position, world);
 	
-	vin.normal.w = 0;
-	vout.w_normal = normalize(mul(vin.normal, world));
+	vout.w_normal = normalize(mul(float4(vin.normal, 0.0f), world));
 	
 	vin.tangent.w = 0;
 	vout.w_tangent = normalize(mul(vin.tangent, world));
