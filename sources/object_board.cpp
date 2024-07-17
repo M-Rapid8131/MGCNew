@@ -41,22 +41,22 @@ enum class EnumSpriteUIIndex
 using enum EnumSpriteUIIndex;
 
 // 定数
-const UINT				TEXT_SIZE				= 256;
-const float				UI_SHAKE_FACTOR			= 10.0f;
-const float				CONVERT_COLOR_FACTOR	= 255.0f;
-const DirectX::XMFLOAT2 TEXT_RIGHT_ALIGN_POS	= { 200.0f, 50.0f };
-const DirectX::XMFLOAT2 DEFAULT_UI_SCALE		= { 0.1f,	0.1f };
-const DirectX::XMFLOAT2 SPRITE_UI_SCALE			= { 0.2f,	0.2f };
-const DirectX::XMFLOAT2 UI_SPRITE_CENTER_POS	= { 70.0f,	60.0f };
-const DirectX::XMFLOAT2 UI_SPRITE_SIZE			= { 60.0f,	60.0f };
-const DirectX::XMFLOAT2 UI_GAME_MODE_SIZE		= { 250.0f, 50.0f };
+const UINT				TEXT_SIZE = 256;
+const float				UI_SHAKE_FACTOR = 10.0f;
+const float				CONVERT_COLOR_FACTOR = 255.0f;
+const DirectX::XMFLOAT2 TEXT_RIGHT_ALIGN_POS = { 200.0f, 50.0f };
+const DirectX::XMFLOAT2 DEFAULT_UI_SCALE = { 0.1f,	0.1f };
+const DirectX::XMFLOAT2 SPRITE_UI_SCALE = { 0.2f,	0.2f };
+const DirectX::XMFLOAT2 UI_SPRITE_CENTER_POS = { 70.0f,	60.0f };
+const DirectX::XMFLOAT2 UI_SPRITE_SIZE = { 60.0f,	60.0f };
+const DirectX::XMFLOAT2 UI_GAME_MODE_SIZE = { 250.0f, 50.0f };
 
-const float UI_LEFT_X		= SCast(float, Graphics::GetInstance()->GetScreenWidth()) * 0.19f;
-const float UI_RIGHT_X		= SCast(float, Graphics::GetInstance()->GetScreenWidth()) * 0.7f;
-const float UI_NEXT_BLOCK_Y = SCast(float, Graphics::GetInstance()->GetScreenHeight()) * 0.05f;
-const float UI_TOP_Y		= SCast(float, Graphics::GetInstance()->GetScreenHeight()) * 0.5f;
-const float UI_CENTER_Y		= SCast(float, Graphics::GetInstance()->GetScreenHeight()) * 0.65f;
-const float UI_UNDER_Y		= SCast(float, Graphics::GetInstance()->GetScreenHeight()) * 0.8f;
+const float UI_LEFT_X = Graphics::GetInstance()->GetScreenWidth() * 0.19f;
+const float UI_RIGHT_X = Graphics::GetInstance()->GetScreenWidth() * 0.65f;
+const float UI_NEXT_BLOCK_Y = Graphics::GetInstance()->GetScreenHeight() * 0.05f;
+const float UI_TOP_Y = Graphics::GetInstance()->GetScreenHeight() * 0.5f;
+const float UI_CENTER_Y = Graphics::GetInstance()->GetScreenHeight() * 0.65f;
+const float UI_UNDER_Y = Graphics::GetInstance()->GetScreenHeight() * 0.8f;
 
 //---------------------------------
 // ObjectBoard メンバ関数
@@ -87,9 +87,9 @@ void ObjectBoard::NextBlock::Start()
 void ObjectBoard::NextBlock::Update(float elapsed_time)
 {
 	// プレイヤーIDを使ってコントローラーを取得
-	const UINT			ID					= obj->player_id;
-	GamesystemInput*	gamesystem_input	= GamesystemInput::GetInstance();
-	GamePad*			pad					= gamesystem_input->GetGamePad(ID);
+	const UINT			ID = obj->player_id;
+	GamesystemInput* gamesystem_input = GamesystemInput::GetInstance();
+	GamePad* pad = gamesystem_input->GetGamePad(ID);
 
 	if (obj->board_state.state == EnumBoardState::MOVING)
 	{
@@ -151,8 +151,8 @@ void ObjectBoard::NextBlock::EmissiveRender()
 // NEXTブロックを投入
 void ObjectBoard::NextBlock::SetNewBlock()
 {
-	auto left	= std::make_unique<ObjectBlock>(false, obj);
-	auto right	= std::make_unique<ObjectBlock>(false, obj);
+	auto left = std::make_unique<ObjectBlock>(false, obj);
+	auto right = std::make_unique<ObjectBlock>(false, obj);
 	next_block.push_back(std::make_pair(std::move(left), std::move(right)));
 }
 
@@ -176,8 +176,8 @@ void ObjectBoard::BoardState::TransitionStandbyState()
 // ゲーム開始
 void ObjectBoard::BoardState::TransitionStartState(int game_mode_id)
 {
-	AudioManager*	audio_manager	= GamesystemDirector::GetInstance()->GetAudioManager();
-	JSONEditor*		json_editor		= JSONEditor::GetInstance();
+	AudioManager* audio_manager = GamesystemDirector::GetInstance()->GetAudioManager();
+	JSONEditor* json_editor = JSONEditor::GetInstance();
 
 	// 状態変更後処理
 	state = EnumBoardState::START;
@@ -192,11 +192,11 @@ void ObjectBoard::BoardState::TransitionStartState(int game_mode_id)
 	json_editor->ImportJSON(json_path, &mode_params);
 	mode_setting_params = GET_PARAMETER_IN_PARAMPTR(mode_name, Parameters, &mode_params);
 
-	obj->init_level				= SCast(UINT, *(GET_PARAMETER_IN_PARAMPTR("InitLevel", int, mode_setting_params)));
-	obj->max_level				= SCast(UINT, *(GET_PARAMETER_IN_PARAMPTR("MaxLevel", int, mode_setting_params)));
-	obj->speed_increase_factor	= *(GET_PARAMETER_IN_PARAMPTR("SpeedIncrease", float, mode_setting_params));
-	obj->stand_decrease_factor	= *(GET_PARAMETER_IN_PARAMPTR("StandDecrease", float, mode_setting_params));
-	
+	obj->init_level = SCast(UINT, *(GET_PARAMETER_IN_PARAMPTR("InitLevel", int, mode_setting_params)));
+	obj->max_level = SCast(UINT, *(GET_PARAMETER_IN_PARAMPTR("MaxLevel", int, mode_setting_params)));
+	obj->speed_increase_factor = *(GET_PARAMETER_IN_PARAMPTR("SpeedIncrease", float, mode_setting_params));
+	obj->stand_decrease_factor = *(GET_PARAMETER_IN_PARAMPTR("StandDecrease", float, mode_setting_params));
+
 	audio_manager->StopBGM();
 	audio_manager->PlayVoice(EnumVoiceBank::COUNT_DOWN);
 
@@ -217,9 +217,9 @@ void ObjectBoard::BoardState::TransitionDropStartState()
 
 	obj->ClearDeleteBlockList();
 
-	obj->state_update	= nullptr;
-	obj->standing_time	= 0.0f;
-	obj->chain			= 0;
+	obj->state_update = nullptr;
+	obj->standing_time = 0.0f;
+	obj->chain = 0;
 	obj->value_ui.at(SCast(size_t, CHAIN))->SetIntValue(0, obj->chain, 0.0f);
 
 	for (UINT row = 0; row < MAX_ROW; row++)
@@ -565,7 +565,7 @@ ObjectBoard::ObjectBoard(UINT player_id)
 	cb_emitter.emit_amounts = 1000;
 
 	board_particle = std::make_unique<ParticleSystem>(cb_emitter, true, "accumulate_particle_ps.cso");
-	
+
 	cb_emitter.emit_amounts = 100000;
 	cb_emitter.life_time = 0.3f;
 	cb_emitter.emit_size = 0.2f;
@@ -862,8 +862,8 @@ void ObjectBoard::EmissiveRender()
 // UIを描画
 void ObjectBoard::UIRender()
 {
-	float width		= Graphics::GetInstance()->GetScreenWidth() * 0.5f;
-	float height	= Graphics::GetInstance()->GetScreenHeight() * 0.5f;
+	float width = Graphics::GetInstance()->GetScreenWidth() * 0.5f;
+	float height = Graphics::GetInstance()->GetScreenHeight() * 0.5f;
 
 	for (auto const& ui : value_ui)
 		ui->Render();
@@ -1018,9 +1018,9 @@ void ObjectBoard::CameraZoom(float elapsed_time)
 
 void ObjectBoard::CameraMove(float elapsed_time)
 {
-	GameCamera*				camera		= GamesystemDirector::GetInstance()->GetCamera();
-	GameCamera::TPVData*	tpv			= camera->GetTPVCamera();
-	GamePad*			game_pad	= GamesystemInput::GetInstance()->GetGamePad();
+	GameCamera* camera = GamesystemDirector::GetInstance()->GetCamera();
+	GameCamera::TPVData* tpv = camera->GetTPVCamera();
+	GamePad* game_pad = GamesystemInput::GetInstance()->GetGamePad();
 
 	if (!tpv)	return;
 
@@ -1037,9 +1037,9 @@ void ObjectBoard::CameraMove(float elapsed_time)
 		0.0f
 	};
 
-	DirectX::XMVECTOR	v_camera_rot	= DirectX::XMVectorScale(DirectX::XMLoadFloat3(&camera_rot), elapsed_time);
-	float				angle			= DirectX::XMVectorGetX(DirectX::XMVector3Length(v_camera_rot));
-	DirectX::XMVECTOR	nv_camera_rot	= DirectX::XMVector3Normalize(v_camera_rot);
+	DirectX::XMVECTOR	v_camera_rot = DirectX::XMVectorScale(DirectX::XMLoadFloat3(&camera_rot), elapsed_time);
+	float				angle = DirectX::XMVectorGetX(DirectX::XMVector3Length(v_camera_rot));
+	DirectX::XMVECTOR	nv_camera_rot = DirectX::XMVector3Normalize(v_camera_rot);
 
 	DirectX::XMFLOAT3 n_camera_rot;
 	DirectX::XMStoreFloat3(&n_camera_rot, nv_camera_rot);
@@ -1060,9 +1060,9 @@ void ObjectBoard::CameraMove(float elapsed_time)
 // 落下速度を計算
 void ObjectBoard::CalcBlockSpeed(float elapsed_time)
 {
-	UINT modify_level	= speed_level - init_level;
-	float speed_base	= (SPEED_FACTOR * elapsed_time) + (SCast(float, init_level) - 1) * 0.05f;
-	float add_speed		= (SPEED_FACTOR * elapsed_time) * (SCast(float, modify_level) * speed_increase_factor);
+	UINT modify_level = speed_level - init_level;
+	float speed_base = (SPEED_FACTOR * elapsed_time) + (SCast(float, init_level) - 1) * 0.05f;
+	float add_speed = (SPEED_FACTOR * elapsed_time) * (SCast(float, modify_level) * speed_increase_factor);
 
 	current_speed = speed_base + add_speed;
 }

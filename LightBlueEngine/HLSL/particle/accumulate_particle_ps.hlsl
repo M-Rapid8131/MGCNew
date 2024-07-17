@@ -40,20 +40,17 @@ void ShaderMain(VS_OUT_3D model_pin)
 	float4 color = material_data.basecolor_factor;
 	if (color.a < 0.01f)
 		discard;
-
-	uint num_structs, stride;
-	append_particle_buffer.GetDimensions(num_structs, stride);
 	
 	Particle particle;
-	particle.particle_index = num_structs;
-	particle.position		= model_pin.w_position.xyz - float3(1.0f, 0.0f, 0.0f);
-	particle.size			= emit_size;
-	particle.color			= float4(object_color, color.a);
-	particle.velocity		= norm_vec;
-	particle.acceleration	= 0.0f;
-	particle.normal			= norm_vec;
-	particle.life			= life_time;
-	particle.start_time		= 0.0f;
+	particle.particle_index = 0;
+	particle.position = model_pin.w_position.xyz - float3(1.0f, 0.0f, 0.0f);
+	particle.size = emit_size;
+	particle.color = float4(object_color, color.a);
+	particle.velocity = norm_vec;
+	particle.acceleration = 0.0f;
+	particle.normal = norm_vec;
+	particle.life = life_time;
+	particle.start_time = 0.0f;
 	
 	append_particle_buffer.Append(particle);
 }

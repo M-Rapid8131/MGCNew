@@ -239,16 +239,16 @@ DirectX::XMFLOAT4X4 ObjectBlock::GetParticleTransform() const
 ObjectBlock::ObjectBlock(bool obstacle, ObjectBoard* parent_board)
 	: parent_board(*parent_board)
 {
-	Graphics*				graphics			= Graphics::GetInstance();
-	ID3D11Device*			device				= graphics->GetDevice().Get();
-	ID3D11DeviceContext*	device_context		= graphics->GetDeviceContext().Get();
+	Graphics* graphics = Graphics::GetInstance();
+	ID3D11Device* device = graphics->GetDevice().Get();
+	ID3D11DeviceContext* device_context = graphics->GetDeviceContext().Get();
 
 	DirectX::XMVECTOR v_local_position = DirectX::XMVector3Transform(DirectX::XMLoadFloat3(&translation), DirectX::XMMatrixInverse(NULL, DirectX::XMLoadFloat4x4(&transform)));
 	DirectX::XMFLOAT3 local_position;
 	DirectX::XMStoreFloat3(&local_position, v_local_position);
 
-	model			= std::make_unique<GameModel>("resources/model/block/block.gltf");
-	model_volume	= std::make_unique<GameModel>("resources/model/block/block_volume.gltf");
+	model = std::make_unique<GameModel>("resources/model/block/block.gltf");
+	model_volume = std::make_unique<GameModel>("resources/model/block/block_volume.gltf");
 	model->SetMaskTexture(L"resources/sprite/mask_texture.png");
 
 	if (obstacle)
@@ -265,33 +265,32 @@ ObjectBlock::ObjectBlock(bool obstacle, ObjectBoard* parent_board)
 	}
 
 	blink_time = 0.0f;
-	
-	primitive_renderer	= std::make_unique<PrimitiveRenderer>();
+
+	primitive_renderer = std::make_unique<PrimitiveRenderer>();
 
 	ParticleSystem::CbParticleEmitter emitter = {};
-	emitter.emit_amounts		= 300;
-	emitter.disable				= true;
-	emitter.emit_position.x		= translation.x;
-	emitter.emit_position.y		= translation.y - BLOCK_SIZE * 0.5f;
-	emitter.emit_position.z		= translation.z - BLOCK_SIZE * 0.25f;
-	emitter.emit_color.x		= block_color_factor.x;
-	emitter.emit_color.y		= block_color_factor.y;
-	emitter.emit_color.z		= block_color_factor.z;
+	emitter.emit_amounts = 500;
+	emitter.disable = true;
+	emitter.emit_position.x = translation.x;
+	emitter.emit_position.y = translation.y - BLOCK_SIZE * 0.5f;
+	emitter.emit_position.z = translation.z - BLOCK_SIZE * 0.25f;
+	emitter.emit_color.x = block_color_factor.x;
+	emitter.emit_color.y = block_color_factor.y;
+	emitter.emit_color.z = block_color_factor.z;
 
-	emitter.emit_size	= 0.2f;
+	emitter.emit_size = 0.2f;
 	emitter.spread_rate = 0.0f;
-	emitter.emit_speed	= parent_board->GetCurrentSpeed();
-	emitter.emit_accel	= -3.0f;
-	emitter.life_time	= PARTICLE_LIFE;
-	emitter.start_diff	= 0.01f;
-	emitter.emit_radius = BLOCK_SIZE * 0.5f;
-	block_particle		= std::make_unique<ParticleSystem>(emitter , true, "accumulate_particle_ps.cso");
+	emitter.emit_speed = 1.0f;
+	emitter.emit_accel = 0.0f;
+	emitter.life_time = PARTICLE_LIFE;
+	emitter.start_diff = 0.01f;
+	block_particle = std::make_unique<ParticleSystem>(emitter, true, "accumulate_particle_ps.cso");
 
 	flag_system.SetFlag(EnumBlockFlags::OBSTACLE_BLOCK, obstacle);
 
 	Shader::CreatePSFromCso("shader/ghost_block_ps.cso", ghost_pixel_shader.ReleaseAndGetAddressOf());
 
-	if(parent_board)	
+	if (parent_board)
 	{
 		block_state.obj = this;
 		block_state.TransitionNextState();
@@ -314,6 +313,7 @@ void ObjectBlock::Update(float elapsed_time)
 
 	if (parent_board.GetBoardState().state == EnumBoardState::GAME_OVER)
 	{
+		// ゲームオーバーになったらブロックカラーの値を黒に設定する
 		block_state.TransitionEraseState();
 	}
 
@@ -341,8 +341,7 @@ void ObjectBlock::ErasingUpdate(float elapsed_time)
 
 	float& disolve_factor = model->GetDisolveFactor();
 	disolve_factor -= elapsed_time;
-	
-	block_particle->Update(elapsed_time);
+
 	if (disolve_factor < 0.0f)
 		block_state.TransitionDisappearedState();
 }
@@ -380,9 +379,9 @@ void ObjectBlock::EmissiveRender()
 
 	model->SetBlinkFactor(0.0f);
 
-	if((block_state.state != EnumBlockState::ERASE) && (block_state.state != EnumBlockState::DISAPPEARED))
+	if ((block_state.state != EnumBlockState::ERASE) && (block_state.state != EnumBlockState::DISAPPEARED))
 	{
-		model->Render(false, transform, block_color_factor,graphics->GetPixelShader(EnumPixelShader::EXTRACT_EMISSIVE).Get());
+		model->Render(false, transform, block_color_factor, graphics->GetPixelShader(EnumPixelShader::EXTRACT_EMISSIVE).Get());
 	}
 	block_particle->Render();
 }
@@ -411,7 +410,7 @@ void ObjectBlock::AdjustFromBlockCell()
 		block_cell.shift_y = 0;
 	}
 	translation.x = (SCast(float, block_cell.row) * BLOCK_SIZE) - shake.x + parent_board.GetRootPosition().x;
-	translation.y = -(SCast(float, block_cell.column) * BLOCK_SIZE  + block_cell.shift_y) - shake.y + parent_board.GetRootPosition().y;
+	translation.y = -(SCast(float, block_cell.column) * BLOCK_SIZE + block_cell.shift_y) - shake.y + parent_board.GetRootPosition().y;
 	translation.z = parent_board.GetRootPosition().z;
 }
 
@@ -435,14 +434,14 @@ void ObjectBlock::AccumulateBlockParticle(ID3D11PixelShader* accumlate_ps)
 	DirectX::XMStoreFloat4x4(&particle_transform,
 		DirectX::XMLoadFloat4x4(&transform) * DirectX::XMMatrixTranslation(+1, 0, 0));
 
-	model->Render(false, particle_transform, block_color_factor, accumlate_ps);
+	model_volume->Render(false, particle_transform, block_color_factor, accumlate_ps);
 }
 
 void ObjectBlock::FollowRootBlock(EnumBlockRotation rotation, const BlockCell& following_cell)
 {
 	switch (rotation)
 	{
-	using enum EnumBlockRotation;
+		using enum EnumBlockRotation;
 	case RIGHT:
 		block_cell.row = following_cell.row + 1;
 		break;
@@ -497,7 +496,7 @@ void ObjectBlock::LiftBlock(EnumBlockRotation rotation)
 	parent_board.SetExistingBlockFromCell(block_cell, false);
 	switch (rotation)
 	{
-	using enum EnumBlockRotation;
+		using enum EnumBlockRotation;
 	case RIGHT:
 		block_cell.row--;
 		break;
@@ -571,8 +570,8 @@ bool ObjectBlock::JudgeFallBlock()
 
 	auto under_block = parent_board.GetBlockFromCell(UNDER_CELL);
 
-	bool invalid = 
-		parent_board.IsInvalidBlockFromIterator(under_block) 
+	bool invalid =
+		parent_board.IsInvalidBlockFromIterator(under_block)
 		|| ((*under_block)->block_state.state == EnumBlockState::ERASE)
 		|| ((*under_block)->block_state.state == EnumBlockState::DISAPPEARED);
 
