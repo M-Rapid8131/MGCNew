@@ -3,6 +3,9 @@
         "generator" : "Khronos glTF Blender I/O v1.8.19",
         "version" : "2.0"
     },
+    "extensionsUsed" : [
+        "KHR_materials_clearcoat"
+    ],
     "scene" : 0,
     "scenes" : [
         {
@@ -21,19 +24,40 @@
     "materials" : [
         {
             "doubleSided" : true,
-            "name" : "Material.001",
+            "emissiveFactor" : [
+                1,
+                1,
+                1
+            ],
+            "emissiveTexture" : {
+                "index" : 0
+            },
+            "extensions" : {
+                "KHR_materials_clearcoat" : {
+                    "clearcoatFactor" : 1,
+                    "clearcoatRoughnessFactor" : 1,
+                    "clearcoatTexture" : {
+                        "index" : 1
+                    },
+                    "clearcoatRoughnessTexture" : {
+                        "index" : 1
+                    }
+                }
+            },
+            "name" : "material",
             "pbrMetallicRoughness" : {
                 "baseColorTexture" : {
-                    "index" : 0
+                    "index" : 2
                 },
-                "metallicFactor" : 0,
-                "roughnessFactor" : 0.5
+                "metallicRoughnessTexture" : {
+                    "index" : 3
+                }
             }
         }
     ],
     "meshes" : [
         {
-            "name" : "Block",
+            "name" : "\u7acb\u65b9\u4f53",
             "primitives" : [
                 {
                     "attributes" : {
@@ -51,20 +75,47 @@
         {
             "sampler" : 0,
             "source" : 0
+        },
+        {
+            "sampler" : 0,
+            "source" : 1
+        },
+        {
+            "sampler" : 0,
+            "source" : 2
+        },
+        {
+            "sampler" : 0,
+            "source" : 3
         }
     ],
     "images" : [
         {
             "mimeType" : "image/png",
+            "name" : "block_emissivecolor",
+            "uri" : "texture/block_emissivecolor.png"
+        },
+        {
+            "mimeType" : "image/png",
+            "name" : "block_clearcoat",
+            "uri" : "texture/block_clearcoat.png"
+        },
+        {
+            "mimeType" : "image/png",
             "name" : "block_basecolor",
             "uri" : "texture/block_basecolor.png"
+        },
+        {
+            "mimeType" : "image/png",
+            "name" : "block_metallicroughness",
+            "uri" : "texture/block_metallicroughness.png"
         }
     ],
     "accessors" : [
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 109,
+            "count" : 240,
             "max" : [
                 1,
                 1,
@@ -80,42 +131,42 @@
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 109,
+            "count" : 240,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
-            "count" : 109,
+            "count" : 240,
             "type" : "VEC2"
         },
         {
             "bufferView" : 3,
             "componentType" : 5123,
-            "count" : 132,
+            "count" : 420,
             "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 1308,
+            "byteLength" : 2880,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 1308,
-            "byteOffset" : 1308
+            "byteLength" : 2880,
+            "byteOffset" : 2880
         },
         {
             "buffer" : 0,
-            "byteLength" : 872,
-            "byteOffset" : 2616
+            "byteLength" : 1920,
+            "byteOffset" : 5760
         },
         {
             "buffer" : 0,
-            "byteLength" : 264,
-            "byteOffset" : 3488
+            "byteLength" : 840,
+            "byteOffset" : 7680
         }
     ],
     "samplers" : [
@@ -126,7 +177,7 @@
     ],
     "buffers" : [
         {
-            "byteLength" : 3752,
+            "byteLength" : 8520,
             "uri" : "block.bin"
         }
     ]

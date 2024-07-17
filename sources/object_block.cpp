@@ -248,7 +248,6 @@ ObjectBlock::ObjectBlock(bool obstacle, ObjectBoard* parent_board)
 	DirectX::XMStoreFloat3(&local_position, v_local_position);
 
 	model			= std::make_unique<GameModel>("resources/model/block/block.gltf");
-	model_volume	= std::make_unique<GameModel>("resources/model/block/block_volume.gltf");
 	model->SetMaskTexture(L"resources/sprite/mask_texture.png");
 
 	if (obstacle)
@@ -435,7 +434,7 @@ void ObjectBlock::AccumulateBlockParticle(ID3D11PixelShader* accumlate_ps)
 	DirectX::XMStoreFloat4x4(&particle_transform,
 		DirectX::XMLoadFloat4x4(&transform) * DirectX::XMMatrixTranslation(+1, 0, 0));
 
-	model_volume->Render(false, particle_transform, block_color_factor, accumlate_ps);
+	model->Render(false, particle_transform, block_color_factor, accumlate_ps);
 }
 
 void ObjectBlock::FollowRootBlock(EnumBlockRotation rotation, const BlockCell& following_cell)

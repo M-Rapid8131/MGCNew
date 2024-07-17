@@ -250,7 +250,6 @@ private:
 
 	// ƒ‚ƒfƒ‹ŠÖŒW
 	std::unique_ptr<GameModel>			model;			// block‚Ìƒ‚ƒfƒ‹
-	std::unique_ptr<GameModel>			model_volume;	// block‚ÌŠÈˆÕ‰»ƒ‚ƒfƒ‹
 	std::unique_ptr<PrimitiveRenderer>	primitive_renderer;
 	std::unique_ptr<ParticleSystem>		block_particle;
 	ComPtr<ID3D11PixelShader>			ghost_pixel_shader;
