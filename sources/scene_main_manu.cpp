@@ -187,7 +187,7 @@ void SceneMainManu::Update(float elapsed_time)
 	}
 
 	GameCamera*				camera	= GamesystemDirector::GetInstance()->GetCamera();
-	Light*				light	= GamesystemDirector::GetInstance()->GetLight();
+	Light*					light	= GamesystemDirector::GetInstance()->GetLight();
 	GameCamera::TPVData*	tpv		= camera->GetTPVCamera();
 
 	DirectX::XMFLOAT3	camera_rot = { 0.0f, 0.2f, 0.0f };
@@ -211,7 +211,8 @@ void SceneMainManu::Update(float elapsed_time)
 	v_direction = DirectX::XMVector3Rotate(v_direction, q_rotation);
 	DirectX::XMStoreFloat4(&tpv->tpv_direction, v_direction);
 	DirectX::XMFLOAT3& light_direction = light->GetLightConstants().directional_light_direction;
-	DirectX::XMStoreFloat3(&light_direction, v_direction);
+	DirectX::XMStoreFloat3(&light_direction, DirectX::XMVectorScale(v_direction, -1));
+	light_direction.y += 0.2f;
 
 	hsv_color.x = std::lerp(0.0f, HSV_MAX, fmodf(scene_time, HSV_MAX * 0.3f) / (HSV_MAX * 0.3f));
 

@@ -270,7 +270,7 @@ void GameCamera::DebugGUI()
 
 			ImGui::SliderScalar("FPV Channel", ImGuiDataType_U64, &fpv_channel, &min_channel, &max_channel);
 			ImGui::DragFloat3("Camera Position", &fpv.fpv_position.x, 0.05f);
-			ImGui::DragFloat4("Camera Direction", &fpv.fpv_direction.x, 0.05f);
+			ImGui::SliderFloat3("Camera Direction", &fpv.fpv_direction.x, -1.0f, 1.0f);
 
 			// ÉJÉÅÉâí«â¡
 			if (ImGui::Button("Add FPVCamera"))
@@ -287,7 +287,7 @@ void GameCamera::DebugGUI()
 
 			ImGui::SliderScalar("FPV Channel", ImGuiDataType_U64, &tpv_channel, &min_channel, &max_channel);
 			ImGui::DragFloat3("Camera Target", &tpv.tpv_target.x, 0.05f);
-			ImGui::DragFloat4("Camera Direction", &tpv.tpv_direction.x, 0.05f);
+			ImGui::SliderFloat3("Camera Direction", &tpv.tpv_direction.x, -1.0f, 1.0f);
 			ImGui::DragFloat("Camera Distance", &tpv.tpv_distance, 0.01f, 0.01f, 1000.0f);
 
 			// ÉJÉÅÉâí«â¡

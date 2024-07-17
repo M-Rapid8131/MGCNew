@@ -63,7 +63,7 @@ float3 CalcBRDFLambertian(float3 f0, float3 f90, float3 diffuse_color, float VoH
 }
 
 float3 CalcBRDFSpecularGGX(float3 f0, float3 f90, float alpha_roughness,
-	float VoH, float NoL, float NoV, float NoH,float3 light_vec,float3 view_vec)
+	float VoH, float NoL, float NoV, float NoH,float3 light_vec, float3 view_vec)
 {
 	float3	half_vec = normalize(light_vec + view_vec);
 	float	HoL		= dot(half_vec, light_vec);

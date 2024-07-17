@@ -16,7 +16,7 @@ float4 ShaderMain(VS_OUT_3D pin) : SV_TARGET
 	// ïKóvÇ»ïœêî
 	const float3	projection_vec	= pin.w_position.xyz;
 	const float3	view_vec		= normalize(camera_position - pin.w_position.xyz);
-	const float3	light_vec		= normalize(directional_light_direction);
+	const float3	light_vec		= normalize(-directional_light_direction);
 	float3			norm_vec		= normalize(pin.w_normal.xyz);
 	float3			tangent			= has_tangent ? normalize(pin.w_tangent.xyz) : float3(1, 0, 0);
 	const float		sigma			= has_tangent ? pin.w_tangent.w : 1.0;

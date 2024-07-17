@@ -18,8 +18,8 @@ float4 CalcPBR(MaterialData material_data, float3 light_vec, float3 view_vec, fl
 	const float NoL = max(0.0, dot(norm_vec, light_vec));		// 法線と光源位置の内積
 	const float NoV = max(0.0, dot(norm_vec, view_vec));
 	
-	const float3 reflect_vec = reflect(-light_vec, norm_vec);
-	const float3 half_vec = normalize(view_vec - light_vec);
+	const float3 reflect_vec	= reflect(-light_vec, norm_vec);
+	const float3 half_vec		= normalize(view_vec + light_vec);
 	
 	if (NoL > 0.0 || NoV > 0.0)
 	{
@@ -53,13 +53,13 @@ float4 CalcPBR(MaterialData material_data, float3 light_vec, float3 view_vec, fl
 	clearcoat	+= lerp(clearcoat,	clearcoat	* material_data.occulusion_factor, material_data.occulusion_strength);
 	
 	// クリアコート
-	float	clearcoat_factor		= material_data.clearcoat_factor;
-	float3	clearcoat_fresnel		= Fresnel(material_data.clearcoat_f0, material_data.clearcoat_f90, clamp(dot(material_data.clearcoat_normal, view_vec), 0.0, 1.0));
+	float	clearcoat_factor	= material_data.clearcoat_factor;
+	float3	clearcoat_fresnel	= Fresnel(material_data.clearcoat_f0, material_data.clearcoat_f90, clamp(dot(material_data.clearcoat_normal, view_vec), 0.0, 1.0));
 
 	clearcoat = clearcoat * clearcoat_factor;
 	
 	float3 color = (diffuse + specular + emissive) * object_color;
-	color = color * (1.0 - clearcoat_fresnel * clearcoat_factor) + clearcoat;
+	//color = color * (1.0 - clearcoat_fresnel * clearcoat_factor) + clearcoat;
 	
 	return float4(color, material_data.basecolor_factor.a);
 }

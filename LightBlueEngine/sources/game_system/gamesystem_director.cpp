@@ -37,7 +37,7 @@ void GamesystemDirector::Initialize(HWND hwnd, EnumCameraMode& start_mode)
 	MakeNumberRenderer();
 	scene_manager			= std::make_unique<SceneManager>();
 
-	auto start_scene	= std::make_unique<SceneMainManu>();
+	auto start_scene	= std::make_unique<SceneGame>();
 	auto scene_loading	= std::make_unique<SceneLoading>(start_scene.release());
 
 	scene_manager->ChangeScene(scene_loading.release());

@@ -76,10 +76,7 @@ GameModel::GameModel(const std::string& init_filename)
 		scene.nodes		= gltf_scene.nodes;
 	}
 
-	Accessor::Fetch(gltf_model, accessors);
-	Buffer::Fetch(gltf_model, buffers);
-
-		// Mesh、Nodes、Material、Textureを読み込む関数
+	// Mesh、Nodes、Material、Textureを読み込む関数
 	FetchMeshes(gltf_model);
 	FetchNodes(gltf_model);
 	FetchMaterials(gltf_model);

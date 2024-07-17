@@ -6,19 +6,16 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <tiny_gltf.h>
 
 // ""インクルード
 // LightBlueEngine
 #include "graphics/graphics.h"
 #include "engine_utility.h"
-#include "gltf_properties.h"
 
 // template using
 template<typename T>
 using UMapArray = std::unordered_map<int, std::vector<T>>;
-
-// using namespace
-using namespace glTFProperties;
 
 // enum class
 enum class EnumBufferglTFModel
@@ -290,8 +287,8 @@ private:
 	// struct >> GameModel >> [PbrMetallicRoughness]
 	struct PBRMetallicRoughness
 	{
-		TextureInfo				basecolor_texture;
 		DirectX::XMFLOAT4		basecolor_factor = { 1,1,1,1 };
+		TextureInfo				basecolor_texture;
 		float					metallic_factor		= 1;
 		float					roughness_factor		= 1;
 		TextureInfo				metallic_roughness_texture;
@@ -332,7 +329,7 @@ private:
 	// struct >> GameModel >> [KHRMaterialsIor]
 	struct KHRMaterialsIor
 	{
-		float ior = 1.5f;
+		float ior = 1.45f;
 	};
 
 	// struct >> GameModel >> [Material]
@@ -341,14 +338,14 @@ private:
 		// struct >> GameModel >> [SbMaterial] register : t0
 		struct SbMaterial
 		{
+			bool							double_sided = false;
+			int								alpha_mode;
+			float							alpha_cutoff = 0.5f;
+			DirectX::XMFLOAT3				emissive_factor = { 0,0,0 };
 			PBRMetallicRoughness			pbr_metallic_roughness;
 			NormalTextureInfo				normal_texture;
-			TextureInfo						emissive_texture;
-			DirectX::XMFLOAT3				emissive_factor = { 0,0,0 };
-			std::string						alpha_mode = "OPAQUE";
-			float							alpha_cutoff = 0.5f;
-			bool							double_sided = false;
 			OcclusionTextureInfo			occlusion_texture;
+			TextureInfo						emissive_texture;
 
 			// extension
 			KHRMaterialsClearcoat			khr_materials_clearcoat;
@@ -439,8 +436,6 @@ private:
 	ComPtr<ID3D11ShaderResourceView>				mask_srv;
 	ComPtr<ID3D11UnorderedAccessView>				instance_uav;
 
-	std::vector<Accessor>							accessors;
-	std::vector<Buffer>								buffers;
 	std::unique_ptr<SbInstanceModel[]>				instance_model;
 	std::vector<Scene>								scenes;
 	std::vector<Node>								nodes;

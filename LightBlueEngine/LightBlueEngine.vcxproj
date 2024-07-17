@@ -110,7 +110,6 @@
     <ClInclude Include="sources\game_system\gamesystem_director.h" />
     <ClInclude Include="sources\game_system\gamesystem_input.h" />
     <ClInclude Include="sources\game_system\gamesystem_timer.h" />
-    <ClInclude Include="sources\gltf_properties.h" />
     <ClInclude Include="sources\graphics\bloom_effect.h" />
     <ClInclude Include="sources\graphics\camera.h" />
     <ClInclude Include="sources\graphics\particle_system.h" />
