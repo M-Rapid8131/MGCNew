@@ -563,12 +563,8 @@ if_nz r1.x
   discard_nz l(-1)
 endif 
 
-#line 45
-bufinfo_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r1.x, u1.xyzw
-mov r1.x, r1.x  // r1.x <- num_structs
-
 #line 48
-mov r1.x, r1.x  // r1.x <- particle.particle_index
+mov r1.x, l(0)  // r1.x <- particle.particle_index
 
 #line 49
 mov r1.yzw, l(-0.000000,-1.000000,-0.000000,-0.000000)
@@ -621,4 +617,4 @@ store_structured u1.x, r5.x, l(76), r4.w
 
 #line 59
 ret 
-// Approximately 122 instruction slots used
+// Approximately 120 instruction slots used

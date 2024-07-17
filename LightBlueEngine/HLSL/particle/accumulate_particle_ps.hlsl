@@ -45,7 +45,7 @@ void ShaderMain(VS_OUT_3D model_pin)
 	append_particle_buffer.GetDimensions(num_structs, stride);
 	
 	Particle particle;
-	particle.particle_index = num_structs;
+	particle.particle_index = 0;
 	particle.position		= model_pin.w_position.xyz - float3(1.0f, 0.0f, 0.0f);
 	particle.size			= emit_size;
 	particle.color			= float4(object_color, color.a);

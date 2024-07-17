@@ -19,7 +19,7 @@ float4 CalcPBR(MaterialData material_data, float3 light_vec, float3 view_vec, fl
 	const float NoV = max(0.0, dot(norm_vec, view_vec));
 	
 	const float3 reflect_vec = reflect(-light_vec, norm_vec);
-	const float3 half_vec = normalize(view_vec - light_vec);
+	const float3 half_vec = normalize(view_vec + light_vec);
 	
 	if (NoL > 0.0 || NoV > 0.0)
 	{
@@ -59,7 +59,7 @@ float4 CalcPBR(MaterialData material_data, float3 light_vec, float3 view_vec, fl
 	clearcoat = clearcoat * clearcoat_factor;
 	
 	float3 color = (diffuse + specular + emissive) * object_color;
-	color = color * (1.0 - clearcoat_fresnel * clearcoat_factor) + clearcoat;
+	// color = color * (1.0 - clearcoat_fresnel * clearcoat_factor) + clearcoat;
 	
 	return float4(color, material_data.basecolor_factor.a);
 }
