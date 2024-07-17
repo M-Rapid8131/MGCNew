@@ -1004,7 +1004,7 @@ void ObjectBoard::CameraZoom(float elapsed_time)
 {
 	GamePad* game_pad = GamesystemInput::GetInstance()->GetGamePad();
 	Camera* camera = GamesystemDirector::GetInstance()->GetCamera();
-	Camera::TPVData* tpv = camera->GetTPVCamera();
+	Camera::TPVData* tpv = camera->GetTPVCamera(1);
 
 	if (!tpv)	return;
 
@@ -1019,7 +1019,7 @@ void ObjectBoard::CameraZoom(float elapsed_time)
 void ObjectBoard::CameraMove(float elapsed_time)
 {
 	Camera*				camera		= GamesystemDirector::GetInstance()->GetCamera();
-	Camera::TPVData*	tpv			= camera->GetTPVCamera();
+	Camera::TPVData*	tpv			= camera->GetTPVCamera(1);
 	GamePad*			game_pad	= GamesystemInput::GetInstance()->GetGamePad();
 
 	if (!tpv)	return;

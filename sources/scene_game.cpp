@@ -39,8 +39,8 @@ const ParticleSystem::CbParticleEmitter DEFAULT_EMITTER_SETTING = {
 	0.3f,							// spread_rate
 	{ 1.0f, 1.0f, 1.0f, 1.0f },		// emit_color
 	0.2f,							// emit_size
-	10.0f,							// life_time
-	0.03f,							// start_diff
+	20.0f,							// life_time
+	0.01f,							// start_diff
 	0.5f							// emit_radius
 };
 
@@ -85,6 +85,11 @@ void SceneGame::Initialize()
 	tpv_init.tpv_distance	= DEFAULT_CAMERA_DISTANCE;
 
 	GamesystemDirector::GetInstance()->GetCamera()->AddTPVCamera(&tpv_init);
+	GamesystemDirector::GetInstance()->GetCamera()->SetTPVChannel(1);
+	auto& cb_light = GamesystemDirector::GetInstance()->GetLight()->GetLightConstants();
+	cb_light.directional_light_direction.z = -1.0f;
+	cb_light.directional_light_direction.x = 0.0f;
+	cb_light.directional_light_direction.y = 0.0f;
 
 	auto player_board = std::make_unique<ObjectBoard>(SCast(UINT, EnumPlayerID::PLAYER_1));
 	game_board.emplace_back(std::move(player_board));

@@ -7,9 +7,11 @@
 // LightBlueEngine
 #include "game_system/gamesystem_director.h"
 #include "game_system/gamesystem_input.h"
+#include "scene/scene_loading.h"
 
 // ゲームソースファイル
 #include "scene_main_manu.h"
+#include "scene_game.h"
 
 // 定数
 const float				HSV_MAX = 360.0f;
@@ -23,15 +25,15 @@ const ParticleSystem::CbParticleEmitter DEFAULT_EMITTER_SETTING = {
 	false,								// disable
 	0,									// dummy
 	{ 0.0f, 0.0f, 50.0f },				// emit_position
-	0.0f,								// emit_speed
+	10.0f,								// emit_speed
 	{ 0.0f, 3.0f, 0.0f },				// emit_force
-	100.0f,								// emit_accel
+	10.0f,								// emit_accel
 	{ 0.0f, -1.0f, 0.0f },				// emit_direction
-	0.5f,								// spread_rate
-	{ 1.0f, 1.0f, 1.0f, NormC(100)},	// emit_color
+	1.0f,								// spread_rate
+	{ 1.0f, 1.0f, 1.0f, NormC(200)},	// emit_color
 	0.2f,								// emit_size
 	10.0f,								// life_time
-	0.01f,								// start_diff
+	0.005f,								// start_diff
 	3.0f								// emit_radius
 };
 
@@ -152,6 +154,9 @@ void SceneMainManu::Initialize()
 // 更新処理
 void SceneMainManu::Update(float elapsed_time)
 {
+	std::unique_ptr<SceneGame>		start_scene = std::make_unique<SceneGame>();
+	std::unique_ptr<SceneLoading>	scene_loading = std::make_unique<SceneLoading>(start_scene.release());
+
 	switch (scene_state)
 	{
 		using enum EnumSceneState;
@@ -180,8 +185,10 @@ void SceneMainManu::Update(float elapsed_time)
 		break;
 
 	case SCENE_CHANGE:
+		start_scene = std::make_unique<SceneGame>();
+		scene_loading = std::make_unique<SceneLoading>(start_scene.release());
+		GamesystemDirector::GetInstance()->GetSceneManager()->ChangeScene(scene_loading.release());
 		break;
-
 	default:
 		break;
 	}
@@ -221,6 +228,11 @@ void SceneMainManu::Update(float elapsed_time)
 	emitter.emit_color.y = rgb_color.y;
 	emitter.emit_color.z = rgb_color.z;
 	background_particle->Update(elapsed_time);
+
+	if (GetAsyncKeyState(VK_RETURN))
+	{
+		scene_state = EnumSceneState::TRANSITION_OUT_SETTING;
+	}
 
 	scene_time += elapsed_time;
 }

@@ -29,7 +29,7 @@ void ShaderMain( uint3 dtid : SV_DispatchThreadID )
 	particle.acceleration	= CalcEmitDirection(index) * emit_accel;
 	particle.normal			= float3(0.0f,1.0f,0.0f);
 	particle.life			= life_time;
-	particle.start_time		= start_diff * index;
+	particle.start_time		= start_diff * (index + 1);
 	
 	particle_buffer[index] = particle;
 }

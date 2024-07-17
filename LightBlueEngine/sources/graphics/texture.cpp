@@ -46,12 +46,12 @@ HRESULT TextureLoader::LoadTextureFromFile(const wchar_t* filename,
 
 	if (it != cached_textures.end())
 	{
-		*shader_resource_view = it->second;
+		*shader_resource_view = it->second.Get();
 		(*shader_resource_view)->AddRef();
 	}
 	else
 	{
-		DirectX::TexMetadata		metadata = {};
+		DirectX::TexMetadata	metadata = {};
 		DirectX::ScratchImage	scratch_image;
 
 		// DDSƒtƒ@ƒCƒ‹“Ç‚Ýž‚Ý
@@ -137,7 +137,7 @@ HRESULT TextureLoader::LoadTextureFromMemory(std::wstring name, const void* data
 
 	if (it != cached_textures.end())
 	{
-		*shader_resource_view = it->second;
+		*shader_resource_view = it->second.Get();
 		(*shader_resource_view)->AddRef();
 	}
 	else

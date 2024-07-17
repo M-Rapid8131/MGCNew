@@ -43,9 +43,9 @@ void SceneLoading::Update(float elapsed_time)
 void SceneLoading::Render()
 {
 	// ここにローディング画面のスプライトとかなんかを入れる
-	loading_sprite->Render({ 0.0f,0.0f },
-		{ SCast(float, Graphics::GetInstance()->GetScreenWidth()), SCast(float, Graphics::GetInstance()->GetScreenHeight()) }
-	);
+	//loading_sprite->Render({ 0.0f,0.0f },
+	//	{ SCast(float, Graphics::GetInstance()->GetScreenWidth()), SCast(float, Graphics::GetInstance()->GetScreenHeight()) }
+	//);
 }
 
 // マルチスレッドでこの次のシーンを読み込む

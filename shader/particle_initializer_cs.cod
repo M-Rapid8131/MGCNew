@@ -279,7 +279,9 @@ mov r4.xyz, l(0,1.000000,0,0)  // r4.x <- particle.normal.x; r4.y <- particle.no
 mov r3.w, cb5[5].y  // r3.w <- particle.life
 
 #line 32
-utof r4.w, r0.x
+mov r4.w, l(1)
+iadd r4.w, r0.x, r4.w
+utof r4.w, r4.w
 mul r4.w, r4.w, cb5[5].z  // r4.w <- particle.start_time
 
 #line 34
@@ -306,4 +308,4 @@ store_structured u0.x, r0.x, l(76), r4.w
 
 #line 35
 ret 
-// Approximately 114 instruction slots used
+// Approximately 116 instruction slots used

@@ -82,8 +82,8 @@ public:
 	DirectX::XMFLOAT4X4&	GetProjection()		{ return projection; }
 	ComPtr<ID3D11Buffer>&	GetSceneCBuffer()	{ return scene_cbuffer; }	// shadow_map用
 	CbScene&				GetSceneConstants() { return scene_constants; }	// shadow_map用
-	FPVData*				GetFPVCamera(size_t index = 0) { return index < fpv_data.size() ? &fpv_data[index] : nullptr; }
-	TPVData*				GetTPVCamera(size_t index = 0) { return index < tpv_data.size() ? &tpv_data[index] : nullptr; }
+	FPVData*				GetFPVCamera(size_t channel = 0) { return channel < fpv_data.size() ? &fpv_data[channel] : nullptr; }
+	TPVData*				GetTPVCamera(size_t channel = 0) { return channel < tpv_data.size() ? &tpv_data[channel] : nullptr; }
 
 	// public:セッター関数
 	void SetView(const DirectX::XMFLOAT4X4 fm_view) { view = fm_view; }
@@ -102,6 +102,21 @@ public:
 	void AddTPVCamera(TPVData* = nullptr);
 	void SetCameraShift(const DirectX::XMFLOAT3 shift)	{ camera_shift = shift; }
 	void RadialBlur()									{ scene_constants.blur_size = BLUR_SIZE; }
+	void SetFPVChannel(size_t channel)					
+	{
+		if (fpv_data.size() > channel)
+		{
+			fpv_channel = channel;
+		}
+	}
+
+	void SetTPVChannel(size_t channel)					
+	{
+		if (tpv_data.size() > channel)
+		{
+			tpv_channel = channel;
+		}
+	}
 
 private:
 	// private:変数

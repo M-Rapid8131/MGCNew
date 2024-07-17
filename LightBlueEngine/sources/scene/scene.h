@@ -25,9 +25,9 @@ enum class EnumSceneState
 enum class EnumSceneChangeDirection
 {
 	NONE,
-	SCENE_SELECT,
+	SCENE_MAINMENU,
 	SCENE_GAME,
-	SCENE_CLEAR,
+	SCENE_RESULT,
 };
 
 // class >> [Scene]
