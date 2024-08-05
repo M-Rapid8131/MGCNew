@@ -38,7 +38,6 @@ enum class EnumBlockFlags
 	OBSTACLE_BLOCK,		// おじゃまブロック(灰色のブロック)かどうか ただしシングルでは使わない
 	CHECKED,			// ブロック消去の時に使用
 	STANDING,			// 硬直中かどうか
-	FREEZE,
 	RECORD_TRAIL,
 	FIRING_PARTICLE,
 };
@@ -197,10 +196,10 @@ public:
 	void	AdjustFromBlockCell();
 	void	ResetShiftY();
 	void	AccumulateBlockParticle(ID3D11PixelShader*);
-	void	FollowRootBlock(EnumBlockRotation, const BlockCell&);
+	void	FollowPartnerBlock(EnumBlockRotation, BlockCell&);
 	void	MoveBlock(GamePadButton);
 	void	LiftBlock(EnumBlockRotation);
-	void	RotateBlock(ObjectBlock*, EnumBlockRotation);		// 右ブロックのみ使用
+	bool	RotateBlock(ObjectBlock*, EnumBlockRotation, bool = false);		// 右ブロックのみ使用
 	bool	JudgeFallBlock();
 
 	// state_update用
@@ -214,10 +213,11 @@ public:
 	const int					GetBlockColorNum()		{ return static_cast<int>(this->block_color); }
 	const float					GetBlockTopPosition()	{ return this->translation.y - BLOCK_SIZE * 0.5f; }
 	DirectX::XMFLOAT4X4			GetParticleTransform() const;
-	EnumBlockColor				GetBlockColor()			{ return this->block_color; }
-	GameModel*					GetModel() override		{ return this->model.get(); }
-	BlockCell&					GetBlockCell()			{ return this->block_cell; }
-	BlockState&					GetBlockState()			{ return this->block_state; }
+	EnumBlockColor				GetBlockColor()			{ return block_color; }
+	GameModel*					GetModel() override		{ return model.get(); }
+	BlockCell&					GetBlockCell()			{ return block_cell; }
+	BlockCell&					GetGhostCell()			{ return ghost_cell; }	// 回転をゴーストに反映させるために使用
+	BlockState&					GetBlockState()			{ return block_state; }
 
 	// 座標チェック用
 
@@ -225,7 +225,6 @@ public:
 	FlagSystem<Enum>&			GetFlagSystem()			{ return flag_system; }
 
 	// public:セッター関数
-	//void				SetFlag(EnumBlockFlags item, bool flg);
 	void				SetStanding() 
 	{ 
 		if(block_state.state != EnumBlockState::STAND)
@@ -246,6 +245,7 @@ private:
 	float								blink_time;
 	EnumBlockColor						block_color		= EnumBlockColor::UNDEFINE;		// blockの色
 	DirectX::XMFLOAT3					block_color_factor;
+	DirectX::XMFLOAT3					ghost_translation = {0.0f, 1.0f, 0.0f};
 	FlagSystem<EnumBlockFlags>			flag_system;
 
 	// モデル関係
@@ -259,6 +259,7 @@ private:
 
 	// ゲームシステム関係
 	BlockCell							block_cell		= BlockCell(0, 0);	// 盤面におけるblockの場所
+	BlockCell							ghost_cell		= BlockCell(0, 0);	// ゴーストの位置
 	BlockState							block_state;
 	StateUpdate							state_update;
 };

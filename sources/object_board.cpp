@@ -6,6 +6,7 @@
 #include "game_system/gamesystem_director.h"
 #include "game_system/gamesystem_input.h"
 #include "UI/value_UI.h"
+#include "easing.h"
 #include "json_editor.h"
 #include "xmfloat_calclation.h"
 
@@ -96,10 +97,14 @@ void ObjectBoard::NextBlock::Update(float elapsed_time)
 		GamePadButton input = pad->GetButtonDown();
 		GamePadButton hold = pad->GetButton();
 		GamePadButton barrage = gamesystem_input->GetGamePadButtonBarrage(ID);
+
 		if ((input & BTN_A) || (input & BTN_B))
 		{
-			gamesystem_input->BlockRotate(ID, input);
-			moving_block.RIGHT_BLOCK->RotateBlock(moving_block.LEFT_BLOCK.get(), gamesystem_input->GetBlockRotation(ID));
+			EnumBlockRotation old_rotation = gamesystem_input->GetBlockRotation(ID);
+			bool flip = gamesystem_input->BlockRotate(ID, input);
+			bool succeed = moving_block.RIGHT_BLOCK->RotateBlock(moving_block.LEFT_BLOCK.get(), gamesystem_input->GetBlockRotation(ID), flip);
+			if (!succeed)
+				gamesystem_input->RotationFail(ID, old_rotation);
 		}
 		else
 		{
@@ -114,14 +119,16 @@ void ObjectBoard::NextBlock::Update(float elapsed_time)
 	}
 
 	if (moving_block.LEFT_BLOCK)
+	{
 		moving_block.LEFT_BLOCK->Update(elapsed_time);
+	}
 	else
 		stand_switch.first = false;
 
 	if (moving_block.RIGHT_BLOCK)
 	{
 		moving_block.RIGHT_BLOCK->Update(elapsed_time);
-		moving_block.RIGHT_BLOCK->FollowRootBlock(gamesystem_input->GetBlockRotation(ID),
+		moving_block.RIGHT_BLOCK->FollowPartnerBlock(gamesystem_input->GetBlockRotation(ID),
 			moving_block.LEFT_BLOCK->GetBlockCell());
 	}
 	else
@@ -160,24 +167,13 @@ void ObjectBoard::NextBlock::SetNewBlock()
 //		BoardState Transition系
 //---------------------------------------------------------------------------------------
 
-// ゲーム開始前
-void ObjectBoard::BoardState::TransitionStandbyState()
-{
-	// 状態変更後処理
-	state = EnumBoardState::STANDBY;
-	obj->count_down_time = 4.0f - FLT_EPSILON;
-
-	float& disolve_factor = obj->board_model->GetDisolveFactor();
-	disolve_factor = 1.0f;
-
-	obj->state_update = &ObjectBoard::UpdateStandbyState;
-}
-
 // ゲーム開始
 void ObjectBoard::BoardState::TransitionStartState(int game_mode_id)
 {
-	AudioManager*	audio_manager	= GamesystemDirector::GetInstance()->GetAudioManager();
-	JSONEditor*		json_editor		= JSONEditor::GetInstance();
+	AudioManager*		audio_manager	= GamesystemDirector::GetInstance()->GetAudioManager();
+	JSONEditor*			json_editor		= JSONEditor::GetInstance();
+	Camera*				camera			= GamesystemDirector::GetInstance()->GetCamera();
+	Camera::TPVData*	tpv				= camera->GetTPVCamera(SCast(size_t, EnumCameraChannel::GAME));
 
 	// 状態変更後処理
 	state = EnumBoardState::START;
@@ -188,23 +184,53 @@ void ObjectBoard::BoardState::TransitionStartState(int game_mode_id)
 	Parameters	mode_params;
 	ParamPtr	mode_setting_params;
 
-	std::filesystem::path json_path("resources/json_data/mode_data.json");
-	json_editor->ImportJSON(json_path, &mode_params);
-	mode_setting_params = GET_PARAMETER_IN_PARAMPTR(mode_name, Parameters, &mode_params);
+	obj->game_mode = SCast(EnumGameMode, game_mode_id);
+	obj->board_color = BOARD_COLOR_SET[game_mode_id];
+	if(obj->game_mode != EnumGameMode::NORMAL_DEMO)
+		obj->sprite_ui.at(SCast(size_t, GAME_MODE))->SetIndexValue(0, game_mode_id);
+	else
+	{
+		obj->demo_mode = true;
+		obj->sprite_ui.at(SCast(size_t, GAME_MODE))->SetIndexValue(0, 0);
+	}
+	if (obj->game_mode != EnumGameMode::BONUS)
+	{
+		obj->board_model->GetDisolveFactor() = 0.0f;
 
-	obj->init_level				= SCast(UINT, *(GET_PARAMETER_IN_PARAMPTR("InitLevel", int, mode_setting_params)));
-	obj->max_level				= SCast(UINT, *(GET_PARAMETER_IN_PARAMPTR("MaxLevel", int, mode_setting_params)));
-	obj->speed_increase_factor	= *(GET_PARAMETER_IN_PARAMPTR("SpeedIncrease", float, mode_setting_params));
-	obj->stand_decrease_factor	= *(GET_PARAMETER_IN_PARAMPTR("StandDecrease", float, mode_setting_params));
-	
-	audio_manager->StopBGM();
-	audio_manager->PlayVoice(EnumVoiceBank::COUNT_DOWN);
+		std::filesystem::path json_path("resources/json_data/mode_data.json");
+		json_editor->ImportJSON(json_path, &mode_params);
+		mode_setting_params = GET_PARAMETER_IN_PARAMPTR(mode_name, Parameters, &mode_params);
 
-	obj->value_ui.at(SCast(size_t, SPEED_LEVEL))->SetIntValue(0, obj->init_level, 0.0f);
-	obj->flag_system.SetFlag(EnumBoardFlags::PLAYING, true);
-	obj->sprite_ui.at(SCast(size_t, GAME_MODE))->SetIndexValue(0, game_mode_id);
+		obj->game_data.init_level	= SCast(UINT, *(GET_PARAMETER_IN_PARAMPTR("InitLevel", int, mode_setting_params)));
+		obj->game_data.max_level	= SCast(UINT, *(GET_PARAMETER_IN_PARAMPTR("MaxLevel", int, mode_setting_params)));
+		obj->speed_increase_factor	= *(GET_PARAMETER_IN_PARAMPTR("SpeedIncrease", float, mode_setting_params));
+		obj->stand_decrease_factor	= *(GET_PARAMETER_IN_PARAMPTR("StandDecrease", float, mode_setting_params));
 
-	obj->speed_level = obj->init_level;
+		audio_manager->StopBGM();
+
+		obj->value_ui.at(SCast(size_t, SPEED_LEVEL))->SetIntValue(0, obj->game_data.init_level, 0.0f);
+
+		obj->game_data.speed_level = obj->game_data.init_level;
+
+		tpv->tpv_distance = ZOOM_MIN;
+	}
+	else
+	{
+		obj->flag_system.SetFlag(EnumBoardFlags::PLAYING, true);
+		obj->object_time = 60.0f;
+		tpv->tpv_distance = DEFAULT_ZOOM;
+	}
+
+	for (UINT row = 0; row < MAX_ROW; row++)
+	{
+		int column = MAX_COLUMN - 1;
+		while (obj->existing_matrix[row][column])
+		{
+			if (column <= 0)	break;
+			column--;
+		}
+		obj->stand_collision_heignt[row] = SCast(UINT, column);
+	}
 }
 
 // ブロック移動開始
@@ -215,22 +241,21 @@ void ObjectBoard::BoardState::TransitionDropStartState()
 	// 状態変更後処理
 	state = EnumBoardState::DROP_START;
 
+	if (obj->game_mode == EnumGameMode::BONUS)
+	{
+		if (obj->object_time <= 0.0f)
+		{
+			TransitionGameOverState(true);
+			return;
+		}
+	}
+	
 	obj->ClearDeleteBlockList();
 
-	obj->state_update	= nullptr;
-	obj->standing_time	= 0.0f;
-	obj->chain			= 0;
+	obj->state_update = nullptr;
+	obj->standing_time = 0.0f;
+	obj->chain = 0;
 	obj->value_ui.at(SCast(size_t, CHAIN))->SetIntValue(0, obj->chain, 0.0f);
-
-	for (UINT row = 0; row < MAX_ROW; row++)
-	{
-		UINT column = MAX_COLUMN - 1;
-		while (obj->existing_matrix[row][column])
-		{
-			column--;
-		}
-		obj->stand_collision_heignt[row] = column;
-	}
 
 	gamesystem_input->ResetRotate(obj->player_id);
 	obj->flag_system.SetFlag(EnumBoardFlags::BLOCK_REGISTERED, false);
@@ -248,6 +273,17 @@ void ObjectBoard::BoardState::TransitionMovingState()
 	state = EnumBoardState::MOVING;
 	obj->state_update = &ObjectBoard::UpdateMovingState;
 	obj->flag_system.SetFlag(EnumBoardFlags::CAN_MOVE, true);
+
+	for (UINT row = 0; row < MAX_ROW; row++)
+	{
+		int column = MAX_COLUMN - 1;
+		while (obj->existing_matrix[row][column])
+		{
+			if (column <= 0)	break;
+			column--;
+		}
+		obj->stand_collision_heignt[row] = SCast(UINT, column);
+	}
 }
 
 // ブロック落下開始
@@ -259,6 +295,17 @@ void ObjectBoard::BoardState::TransitionDroppingState()
 	obj->standing_time = 0.0f;
 
 	obj->current_speed = 0.0f;
+
+	for (UINT row = 0; row < MAX_ROW; row++)
+	{
+		int column = MAX_COLUMN - 1;
+		while (obj->existing_matrix[row][column])
+		{
+			if (column <= 0)	break;
+			column--;
+		}
+		obj->stand_collision_heignt[row] = column;
+	}
 }
 
 // 着地
@@ -292,6 +339,16 @@ void ObjectBoard::BoardState::TransitionLandingState()
 		};
 	obj->erase_block_particle->AccumulateParticles(call_back);
 
+	for (UINT row = 0; row < MAX_ROW; row++)
+	{
+		int column = MAX_COLUMN - 1;
+		while (obj->existing_matrix[row][column])
+		{
+			if (column <= 0)	break;
+			column--;
+		}
+		obj->stand_collision_heignt[row] = column;
+	}
 }
 
 // ゲームオーバー
@@ -299,6 +356,13 @@ void ObjectBoard::BoardState::TransitionGameOverState(bool cleared)
 {
 	state = EnumBoardState::GAME_OVER;
 	obj->state_update = &ObjectBoard::UpdateGameOverState;
+
+	if (obj->game_mode != EnumGameMode::BONUS)
+	{
+		AudioManager* audio_manarger = GamesystemDirector::GetInstance()->GetAudioManager();
+		audio_manarger->StopBGM();
+		if(cleared)		audio_manarger->PlaySE(EnumSEBank::GAME_CLEAR);
+	}
 
 	for (const auto& block : obj->block_list)
 	{
@@ -315,53 +379,59 @@ void ObjectBoard::BoardState::TransitionGameOverState(bool cleared)
 		}
 	}
 
-	obj->AccumulateBoardParticle();
+	obj->game_data.cleared = cleared;
 
 	obj->flag_system.SetFlag(EnumBoardFlags::PLAYING, false);
+}
+
+void ObjectBoard::BoardState::TransitionResultState()
+{
+	// 状態変更後処理
+	state = EnumBoardState::RESULT;
+	obj->state_update = nullptr;
 }
 
 //---------------------------------------------------------------------------------------
 //		State別Update系
 //---------------------------------------------------------------------------------------
-
-// ゲーム開始前
-void ObjectBoard::UpdateStandbyState(float elapsed_time)
-{
-	GamesystemInput* gamesystem_input = GamesystemInput::GetInstance();
-
-	if (gamesystem_input->GetGamePadButtonDown(player_id) & BTN_START)
-	{
-		if (gamesystem_input->GetGamePadButton(player_id) & BTN_Y)
-			GameStart(SCast(int, EnumGameMode::IMPACT));
-		else if (gamesystem_input->GetGamePadButton(player_id) & BTN_X)
-			GameStart(SCast(int, EnumGameMode::ULTIMATE));
-		else if (gamesystem_input->GetGamePadButton(player_id) & BTN_A)
-			GameStart(SCast(int, EnumGameMode::ENDLESS));
-		else
-			GameStart(SCast(int, EnumGameMode::NORMAL));
-	}
-}
-
+// カウントダウン
 void ObjectBoard::UpdateStartState(float elapsed_time)
 {
-	AudioManager* audio_manarger = GamesystemDirector::GetInstance()->GetAudioManager();
+	AudioManager*		audio_manarger	= GamesystemDirector::GetInstance()->GetAudioManager();
+	Camera*				camera			= GamesystemDirector::GetInstance()->GetCamera();
+	Camera::TPVData*	tpv				= camera->GetTPVCamera(SCast(size_t, EnumCameraChannel::GAME));
+
 	count_down_time -= elapsed_time;
 	count_down_se_time += elapsed_time;
-	if (count_down_time > 0.0f)
-	{
-		if (count_down_se_time > count_down_se_span)
-		{
-			if (count_down_time > 1.0f)
-				audio_manarger->PlaySE(EnumSEBank::COUNT_DOWN);
-			else
-				audio_manarger->PlaySE(EnumSEBank::GAME_START);
+	float& dissolve = board_model->GetDisolveFactor();
+	dissolve = Easing::Out(EnumEasingType::QUAD, EnumEasingMode::RATE, 0.0f, COUNT_DOWN, COUNT_DOWN - count_down_time);
 
-			count_down_se_time -= count_down_se_span;
+	tpv->tpv_distance = std::lerp(ZOOM_MIN, DEFAULT_ZOOM, dissolve);
+	//tpv->tpv_distance = DEFAULT_ZOOM;
+
+	if(game_mode != EnumGameMode::BONUS)
+	{
+		if (count_down_time > 0.0f)
+		{
+			if (count_down_se_time > count_down_se_span)
+			{
+				audio_manarger->PlaySE(EnumSEBank::COUNT_DOWN);
+
+				count_down_se_time -= count_down_se_span;
+			}
+		}
+		else if (count_down_time < 0.0f)
+		{
+			tpv->tpv_distance = DEFAULT_ZOOM;
+			audio_manarger->PlayBGM(SCast(EnumBGMBank, game_data.speed_level / (demo_mode ? 3 : 10)), true);
+			flag_system.SetFlag(EnumBoardFlags::PLAYING, true);
+			board_state.TransitionDropStartState();
 		}
 	}
-	else if (count_down_time < 0.0f)
+	else
 	{
-		audio_manarger->PlayBGM(SCast(EnumBGMBank, init_level / 10));
+		audio_manarger->PlayBGM(EnumBGMBank::BONUS_TIME, false);
+		flag_system.SetFlag(EnumBoardFlags::PLAYING, true);
 		board_state.TransitionDropStartState();
 	}
 }
@@ -371,9 +441,6 @@ void ObjectBoard::UpdateMovingState(float elapsed_time)
 {
 	GamesystemInput* gamesystem_input = GamesystemInput::GetInstance();
 
-	CalcBlockSpeed(elapsed_time);
-
-	object_time += elapsed_time;
 
 	// 左右どちらかがが静止状態であるとき
 	if (next_block.moving_block.LEFT_BLOCK->GetBlockState().state == EnumBlockState::STAND
@@ -429,8 +496,6 @@ void ObjectBoard::UpdateDroppingState(float elapsed_time)
 	else
 		current_speed = MAX_SPEED;
 
-	object_time += elapsed_time;
-
 	if (!flag_system.GetFlag(EnumBoardFlags::BLOCK_REGISTERED))
 	{
 		RegisterBlock();
@@ -448,7 +513,6 @@ void ObjectBoard::UpdateDroppingState(float elapsed_time)
 // ブロックがすべて着地した時の処理
 void ObjectBoard::UpdateLandingState(float elapsed_time)
 {
-	object_time += elapsed_time;
 	current_speed = 0.0f;
 
 	float chain_wait_time = waiting_time_limit * (1.0f - SCast(float, chain) * 0.2f);
@@ -488,18 +552,34 @@ void ObjectBoard::UpdateLandingState(float elapsed_time)
 void ObjectBoard::UpdateGameOverState(float elapsed_time)
 {
 	AudioManager* audio_manager = GamesystemDirector::GetInstance()->GetAudioManager();
-
-	audio_manager->StopBGM();
+	if(audio_manager->IsPlaying())
+		audio_manager->StopBGM();
 
 	game_over_time += elapsed_time;
 
-	float& disolve_factor = board_model->GetDisolveFactor();
-	disolve_factor -= 0.02f;
-
-	if (game_over_time > 5.0f)
+	if(game_data.cleared)
 	{
-		game_over_time = 0.0f;
-		board_state.TransitionStandbyState();
+		if (game_over_time > 3.0f)
+		{
+			game_over_time = 0.0f;
+
+			if (game_mode != EnumGameMode::BONUS)
+				BonusStart();
+
+			else
+				board_state.TransitionResultState();
+		}
+	}
+	else
+	{
+		float& disolve_factor = board_model->GetDisolveFactor();
+		disolve_factor -= 0.02f;
+
+		if (game_over_time > 5.0f)
+		{
+			game_over_time = 0.0f;
+			board_state.TransitionResultState();
+		}
 	}
 }
 
@@ -509,22 +589,33 @@ void ObjectBoard::SignalMove(GamePadButton input)
 	GamesystemInput* gamesystem_input = GamesystemInput::GetInstance();
 
 	bool		result = false;
-	BlockCell	left_cell_l = BlockCell(next_block.moving_block.LEFT_BLOCK->GetBlockCell().row - 1, next_block.moving_block.LEFT_BLOCK->GetBlockCell().column);
-	BlockCell	left_cell_r = BlockCell(next_block.moving_block.RIGHT_BLOCK->GetBlockCell().row - 1, next_block.moving_block.RIGHT_BLOCK->GetBlockCell().column);
-	BlockCell	right_cell_l = BlockCell(next_block.moving_block.LEFT_BLOCK->GetBlockCell().row + 1, next_block.moving_block.LEFT_BLOCK->GetBlockCell().column);
-	BlockCell	right_cell_r = BlockCell(next_block.moving_block.RIGHT_BLOCK->GetBlockCell().row + 1, next_block.moving_block.RIGHT_BLOCK->GetBlockCell().column);
+
+	UINT shift_factor = next_block.moving_block.LEFT_BLOCK->GetBlockCell().shift_y < FLT_EPSILON ? 0 : 1;
+
+	const BlockCell&	LEFT_CELL_L		= BlockCell(next_block.moving_block.LEFT_BLOCK->GetBlockCell().row - 1,
+											next_block.moving_block.LEFT_BLOCK->GetBlockCell().column + shift_factor);
+
+	const BlockCell&	LEFT_CELL_R		= BlockCell(next_block.moving_block.RIGHT_BLOCK->GetBlockCell().row - 1,
+											next_block.moving_block.RIGHT_BLOCK->GetBlockCell().column + shift_factor);
+
+	const BlockCell&	RIGHT_CELL_L	= BlockCell(next_block.moving_block.LEFT_BLOCK->GetBlockCell().row + 1,
+											next_block.moving_block.LEFT_BLOCK->GetBlockCell().column + shift_factor);
+
+	const BlockCell&	RIGHT_CELL_R	= BlockCell(next_block.moving_block.RIGHT_BLOCK->GetBlockCell().row + 1,
+											next_block.moving_block.RIGHT_BLOCK->GetBlockCell().column + shift_factor);
+
 	if (input & BTN_LEFT)
 	{
 		switch (gamesystem_input->GetBlockRotation(player_id))
 		{
 		case EnumBlockRotation::RIGHT:
 		case EnumBlockRotation::TOP:
-			if (!IsExistingBlockFromCell(left_cell_l))
+			if (!IsExistingBlockFromCell(LEFT_CELL_L))
 				result = true;
 			break;
 		case EnumBlockRotation::UNDER:
 		case EnumBlockRotation::LEFT:
-			if (!IsExistingBlockFromCell(left_cell_r))
+			if (!IsExistingBlockFromCell(LEFT_CELL_R))
 				result = true;
 			break;
 		}
@@ -535,12 +626,12 @@ void ObjectBoard::SignalMove(GamePadButton input)
 		{
 		case EnumBlockRotation::RIGHT:
 		case EnumBlockRotation::UNDER:
-			if (!IsExistingBlockFromCell(right_cell_r))
+			if (!IsExistingBlockFromCell(RIGHT_CELL_R))
 				result = true;
 			break;
 		case EnumBlockRotation::LEFT:
 		case EnumBlockRotation::TOP:
-			if (!IsExistingBlockFromCell(right_cell_l))
+			if (!IsExistingBlockFromCell(RIGHT_CELL_L))
 				result = true;
 			break;
 		}
@@ -562,13 +653,11 @@ ObjectBoard::ObjectBoard(UINT player_id)
 	board_model->SetMaskTexture(L"resources/sprite/mask_texture.png");
 
 	ParticleSystem::CbParticleEmitter	cb_emitter;
-	cb_emitter.emit_amounts = 1000;
-
-	board_particle = std::make_unique<ParticleSystem>(cb_emitter, true, "accumulate_particle_ps.cso");
-	
-	cb_emitter.emit_amounts = 100000;
-	cb_emitter.life_time = 0.3f;
-	cb_emitter.emit_size = 0.2f;
+	cb_emitter.emit_amounts = 50000;
+	cb_emitter.emit_speed	= 5.0f;
+	cb_emitter.life_time	= 0.5f;
+	cb_emitter.emit_size	= 0.2f;
+	cb_emitter.emit_radius	= 0.5f;
 	erase_block_particle = std::make_unique<ParticleSystem>(cb_emitter, true, "accumulate_particle_ps.cso");
 
 	existing_matrix.resize(MAX_ROW);
@@ -576,8 +665,6 @@ ObjectBoard::ObjectBoard(UINT player_id)
 	{
 		existing_matrix.at(x).resize(MAX_COLUMN);
 	}
-
-	level_up_block = LV_UP_BLOCK_COUNT;
 
 	board_state.obj = this;
 
@@ -619,6 +706,7 @@ ObjectBoard::ObjectBoard(UINT player_id)
 		L"resources/sprite/mode/endless.png",
 		L"resources/sprite/mode/mission.png",
 		L"resources/sprite/mode/ultimate.png",
+		L"resources/sprite/mode/bonus.png",
 	};
 
 	for (const wchar_t* w_filename : w_game_mode_filename)
@@ -636,12 +724,12 @@ ObjectBoard::ObjectBoard(UINT player_id)
 
 	auto& ui_score = value_ui.emplace_back(std::make_unique<ValueUI>());
 	ui_score->Initialize(L"resources/sprite/UI/UI_score.png", L"SCORE", { UI_RIGHT_X, UI_UNDER_Y });
-	ui_score->PushIntValue(score, TEXT_RIGHT_ALIGN_POS);
+	ui_score->PushIntValue(game_data.score, TEXT_RIGHT_ALIGN_POS);
 	ui_score->SetUIScale(DEFAULT_UI_SCALE);
 
 	auto& ui_speed_level = value_ui.emplace_back(std::make_unique<ValueUI>());
 	ui_speed_level->Initialize(L"resources/sprite/UI/UI_speed_lv.png", L"SPEED_LEVEL", { UI_LEFT_X, UI_CENTER_Y });
-	ui_speed_level->PushIntValue(speed_level, TEXT_RIGHT_ALIGN_POS);
+	ui_speed_level->PushIntValue(game_data.speed_level, TEXT_RIGHT_ALIGN_POS);
 	ui_speed_level->SetUIScale(DEFAULT_UI_SCALE);
 
 	auto& ui_chain = value_ui.emplace_back(std::make_unique<ValueUI>());
@@ -651,12 +739,14 @@ ObjectBoard::ObjectBoard(UINT player_id)
 
 	auto& ui_deleted_blocks = value_ui.emplace_back(std::make_unique<ValueUI>());
 	ui_deleted_blocks->Initialize(L"resources/sprite/UI/UI_deleted_blocks.png", L"DELETED_BLOCKS", { UI_LEFT_X, UI_UNDER_Y });
-	ui_deleted_blocks->PushIntValue(deleted_block_count, TEXT_RIGHT_ALIGN_POS);
+	ui_deleted_blocks->PushIntValue(game_data.deleted_block_count, TEXT_RIGHT_ALIGN_POS);
 	ui_deleted_blocks->SetUIScale(DEFAULT_UI_SCALE);
 
 	delete_block_sorter.color_block.resize(6);
 
-	board_state.TransitionStandbyState();
+	GameStart(SCast(int, EnumGameMode::NORMAL_DEMO));
+
+	game_data.level_up_block = demo_mode ? DEMO_LV_UP_BLOCK_COUNT : LV_UP_BLOCK_COUNT;
 }
 
 // デストラクタ
@@ -675,26 +765,37 @@ void ObjectBoard::Update(float elapsed_time)
 	if (state_update)
 		(this->*state_update)(elapsed_time);
 
-	// カメラ移動
-	if (game_pad->GetAxisLY() <= -0.01f || game_pad->GetAxisLY() >= +0.01f)
-		CameraZoom(elapsed_time);
+	if (flag_system.GetFlag(EnumBoardFlags::PLAYING))
+	{
+		if (game_mode == EnumGameMode::BONUS)
+		{
+			if (object_time > 0.0f)
+				object_time -= elapsed_time;
+			else
+				object_time = 0.0f;
+		}
+		else
+			object_time += elapsed_time;
+	}
 
-	if ((game_pad->GetAxisRX() <= -0.01f || game_pad->GetAxisRX() >= +0.01f) ||
-		(game_pad->GetAxisRY() <= -0.01f || game_pad->GetAxisRY() >= +0.01f))
-		CameraMove(elapsed_time);
+	// カメラ移動
+	CameraZoom(elapsed_time);
+	CameraMove(elapsed_time);
 
 	// 揺らし処理
 	DirectX::XMFLOAT3 root_translation = translation;
-	shake_position = XMFloatCalclation::XMFloat3Add(shake_position, shake_speed);
-	translation = XMFloatCalclation::XMFloat3Subtract(translation, shake_position);
+	shake_position	= XMFloatCalclation::XMFloat3Add(shake_position, shake_speed);
+	translation		= XMFloatCalclation::XMFloat3Subtract(translation, shake_position);
 
 	// transform更新
 	UpdateTransform();
 
 	// translationを元に戻す
-	translation = root_translation;
-	shake_speed = XMFloatCalclation::XMFloat3Lerp(shake_speed, { 0.0f,0.0f,0.0f }, 0.3f);
-	shake_position = XMFloatCalclation::XMFloat3Lerp(shake_position, { 0.0f,0.0f,0.0f }, 0.03f);
+	translation		= root_translation;
+	shake_speed		= XMFloatCalclation::XMFloat3Lerp(shake_speed, { 0.0f,0.0f,0.0f }, 0.3f);
+	shake_position	= XMFloatCalclation::XMFloat3Lerp(shake_position, { 0.0f,0.0f,0.0f }, 0.03f);
+
+	erase_block_particle->Update(elapsed_time, Graphics::GetInstance()->GetComputeShader(EnumComputeShader::BLOCK).Get());
 
 	// blockの更新処理
 	for (const auto& block : block_list)
@@ -711,34 +812,31 @@ void ObjectBoard::Update(float elapsed_time)
 		}
 	}
 
-	// パーティクルの更新処理
-	for (const auto& particle : block_particle)
-	{
-		particle->Update(elapsed_time);
-	}
-
-	next_block.Update(elapsed_time);
+	if(flag_system.GetFlag(EnumBoardFlags::PLAYING))
+		next_block.Update(elapsed_time);
 
 	// レベルアップ処理
-	if (deleted_block_count >= level_up_block)
+	if(game_mode != EnumGameMode::BONUS)
 	{
-		audio_manager->PlayVoice(EnumVoiceBank::LEVEL_UP);
-		audio_manager->PlaySE(EnumSEBank::LEVEL_UP);
-		if (speed_level == max_level)
-			board_state.TransitionGameOverState(true);
-		else
+		if (game_data.deleted_block_count >= game_data.level_up_block)
 		{
-			speed_level++;
-			value_ui.at(SCast(size_t, SPEED_LEVEL))->SetIntValue(0, speed_level);
-			level_up_block += LV_UP_BLOCK_COUNT;
-		}
-		if (speed_level % 10 == 1 && speed_level < 70)	// 11,21,31,41,51,61でBGM変化
-		{
-			audio_manager->StopBGM();
-			audio_manager->PlayBGM(SCast(EnumBGMBank, speed_level / 10));
-		}
+			audio_manager->PlaySE(EnumSEBank::LEVEL_UP);
+			if ((game_data.speed_level == game_data.max_level) && flag_system.GetFlag(EnumBoardFlags::PLAYING))
+				board_state.TransitionGameOverState(true);
+			else
+			{
+				game_data.speed_level++;
+				value_ui.at(SCast(size_t, SPEED_LEVEL))->SetIntValue(0, game_data.speed_level);
+				game_data.level_up_block += demo_mode ? DEMO_LV_UP_BLOCK_COUNT : LV_UP_BLOCK_COUNT;
+				if (game_data.speed_level % (demo_mode ? 3 : 10) == 1 && game_data.speed_level < 70)	// 11,21,31,41,51,61でBGM変化
+				{
+					audio_manager->StopBGM();
+					audio_manager->PlayBGM(SCast(EnumBGMBank, game_data.speed_level / (demo_mode ? 3 : 10)), true);
+				}
+			}
 
-		standing_time_limit -= stand_decrease_factor;
+			standing_time_limit -= stand_decrease_factor;
+		}
 	}
 
 	int game_second = SCast(int, object_time) % 60;
@@ -748,8 +846,6 @@ void ObjectBoard::Update(float elapsed_time)
 	UIUpdate(elapsed_time);
 
 	board_model->InstanceUpdate();
-
-	erase_block_particle->Update(elapsed_time, Graphics::GetInstance()->GetComputeShader(EnumComputeShader::BLOCK).Get());
 
 	if (gamesystem_input->GetGamePadButtonDown(player_id) & BTN_BACK)
 		board_state.TransitionGameOverState(false);
@@ -779,16 +875,33 @@ void ObjectBoard::DebugGUI()
 {
 	if (ImGui::CollapsingHeader("ObjectBoard"))
 	{
+		ImGui::InputFloat("Object Time", &object_time);
 		ImGui::InputFloat("Current Speed", &current_speed);
 		ImGui::InputFloat("Rigidity Time", &standing_time);
 		ImGui::InputFloat("Rigidity Time Limit", &standing_time_limit);
 
-		void* vp_level = &speed_level;
+		int		row_l		= next_block.moving_block.first ? next_block.moving_block.first->GetBlockCell().row : -1;
+		int		column_l	= next_block.moving_block.first ? next_block.moving_block.first->GetBlockCell().column : -1;
+		float	shift_l		= next_block.moving_block.first ? next_block.moving_block.first->GetBlockCell().shift_y : -1.0f;
+
+		int		row_r		= next_block.moving_block.first ? next_block.moving_block.second->GetBlockCell().row : -1;
+		int		column_r	= next_block.moving_block.first ? next_block.moving_block.second->GetBlockCell().column : -1;
+		float	shift_r		= next_block.moving_block.first ? next_block.moving_block.second->GetBlockCell().shift_y : -1.0f;
+
+		int cell_l[] = { row_l, column_l };
+		int cell_r[] = { row_r, column_r };
+
+		ImGui::InputInt2("Left Block Cell", cell_l);
+		ImGui::InputFloat("Left Block Shift", &shift_l);
+		ImGui::InputInt2("Right Block Cell", cell_r);
+		ImGui::InputFloat("Right Block Shift", &shift_r);
+
+		void* vp_level = &game_data.speed_level;
 		if (ImGui::InputScalar("Speed Level", ImGuiDataType_U16, vp_level))
 		{
-			if (speed_level < init_level)			speed_level = init_level;
-			else if (speed_level > max_level)		speed_level = max_level;
-			else									speed_level = speed_level;
+			if (game_data.speed_level < game_data.init_level)		game_data.speed_level = game_data.init_level;
+			else if (game_data.speed_level > game_data.max_level)	game_data.speed_level = game_data.max_level;
+			else													game_data.speed_level = game_data.speed_level;
 		}
 
 		int id = SCast(int, player_id);
@@ -796,12 +909,12 @@ void ObjectBoard::DebugGUI()
 
 		for (int i = 0; i < delete_block_sorter.color_block.size(); i++)
 		{
-			int size = delete_block_sorter.color_block[i].size();
-			std::string str_id = "Sorter" + std::to_string(i);
+			size_t		size	= delete_block_sorter.color_block[i].size();
+			std::string str_id	= "Sorter" + std::to_string(i);
 			ImGui::InputInt(str_id.c_str(), &id);
 		}
 
-		int erased = SCast(int, deleted_block_count);
+		int erased = SCast(int, game_data.deleted_block_count);
 		ImGui::InputInt("deleted_block_count", &erased);
 
 		char block_state_str[TEXT_SIZE] = "Board State : ";
@@ -820,7 +933,7 @@ void ObjectBoard::Render()
 	graphics->SetRasterizerState(EnumRasterizerState::SOLID);
 	graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
 
-	board_model->Render(false, transform);
+	board_model->Render(false, transform, board_color);
 
 	for (UPtrVector<ObjectBlock>::const_reference block : block_list)
 		block->Render();
@@ -843,7 +956,11 @@ void ObjectBoard::EmissiveRender()
 {
 	Graphics* graphics = Graphics::GetInstance();
 
-	board_model->Render(false, transform, graphics->GetPixelShader(EnumPixelShader::EXTRACT_EMISSIVE).Get());
+	graphics->SetDepthStencilState(EnumDepthState::ZT_ON_ZW_ON);
+	graphics->SetRasterizerState(EnumRasterizerState::SOLID);
+	graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
+
+	board_model->Render(false, transform, board_color, graphics->GetPixelShader(EnumPixelShader::EXTRACT_EMISSIVE).Get());
 
 	for (UPtrVector<ObjectBlock>::const_reference block : block_list)
 		block->EmissiveRender();
@@ -852,9 +969,11 @@ void ObjectBoard::EmissiveRender()
 	{
 		for (const auto& deleted_block : delete_block_list)
 		{
-			deleted_block->Render();
+			deleted_block->EmissiveRender();
 		}
 	}
+
+	erase_block_particle->Render();
 
 	next_block.EmissiveRender();
 }
@@ -871,10 +990,10 @@ void ObjectBoard::UIRender()
 	for (auto const& ui : sprite_ui)
 		ui->Render();
 
-	if (board_state.state == EnumBoardState::START)
+	if (game_mode != EnumGameMode::BONUS && board_state.state == EnumBoardState::START)
 	{
 		NumberRenderer* number_renderer = GamesystemDirector::GetInstance()->GetNumberRenderer();
-		number_renderer->RenderInt(SCast(int, count_down_time), { width,height }, { 0.5f,0.5f }, EnumNumberAlignment::CENTER_ALIGNMENT);
+		number_renderer->RenderInt(SCast(int, count_down_time) + 1, { width,height }, { 0.5f,0.5f }, EnumNumberAlignment::CENTER_ALIGNMENT);
 	}
 }
 
@@ -932,7 +1051,6 @@ bool ObjectBoard::MoveToDeletedBlockList()
 		if (block->GetBlockState().state == EnumBlockState::ERASE)
 		{
 			delete_block_sorter.color_block.at(color_num).push_back(std::move(block));
-			block.reset();
 			pop_count++;
 			if (!delete_block_sorter.erase_flag.at(color_num))
 				delete_block_sorter.erase_flag.at(color_num).flip();
@@ -981,7 +1099,7 @@ bool ObjectBoard::MoveToDeletedBlockList()
 
 		// 消去するブロックの個数とブロック消去
 		size_t	erase_count = list.size();
-		deleted_block_count += board_state.state != EnumBoardState::GAME_OVER ? SCast(UINT, erase_count) : 0;
+		game_data.deleted_block_count += board_state.state != EnumBoardState::GAME_OVER ? SCast(UINT, erase_count) : 0;
 		poped_block += SCast(UINT, erase_count);
 		num++;
 	}
@@ -991,80 +1109,93 @@ bool ObjectBoard::MoveToDeletedBlockList()
 	if (board_state.state != EnumBoardState::GAME_OVER)
 	{
 		chain++;
-		score += CalcScore(poped_block, chain);
-		value_ui.at(SCast(size_t, SCORE))->SetIntValue(0, score);
+		game_data.score += CalcScore(poped_block, chain);
+		value_ui.at(SCast(size_t, SCORE))->SetIntValue(0, game_data.score);
 		value_ui.at(SCast(size_t, CHAIN))->SetIntValue(0, chain);
-		value_ui.at(SCast(size_t, DELETED_BLOCKS))->SetIntValue(0, deleted_block_count);
+		value_ui.at(SCast(size_t, DELETED_BLOCKS))->SetIntValue(0, game_data.deleted_block_count);
+
+		if (chain >= 2)
+		{
+			GamesystemDirector::GetInstance()->GetAudioManager()->PlaySE(EnumSEBank::CHAIN);
+			if (chain >= 3)
+			{
+				Camera* camera = GamesystemDirector::GetInstance()->GetCamera();
+				auto& scene_constants = camera->GetSceneConstants();
+				scene_constants.post_effect_blend = 2.0f;
+			}
+		}
 	}
 
 	return true;
 }
 
+// カメラを盤面に近づけたり遠ざけたりする処理
 void ObjectBoard::CameraZoom(float elapsed_time)
 {
-	GamePad* game_pad = GamesystemInput::GetInstance()->GetGamePad();
-	Camera* camera = GamesystemDirector::GetInstance()->GetCamera();
-	Camera::TPVData* tpv = camera->GetTPVCamera(1);
-
-	if (!tpv)	return;
-
-	tpv->tpv_distance -= game_pad->GetAxisLY();
-
-	if (tpv->tpv_distance < ZOOM_MIN)
-		tpv->tpv_distance = ZOOM_MIN;
-	else if (tpv->tpv_distance > ZOOM_MAX)
-		tpv->tpv_distance = ZOOM_MAX;
-}
-
-void ObjectBoard::CameraMove(float elapsed_time)
-{
 	Camera*				camera		= GamesystemDirector::GetInstance()->GetCamera();
-	Camera::TPVData*	tpv			= camera->GetTPVCamera(1);
+	Camera::TPVData*	tpv			= camera->GetTPVCamera(SCast(size_t, EnumCameraChannel::GAME));
 	GamePad*			game_pad	= GamesystemInput::GetInstance()->GetGamePad();
 
 	if (!tpv)	return;
 
-	if (game_pad->GetButton() & BTN_RIGHT_SHOULDER)
+	if(fabsf(game_pad->GetAxisLY()) > FLT_EPSILON)
 	{
-		tpv->tpv_target.x += game_pad->GetAxisRX() * 0.5f;
-		tpv->tpv_target.y += game_pad->GetAxisRY() * 0.5f;
-		return;
+		tpv->tpv_distance -= game_pad->GetAxisLY();
+
+		if (tpv->tpv_distance < ZOOM_MIN)
+			tpv->tpv_distance = ZOOM_MIN;
+		else if (tpv->tpv_distance > ZOOM_MAX)
+			tpv->tpv_distance = ZOOM_MAX;
 	}
-
-	camera_rot = {
-		game_pad->GetAxisRY(),
-		-game_pad->GetAxisRX(),
-		0.0f
-	};
-
-	DirectX::XMVECTOR	v_camera_rot	= DirectX::XMVectorScale(DirectX::XMLoadFloat3(&camera_rot), elapsed_time);
-	float				angle			= DirectX::XMVectorGetX(DirectX::XMVector3Length(v_camera_rot));
-	DirectX::XMVECTOR	nv_camera_rot	= DirectX::XMVector3Normalize(v_camera_rot);
-
-	DirectX::XMFLOAT3 n_camera_rot;
-	DirectX::XMStoreFloat3(&n_camera_rot, nv_camera_rot);
-
-	DirectX::XMVECTOR q_rotation = DirectX::XMVectorSet(
-		n_camera_rot.x * sin(angle * 0.5f),
-		n_camera_rot.y * sin(angle * 0.5f),
-		n_camera_rot.z * sin(angle * 0.5f),
-		cos(angle * 0.5f)
-	);
-
-	q_rotation = DirectX::XMQuaternionNormalize(q_rotation);
-	DirectX::XMVECTOR v_direction = DirectX::XMLoadFloat4(&tpv->tpv_direction);
-	v_direction = DirectX::XMVector3Rotate(v_direction, q_rotation);
-	DirectX::XMStoreFloat4(&tpv->tpv_direction, v_direction);
+	
+	if (game_pad->GetButtonDown() & BTN_LEFT_THUMB)
+		tpv->tpv_distance = DEFAULT_ZOOM;
 }
 
-// 落下速度を計算
-void ObjectBoard::CalcBlockSpeed(float elapsed_time)
+// カメラの位置を動かす処理
+void ObjectBoard::CameraMove(float elapsed_time)
 {
-	UINT modify_level	= speed_level - init_level;
-	float speed_base	= (SPEED_FACTOR * elapsed_time) + (SCast(float, init_level) - 1) * 0.05f;
-	float add_speed		= (SPEED_FACTOR * elapsed_time) * (SCast(float, modify_level) * speed_increase_factor);
+	Camera*				camera		= GamesystemDirector::GetInstance()->GetCamera();
+	Camera::TPVData*	tpv			= camera->GetTPVCamera(SCast(size_t, EnumCameraChannel::GAME));
+	GamePad*			game_pad	= GamesystemInput::GetInstance()->GetGamePad();
 
-	current_speed = speed_base + add_speed;
+	if (!tpv)	return;
+
+	if(fabsf(game_pad->GetAxisRX()) > FLT_EPSILON || fabsf(game_pad->GetAxisRY()) > FLT_EPSILON)
+	{
+		camera_rot = {
+			-game_pad->GetAxisRY(),
+			game_pad->GetAxisRX(),
+			0.0f
+		};
+
+		DirectX::XMVECTOR	v_camera_rot = DirectX::XMVectorScale(DirectX::XMLoadFloat3(&camera_rot), elapsed_time);
+		float				angle = DirectX::XMVectorGetX(DirectX::XMVector3Length(v_camera_rot));
+		DirectX::XMVECTOR	nv_camera_rot = DirectX::XMVector3Normalize(v_camera_rot);
+
+		DirectX::XMFLOAT3 n_camera_rot;
+		DirectX::XMStoreFloat3(&n_camera_rot, nv_camera_rot);
+
+		DirectX::XMVECTOR q_rotation = DirectX::XMVectorSet(
+			n_camera_rot.x * sin(angle * 0.5f),
+			n_camera_rot.y * sin(angle * 0.5f),
+			n_camera_rot.z * sin(angle * 0.5f),
+			cos(angle * 0.5f)
+		);
+
+		q_rotation = DirectX::XMQuaternionNormalize(q_rotation);
+		DirectX::XMVECTOR v_direction = DirectX::XMLoadFloat4(&tpv->tpv_direction);
+		DirectX::XMVECTOR v_base_direction = DirectX::XMLoadFloat4(&DEFAULT_DIRECTION);
+		v_base_direction = DirectX::XMVectorScale(v_base_direction, -1);
+
+		v_direction = DirectX::XMVector3Rotate(v_direction, q_rotation);
+		DirectX::XMStoreFloat4(&tpv->tpv_direction, v_direction);
+	}
+
+	if (game_pad->GetButtonDown() & BTN_RIGHT_THUMB)
+	{
+		tpv->tpv_direction = DEFAULT_DIRECTION;
+	}
 }
 
 // 盤面を揺らす処理
@@ -1146,7 +1277,9 @@ void ObjectBoard::VerticalLineCheck(const UINT row_line)
 	// 色が揃っていたブロックを消去状態にしておく
 	for (const auto& block_itr : itr_array)
 	{
-		(*block_itr)->GetBlockState().TransitionEraseState();
+		EnumBlockState b_state = (*block_itr)->GetBlockState().state;
+		if (!(b_state == EnumBlockState::ERASE || b_state == EnumBlockState::DISAPPEARED))
+			(*block_itr)->GetBlockState().TransitionEraseState();
 	}
 }
 
@@ -1214,7 +1347,9 @@ void ObjectBoard::HorizontalLineCheck(const UINT column_line)
 	// 色が揃っていたブロックを消去状態にしておく
 	for (const auto& block_itr : itr_array)
 	{
-		(*block_itr)->GetBlockState().TransitionEraseState();
+		EnumBlockState b_state = (*block_itr)->GetBlockState().state;
+		if (!(b_state == EnumBlockState::ERASE || b_state == EnumBlockState::DISAPPEARED))
+			(*block_itr)->GetBlockState().TransitionEraseState();
 	}
 }
 
@@ -1243,16 +1378,23 @@ void ObjectBoard::SortInList(UPtrVector<ObjectBlock>& list)
 void ObjectBoard::GameStart(int game_mode_id)
 {
 	GamesystemDirector::GetInstance()->GetAudioManager()->StopBGM();
-	deleted_block_count = 0;
-	level_up_block = LV_UP_BLOCK_COUNT;
-	speed_level = init_level;
-	deleted_block_count = 0;
-	score = 0;
+	game_data.deleted_block_count	= 0;
+	game_data.level_up_block		= demo_mode ? DEMO_LV_UP_BLOCK_COUNT : LV_UP_BLOCK_COUNT;
+	game_data.speed_level			= game_data.init_level;
+	game_data.score					= 0;
+
 	value_ui.at(SCast(size_t, EnumValueUIIndex::SPEED_LEVEL))->SetIntValue(0, 1, 0.0f);
 	value_ui.at(SCast(size_t, EnumValueUIIndex::DELETED_BLOCKS))->SetIntValue(0, 0, 0.0f);
 	value_ui.at(SCast(size_t, EnumValueUIIndex::SCORE))->SetIntValue(0, 0, 0.0f);
-	count_down_time = 4.0f;
 	board_state.TransitionStartState(game_mode_id);
+}
+
+void ObjectBoard::BonusStart()
+{
+	GamesystemDirector::GetInstance()->GetAudioManager()->StopBGM();
+	game_data.level_up_block		= INT_MAX;
+
+	board_state.TransitionStartState(SCast(int, EnumGameMode::BONUS));
 }
 
 void ObjectBoard::AccumulateBoardParticle()
@@ -1267,12 +1409,6 @@ void ObjectBoard::AccumulateBoardParticle()
 	DirectX::XMFLOAT4X4 particle_transform;
 	DirectX::XMStoreFloat4x4(&particle_transform,
 		DirectX::XMLoadFloat4x4(&transform) * DirectX::XMMatrixTranslation(+1, 0, 0));
-
-	auto call_back = [&](ID3D11PixelShader* accumulate_ps)
-		{
-			board_model->Render(false, particle_transform, accumulate_ps);
-		};
-	board_particle->AccumulateParticles(call_back);
 }
 
 // 天井に到達したかをチェックする関数
@@ -1293,11 +1429,11 @@ bool ObjectBoard::CheckGameOver()
 // スコアを計算
 UINT ObjectBoard::CalcScore(UINT block_count, UINT chain)
 {
-	return (SCORE_BASE + (speed_level - 1)) * block_count * (chain * chain);
+	return (SCORE_BASE + (game_data.speed_level - 1)) * block_count * (chain * chain);
 }
 
 // 指定したセルにブロックが存在するかを取得(主に着地判定)
-bool ObjectBoard::IsExistingBlockFromCell(BlockCell cell)
+const bool ObjectBoard::IsExistingBlockFromCell(BlockCell cell)
 {
 	if (cell.row < 1 || cell.row > MAX_ROW)			return true;
 	if (cell.column < 1 || cell.column > MAX_COLUMN)		return true;
@@ -1305,7 +1441,7 @@ bool ObjectBoard::IsExistingBlockFromCell(BlockCell cell)
 }
 
 // 指定したセルのイテレータが無効でないかの判定
-bool ObjectBoard::IsInvalidBlockFromCell(BlockCell cell)
+const bool ObjectBoard::IsInvalidBlockFromCell(BlockCell cell)
 {
 	auto itr = GetBlockFromCell(cell);
 	bool invalid = (itr == block_list.end());
@@ -1313,7 +1449,7 @@ bool ObjectBoard::IsInvalidBlockFromCell(BlockCell cell)
 }
 
 // イテレータが無効でないかの判定
-bool ObjectBoard::IsInvalidBlockFromIterator(UPtrVector<ObjectBlock>::iterator itr)
+const bool ObjectBoard::IsInvalidBlockFromIterator(UPtrVector<ObjectBlock>::iterator itr)
 {
 	bool invalid = itr == block_list.end();
 	return invalid;

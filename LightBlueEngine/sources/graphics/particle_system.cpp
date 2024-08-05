@@ -1,3 +1,4 @@
+#include "particle_system.h"
 // <>インクルード
 #include <crtdbg.h>
 #include <imgui.h>
@@ -7,7 +8,7 @@
 #include "graphics.h"
 #include "engine_utility.h"
 #include "shader.h"
-#include "particle_system.h"
+#include "json_editor.h"
 
 // ゲームソースファイル
 #include "misc.h"
@@ -152,6 +153,163 @@ ParticleSystem::ParticleSystem(const CbParticleEmitter emitter_setting, bool use
 	}
 
 	// パーティクルの初期設定をCSが行う
+
+	// コンスタントバッファ
+	device_context->UpdateSubresource(particle_emitter_cbuffer.Get(), 0, nullptr, &emitter_setting, 0, 0);
+	device_context->CSSetConstantBuffers(SCast(UINT, EnumBufferGPUParticle::PARTICLE_EMITTER), 1, particle_emitter_cbuffer.GetAddressOf());
+
+	// UAVをセット
+	device_context->CSSetUnorderedAccessViews(0, 1, unordered_access_view.GetAddressOf(), nullptr);
+
+	device_context->CSSetShader(initializer_compute_shader.Get(), nullptr, 0);
+
+	UINT num_threads = Align(particle_emitter_constants.emit_amounts, 512);
+	// 計算シェーダー実行
+	device_context->Dispatch(num_threads / 512, 1, 1);
+
+	// 空のUAVをセット
+	ID3D11UnorderedAccessView* null_uav = nullptr;
+	device_context->CSSetUnorderedAccessViews(0, 1, &null_uav, NULL);
+}
+
+ParticleSystem::ParticleSystem(std::string json_key)
+{
+	Graphics* graphics = Graphics::GetInstance();
+	std::lock_guard<std::mutex> lock(graphics->GetMutex());
+	ID3D11Device* device = graphics->GetDevice().Get();
+	ID3D11DeviceContext* device_context = graphics->GetDeviceContext().Get();
+
+	HRESULT	hr = S_OK;
+
+	JSONEditor* json_editor = JSONEditor::GetInstance();
+	Parameters json_params;
+	ParamPtr particle_params;
+
+	json_editor->ImportJSON(std::filesystem::path("./resources/json_data/particle_data.json"), &json_params);
+	particle_params = GET_PARAMETER_IN_PARAMPTR(json_key, Parameters, &json_params);
+	CbParticleEmitter emitter_setting;
+	emitter_setting.emit_amounts	= *(GET_PARAMETER_IN_PARAMPTR("EmitAmounts", int, particle_params));
+	emitter_setting.random_color	= *(GET_PARAMETER_IN_PARAMPTR("RandomColor", bool, particle_params));
+	emitter_setting.disable			= *(GET_PARAMETER_IN_PARAMPTR("Disable", bool, particle_params));
+
+	ParamPtr emit_position_param	= GET_PARAMETER_IN_PARAMPTR("EmitPosition", Parameters, particle_params);
+	emitter_setting.emit_position.x	= *(GET_PARAMETER_IN_PARAMPTR("0", float, emit_position_param));
+	emitter_setting.emit_position.y	= *(GET_PARAMETER_IN_PARAMPTR("1", float, emit_position_param));
+	emitter_setting.emit_position.z	= *(GET_PARAMETER_IN_PARAMPTR("2", float, emit_position_param));
+
+	emitter_setting.emit_speed = *(GET_PARAMETER_IN_PARAMPTR("EmitSpeed", float, particle_params));
+
+	ParamPtr emit_force_param		= GET_PARAMETER_IN_PARAMPTR("EmitForce", Parameters, particle_params);
+	emitter_setting.emit_force.x	= *(GET_PARAMETER_IN_PARAMPTR("0", float, emit_force_param));
+	emitter_setting.emit_force.y	= *(GET_PARAMETER_IN_PARAMPTR("1", float, emit_force_param));
+	emitter_setting.emit_force.z	= *(GET_PARAMETER_IN_PARAMPTR("2", float, emit_force_param));
+
+	emitter_setting.emit_accel		= *(GET_PARAMETER_IN_PARAMPTR("EmitAccel", float, particle_params));
+
+	ParamPtr emit_direction_param	= GET_PARAMETER_IN_PARAMPTR("EmitDirection", Parameters, particle_params);
+	emitter_setting.emit_direction.x	= *(GET_PARAMETER_IN_PARAMPTR("0", float, emit_direction_param));
+	emitter_setting.emit_direction.y	= *(GET_PARAMETER_IN_PARAMPTR("1", float, emit_direction_param));
+	emitter_setting.emit_direction.z	= *(GET_PARAMETER_IN_PARAMPTR("2", float, emit_direction_param));
+
+	emitter_setting.spread_rate		= *(GET_PARAMETER_IN_PARAMPTR("SpreadRate", float, particle_params));
+
+	ParamPtr emit_color_param	= GET_PARAMETER_IN_PARAMPTR("EmitColor", Parameters, particle_params);
+	emitter_setting.emit_color.x	= *(GET_PARAMETER_IN_PARAMPTR("0", float, emit_color_param));
+	emitter_setting.emit_color.y	= *(GET_PARAMETER_IN_PARAMPTR("1", float, emit_color_param));
+	emitter_setting.emit_color.z	= *(GET_PARAMETER_IN_PARAMPTR("2", float, emit_color_param));
+	emitter_setting.emit_color.w	= *(GET_PARAMETER_IN_PARAMPTR("3", float, emit_color_param));
+
+	emitter_setting.emit_size		= *(GET_PARAMETER_IN_PARAMPTR("EmitSize", float, particle_params));
+	emitter_setting.life_time		= *(GET_PARAMETER_IN_PARAMPTR("LifeTime", float, particle_params));
+	emitter_setting.start_diff		= *(GET_PARAMETER_IN_PARAMPTR("StartDiff", float, particle_params));
+	emitter_setting.emit_radius		= *(GET_PARAMETER_IN_PARAMPTR("EmitRadius", float, particle_params));
+
+	particle_emitter_constants = emitter_setting;
+
+	D3D11_BUFFER_DESC buffer_desc = {};
+
+	// バッファ生成
+	// バッファ作成のための設定オプション
+	buffer_desc.ByteWidth
+		= SCast(UINT, sizeof(SbParticle) * particle_emitter_constants.emit_amounts);
+	buffer_desc.Usage = D3D11_USAGE_DEFAULT;
+	buffer_desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
+	buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+	buffer_desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	buffer_desc.StructureByteStride = sizeof(SbParticle);
+
+	hr = device->CreateBuffer(&buffer_desc, nullptr, particle_sbuffer.GetAddressOf());
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	// 定数バッファ設定
+	buffer_desc.ByteWidth = SCast(UINT, sizeof(CbParticle));
+	buffer_desc.Usage = D3D11_USAGE_DEFAULT;
+	buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	buffer_desc.CPUAccessFlags = 0;
+	buffer_desc.MiscFlags = 0;
+	buffer_desc.StructureByteStride = 0;
+
+	hr = device->CreateBuffer(&buffer_desc, nullptr, particle_cbuffer.GetAddressOf());
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	D3D11_SUBRESOURCE_DATA subresource_data = {};
+	subresource_data.pSysMem = &particle_emitter_constants;
+	subresource_data.SysMemPitch = 0;
+	subresource_data.SysMemSlicePitch = 0;
+
+	buffer_desc.ByteWidth = SCast(UINT, sizeof(CbParticleEmitter));
+	hr = device->CreateBuffer(&buffer_desc, &subresource_data, particle_emitter_cbuffer.GetAddressOf());
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	buffer_desc.ByteWidth = SCast(UINT, sizeof(CbParticleFlock));
+	hr = device->CreateBuffer(&buffer_desc, nullptr, particle_flock_cbuffer.GetAddressOf());
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	// シェーダーリソースビュー作成
+	D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+	srv_desc.Format = DXGI_FORMAT_UNKNOWN;
+	srv_desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+	srv_desc.Buffer.ElementOffset = 0;
+	srv_desc.Buffer.NumElements = SCast(UINT, particle_emitter_constants.emit_amounts);
+
+	hr = device->CreateShaderResourceView(
+		particle_sbuffer.Get(),
+		&srv_desc,
+		shader_resource_view.GetAddressOf()
+	);
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	// UAV生成
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc;
+	uav_desc.Format = DXGI_FORMAT_UNKNOWN;
+	uav_desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+	uav_desc.Buffer.FirstElement = 0;
+	uav_desc.Buffer.Flags = 0;
+	uav_desc.Buffer.NumElements
+		= SCast(UINT, particle_emitter_constants.emit_amounts);
+
+	hr = device->CreateUnorderedAccessView(
+		particle_sbuffer.Get(),
+		&uav_desc,
+		unordered_access_view.GetAddressOf()
+	);
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	// シェーダー
+	hr = Shader::CreateVSFromCso("shader/particle_vs.cso", vertex_shader.ReleaseAndGetAddressOf());
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	hr = Shader::CreatePSFromCso("shader/particle_ps.cso", pixel_shader.ReleaseAndGetAddressOf());
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	hr = Shader::CreateGSFromCso("shader/particle_gs.cso", geometry_shader.ReleaseAndGetAddressOf());
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	hr = Shader::CreateCSFromCso("shader/particle_cs.cso", compute_shader.ReleaseAndGetAddressOf());
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	hr = Shader::CreateCSFromCso("shader/particle_initializer_cs.cso", initializer_compute_shader.ReleaseAndGetAddressOf());
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	// コンスタントバッファ
 	device_context->UpdateSubresource(particle_emitter_cbuffer.Get(), 0, nullptr, &emitter_setting, 0, 0);
@@ -412,4 +570,50 @@ void ParticleSystem::Uninitialize()
 	compute_shader.Reset();
 
 	accumulate_pixel_shader.Reset();
+}
+
+void ParticleSystem::SetEmitterConstantsFromJSON(std::string json_key)
+{
+	JSONEditor* json_editor = JSONEditor::GetInstance();
+	Parameters json_params;
+	ParamPtr particle_params;
+
+	json_editor->ImportJSON(std::filesystem::path("./resources/json_data/particle_data.json"), &json_params);
+	particle_params = GET_PARAMETER_IN_PARAMPTR(json_key, Parameters, &json_params);
+	CbParticleEmitter emitter_setting;
+	emitter_setting.emit_amounts = *(GET_PARAMETER_IN_PARAMPTR("EmitAmounts", int, particle_params));
+	emitter_setting.random_color = *(GET_PARAMETER_IN_PARAMPTR("RandomColor", bool, particle_params));
+	emitter_setting.disable = *(GET_PARAMETER_IN_PARAMPTR("Disable", bool, particle_params));
+
+	ParamPtr emit_position_param = GET_PARAMETER_IN_PARAMPTR("EmitPosition", Parameters, particle_params);
+	emitter_setting.emit_position.x = *(GET_PARAMETER_IN_PARAMPTR("0", float, emit_position_param));
+	emitter_setting.emit_position.y = *(GET_PARAMETER_IN_PARAMPTR("1", float, emit_position_param));
+	emitter_setting.emit_position.z = *(GET_PARAMETER_IN_PARAMPTR("2", float, emit_position_param));
+
+	emitter_setting.emit_speed = *(GET_PARAMETER_IN_PARAMPTR("EmitSpeed", float, particle_params));
+
+	ParamPtr emit_force_param = GET_PARAMETER_IN_PARAMPTR("EmitForce", Parameters, particle_params);
+	emitter_setting.emit_force.x = *(GET_PARAMETER_IN_PARAMPTR("0", float, emit_force_param));
+	emitter_setting.emit_force.y = *(GET_PARAMETER_IN_PARAMPTR("1", float, emit_force_param));
+	emitter_setting.emit_force.z = *(GET_PARAMETER_IN_PARAMPTR("2", float, emit_force_param));
+
+	emitter_setting.emit_accel = *(GET_PARAMETER_IN_PARAMPTR("EmitAccel", float, particle_params));
+
+	ParamPtr emit_direction_param = GET_PARAMETER_IN_PARAMPTR("EmitDirection", Parameters, particle_params);
+	emitter_setting.emit_direction.x = *(GET_PARAMETER_IN_PARAMPTR("0", float, emit_direction_param));
+	emitter_setting.emit_direction.y = *(GET_PARAMETER_IN_PARAMPTR("1", float, emit_direction_param));
+	emitter_setting.emit_direction.z = *(GET_PARAMETER_IN_PARAMPTR("2", float, emit_direction_param));
+
+	emitter_setting.spread_rate = *(GET_PARAMETER_IN_PARAMPTR("SpreadRate", float, particle_params));
+
+	ParamPtr emit_color_param = GET_PARAMETER_IN_PARAMPTR("EmitColor", Parameters, particle_params);
+	emitter_setting.emit_color.x = *(GET_PARAMETER_IN_PARAMPTR("0", float, emit_color_param));
+	emitter_setting.emit_color.y = *(GET_PARAMETER_IN_PARAMPTR("1", float, emit_color_param));
+	emitter_setting.emit_color.z = *(GET_PARAMETER_IN_PARAMPTR("2", float, emit_color_param));
+	emitter_setting.emit_color.w = *(GET_PARAMETER_IN_PARAMPTR("3", float, emit_color_param));
+
+	emitter_setting.emit_size = *(GET_PARAMETER_IN_PARAMPTR("EmitSize", float, particle_params));
+	emitter_setting.life_time = *(GET_PARAMETER_IN_PARAMPTR("LifeTime", float, particle_params));
+	emitter_setting.start_diff = *(GET_PARAMETER_IN_PARAMPTR("StartDiff", float, particle_params));
+	emitter_setting.emit_radius = *(GET_PARAMETER_IN_PARAMPTR("EmitRadius", float, particle_params));
 }

@@ -8,6 +8,8 @@
 #include "scene/scene_loading.h"
 #include "gamesystem_director.h"
 #include "game_system/gamesystem_input.h"
+
+#include "easing.h"
 #include "json_editor.h"
 
 // ゲームソースファイル
@@ -24,6 +26,8 @@ void GamesystemDirector::Initialize(HWND hwnd, EnumCameraMode& start_mode)
 	// 各必須クラスオブジェクトの初期化
 	Graphics* graphics = Graphics::GetInstance();
 	graphics->Initialize(hwnd, windowed);
+	graphics->LoadTransitionTexture(L"resources/sprite/screen_disolve.png");
+	graphics->LoadTransitionBackTexture(L"resources/sprite/loading_screen.png");
 
 	GamesystemInput::GetInstance()->Initialize(graphics->GetHWND());
 
@@ -58,12 +62,19 @@ void GamesystemDirector::Initialize(HWND hwnd, EnumCameraMode& start_mode)
 // クラスオブジェクトの更新処理
 void GamesystemDirector::Update(float elapsed_time)
 {
-	Graphics* graphics = Graphics::GetInstance();
+	Graphics*			graphics	= Graphics::GetInstance();
+	GamesystemInput*	input		= GamesystemInput::GetInstance();
 	graphics->Update();
-	GamesystemInput::GetInstance()->Update(elapsed_time);
+	input->Update(elapsed_time);
 	light->Update();
 	camera->Update();
 	scene_manager->Update(elapsed_time);
+
+#ifdef USE_IMGUI
+	if ((input->GetGamePad(0)->GetButton() & BTN_UP) && (input->GetGamePad(0)->GetButtonDown() & BTN_DOWN))
+		show_imgui = !show_imgui;
+#endif // USE_IMGUI
+
 }
 
 // ImGui表示
@@ -75,57 +86,40 @@ void GamesystemDirector::DebugGUI()
 	wcstombs_s(&len, apprication_name, sizeof(apprication_name), Graphics::W_APPLICATION_NAME, _TRUNCATE);
 
 	// DebugGUI関数を持つクラスを一挙表示
-	if (ImGui::Begin(apprication_name))
+	if(show_imgui)
 	{
-		framebuffer_manager->DebugGUI();
-		if (using_class_flag.GetFlag(EnumUsingClass::SHADOW_MAP))
-			shadow_map->DebugGUI();
-		Graphics::GetInstance()->DebugGUI();
-		camera->DebugGUI();
-		light->DebugGUI();
-		scene_manager->DebugGUI();
-		if (using_class_flag.GetFlag(EnumUsingClass::RANDOM_NOISE))
-			random_noise->DebugGUI();
-		GamesystemInput::GetInstance()->DebugGUI();
+		if (ImGui::Begin(apprication_name))
+		{
+			framebuffer_manager->DebugGUI();
+			if (using_class_flag.GetFlag(EnumUsingClass::SHADOW_MAP))
+				shadow_map->DebugGUI();
+			Graphics::GetInstance()->DebugGUI();
+			camera->DebugGUI();
+			light->DebugGUI();
+			scene_manager->DebugGUI();
+			if (using_class_flag.GetFlag(EnumUsingClass::RANDOM_NOISE))
+				random_noise->DebugGUI();
+			GamesystemInput::GetInstance()->DebugGUI();
 
 #if 1
-		if (ImPlot::BeginPlot("step_graph"))
-		{
-			float x_data[1000];
-			float step_y_data[1000];
-			float smoothstep_y_data[1000];
-
-			auto smooth_step = [](float a, float b, float x) {
-				if (x < a)	return 0.0f;
-				else if (x > b)	return 1.0f;
-
-				float t = (std::clamp)((x - a) / (b - a), 0.0f, 1.0f);
-				return t * t * (3 - 2 * t);
-				};
-
-			auto step = [](float a, float x)
-				{
-					if (a < x) return 1.0f;
-					else return 0.0f;
-				};
-
-			for (int i = 0; i < 1000; i++)
+			if (ImPlot::BeginPlot("easing_graph"))
 			{
-				x_data[i] = (float)i * 0.01f;
-				step_y_data[i] = step(step_a, x_data[i]);
-				smoothstep_y_data[i] = smooth_step(step_a, step_b, x_data[i]);
+				float x_data[1001];
+				float y_data[1001];
+
+				for (int i = 0.; i <= 1000; i++)
+				{
+					x_data[i] = (float)i * 0.001f;
+					y_data[i] = Easing::In(EnumEasingType::BOUNCE, x_data[i]);
+				}
+
+				ImPlot::PlotLine("Ease Line", x_data, y_data, 1001);
+				ImPlot::EndPlot();
 			}
-
-			ImPlot::PlotLine("step", x_data, step_y_data, 1000);
-			ImPlot::PlotLine("smoothstep", x_data, smoothstep_y_data, 1000);
-			ImPlot::EndPlot();
-		}
-
-		ImGui::DragFloat("Step A", &step_a, 0.01f, 0.1f);
-		ImGui::DragFloat("Step B", &step_b, 0.01f, 0.1f);
 #endif
+		}
+		ImGui::End();
 	}
-	ImGui::End();
 }
 
 // 描画処理

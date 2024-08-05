@@ -7,6 +7,8 @@
 #include <DirectXMath.h>
 #include <vector>
 #include <functional>
+#include <string>
+#include <memory>
 
 // 前方宣言
 class Graphics;
@@ -108,6 +110,7 @@ public:
 
 	// public:コンストラクタ・デストラクタ
 	ParticleSystem(const CbParticleEmitter = {}, bool = false, const char* = nullptr);
+	ParticleSystem(std::string = "");
 	~ParticleSystem() {};
 
 	// public:通常関数
@@ -121,6 +124,9 @@ public:
 	// public:ゲッター関数
 	CbParticle&			GetCbParticle()			{ return particle_constants; }
 	CbParticleEmitter&	GetCbParticleEmitter()	{ return particle_emitter_constants; }
+
+	// public:セッター関数
+	void SetEmitterConstantsFromJSON(std::string = "");
 
 private:
 	// private:変数

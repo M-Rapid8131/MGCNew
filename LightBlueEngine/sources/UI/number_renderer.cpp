@@ -59,9 +59,9 @@ void NumberRenderer::RenderInt(int number, DirectX::XMFLOAT2 pos, DirectX::XMFLO
 	{
 		num = number / PowInt(10, digits - 1);
 		number_sprite->Render(
-			{ modified_pos.x + (TEXT_SPR_WIDTH * scale.x) * SCast(float,count),modified_pos.y },
-			{ SCast(float, TEXT_SPR_WIDTH) * scale.x,SCast(float, TEXT_SPR_HEIGHT) * scale.y },
-			{ 1.0f,1.0f,1.0f,1.0f },
+			{ modified_pos.x + (TEXT_SPR_WIDTH * scale.x) * SCast(float,count), modified_pos.y },
+			{ SCast(float, TEXT_SPR_WIDTH) * scale.x, SCast(float, TEXT_SPR_HEIGHT) * scale.y },
+			number_color,
 			{ 0.0f,0.0f,0.0f },
 			{ TEXT_SPR_WIDTH * SCast(float, num),0.0f },
 			{ TEXT_SPR_WIDTH,TEXT_SPR_HEIGHT }

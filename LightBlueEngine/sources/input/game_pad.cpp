@@ -23,11 +23,14 @@ void GamePad::Update()
 	trigger_l	= trigger_r = 0.0f;
 
 	GamePadButton new_button_state = 0;
+	EnumInputDevice tentative_device = EnumInputDevice::UNDEFINE;
 
 	XINPUT_STATE xinput_state;
 	// XBOXコントローラー設定
 	if (XInputGetState(slot, &xinput_state) == ERROR_SUCCESS)
 	{
+		tentative_device = EnumInputDevice::XBOX;
+
 		XINPUT_GAMEPAD& pad = xinput_state.Gamepad;
 
 		// 入力判定
@@ -81,6 +84,8 @@ void GamePad::Update()
 
 		if (joyGetPosEx(slot, &joy_info) == JOYERR_NOERROR)
 		{
+			tentative_device = EnumInputDevice::PS;
+
 			static const WORD PS4_PID = 1476;
 
 			JOYCAPS joy_caps;
@@ -116,8 +121,6 @@ void GamePad::Update()
 					if (joy_info.dwButtons & JOY_BUTTON10)		new_button_state |= BTN_START;
 					if (joy_info.dwButtons & JOY_BUTTON11)		new_button_state |= BTN_LEFT_THUMB;
 					if (joy_info.dwButtons & JOY_BUTTON12)		new_button_state |= BTN_RIGHT_THUMB;
-					//if (joy_info.dwButtons & JOY_BUTTON13)		new_button_state |= BTN_?; //PS
-					//if (joy_info.dwButtons & JOY_BUTTON14)		new_button_state |= BTN_?; //Touch
 
 					// トリガー・スティック入力
 					axis_lx		= SCast(int, joy_info.dwXpos - 0x7FFF) / SCast(float, 0x8000);
@@ -161,19 +164,14 @@ void GamePad::Update()
 	if (GetAsyncKeyState(VK_DOWN) & 0x8000)		new_button_state |= BTN_DOWN;
 	if (GetAsyncKeyState(VK_LEFT) & 0x8000)		new_button_state |= BTN_LEFT;
 
-	if (GetAsyncKeyState('W') & 0x8000)			new_button_state |= BTN_UP;
-	if (GetAsyncKeyState('D') & 0x8000)			new_button_state |= BTN_RIGHT;
-	if (GetAsyncKeyState('S') & 0x8000)			new_button_state |= BTN_DOWN;
-	if (GetAsyncKeyState('A') & 0x8000)			new_button_state |= BTN_LEFT;
     if (GetAsyncKeyState(VK_RETURN) & 0x8000)	new_button_state |= BTN_START;
 	if (GetAsyncKeyState(VK_BACK) & 0x8000)		new_button_state |= BTN_BACK;
 
-#if 0
-	if (new_button_state & BTN_UP)		ly = 1.0f;
-	if (new_button_state & BTN_RIGHT)	lx = 1.0f;
-	if (new_button_state & BTN_DOWN)		ly = -1.0f;
-	if (new_button_state & BTN_LEFT)		lx = -1.0f;
-#endif
+	if (tentative_device == EnumInputDevice::UNDEFINE)
+		tentative_device = EnumInputDevice::KEYBOARD;
+
+	// 入力デバイスの確定
+	input_device = tentative_device;
 
 	// スティック入力値のノーマライズ
 	if (lx >= 1.0f || lx <= -1.0f || ly >= 1.0f || ly <= -1.0f)

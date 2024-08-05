@@ -49,7 +49,7 @@ float4 ShaderMain(VS_OUT_2D pin) : SV_TARGET
 	// ¬‚º‡‚í‚¹‚½’l‚ğƒJƒ‰[‚Æ‚·‚é
 	float4 color = float4(lerp(bleach_bypass_color, chromatic_color, 0.75f), base_color.a);
 	
-	color = lerp(blur_color, color, 0.5f);
+	color = lerp(blur_color, color * post_effect_blend, 0.5f);
 	
-	return color;
+	return ApplyTransition(color, pin.texcoord);
 }

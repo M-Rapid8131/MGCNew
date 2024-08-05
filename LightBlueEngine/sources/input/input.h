@@ -24,13 +24,14 @@ public:
 	~Input() {}
 
 	// public:’ÊíŠÖ”
-	virtual void	Initialize(HWND, UINT);
-	virtual void	Update(float);
-	virtual void	DebugGUI();
-	void			AddGamePad(UINT);
-	void			DeleteGamePad(UINT);
-	Mouse&			GetMouse()			{ return mouse; }
-	GamePad*		GetGamePad(UINT id = 0)	{ return game_pad[id].get(); }
+	virtual void		Initialize(HWND, UINT);
+	virtual void		Update(float);
+	virtual void		DebugGUI();
+	void				AddGamePad(UINT);
+	void				DeleteGamePad(UINT);
+	Mouse&				GetMouse()					{ return mouse; }
+	GamePad*			GetGamePad(UINT id = 0)		{ return game_pad[id].get(); }
+	EnumInputDevice		GetInputDevice(UINT id = 0)	{ return game_pad[id]->GetInputDevice(); }
 
 protected:
 	// private:•Ï”

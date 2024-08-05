@@ -14,7 +14,8 @@
 //   float3 camera_position;            // Offset:  144 Size:    12
 //   float blur_strength;               // Offset:  156 Size:     4 [unused]
 //   float blur_size;                   // Offset:  160 Size:     4 [unused]
-//   float3 cbscene_fpad;               // Offset:  164 Size:    12 [unused]
+//   float post_effect_blend;           // Offset:  164 Size:     4 [unused]
+//   float2 cbscene_fpad;               // Offset:  168 Size:     8 [unused]
 //
 // }
 //

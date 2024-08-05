@@ -100,25 +100,25 @@ mov r0.x, vThreadID.x  // r0.x <- index
 nop 
 mov r0.x, r0.x
 
-#line 83 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
+#line 100 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
 mov r0.y, l(1)  // r0.y <- mip_level
 
-#line 85
+#line 102
 resinfo_indexable(texture2d)(float,float,float,float)_uint r0.yz, r0.y, t41.zxyw
 mov r0.y, r0.y  // r0.y <- width
 mov r0.z, r0.z  // r0.z <- height
 
-#line 89
+#line 106
 udiv null, r1.x, r0.x, r0.y  // r1.x <- texture_location.x
 
-#line 90
+#line 107
 udiv r0.y, null, r0.x, r0.y
 udiv null, r1.y, r0.y, r0.z  // r1.y <- texture_location.y
 
-#line 91
+#line 108
 mov r1.zw, l(0,0,0,0)  // r1.w <- texture_location.z
 
-#line 93
+#line 110
 ld_indexable(texture2d)(float,float,float,float) r0.yzw, r1.xyzw, t41.wxyz
 mov r0.yzw, r0.yyzw  // r0.y <- <GetNoiseFactor return value>.x; r0.z <- <GetNoiseFactor return value>.y; r0.w <- <GetNoiseFactor return value>.z
 
@@ -129,25 +129,25 @@ mov r0.yzw, r0.yyzw  // r0.y <- random_f3.x; r0.z <- random_f3.y; r0.w <- random
 nop 
 iadd r1.x, r0.x, cb4[0].y
 
-#line 83 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
+#line 100 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
 mov r1.y, l(1)  // r1.y <- mip_level
 
-#line 85
+#line 102
 resinfo_indexable(texture2d)(float,float,float,float)_uint r1.yz, r1.y, t41.zxyw
 mov r1.y, r1.y  // r1.y <- width
 mov r1.z, r1.z  // r1.z <- height
 
-#line 89
+#line 106
 udiv null, r2.x, r1.x, r1.y  // r2.x <- texture_location.x
 
-#line 90
+#line 107
 udiv r1.x, null, r1.x, r1.y
 udiv null, r2.y, r1.x, r1.z  // r2.y <- texture_location.y
 
-#line 91
+#line 108
 mov r2.zw, l(0,0,0,0)  // r2.w <- texture_location.z
 
-#line 93
+#line 110
 ld_indexable(texture2d)(float,float,float,float) r1.xyz, r2.xyzw, t41.xyzw
 mov r1.xyz, r1.xyzx  // r1.x <- <GetNoiseFactor return value>.x; r1.y <- <GetNoiseFactor return value>.y; r1.z <- <GetNoiseFactor return value>.z
 
@@ -180,25 +180,25 @@ mov r2.y, r0.x
 nop 
 mov r2.y, r2.y
 
-#line 83 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
+#line 100 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
 mov r2.z, l(1)  // r2.z <- mip_level
 
-#line 85
+#line 102
 resinfo_indexable(texture2d)(float,float,float,float)_uint r2.zw, r2.z, t41.zwxy
 mov r2.z, r2.z  // r2.z <- width
 mov r2.w, r2.w  // r2.w <- height
 
-#line 89
+#line 106
 udiv null, r3.x, r2.y, r2.z  // r3.x <- texture_location.x
 
-#line 90
+#line 107
 udiv r2.y, null, r2.y, r2.z
 udiv null, r3.y, r2.y, r2.w  // r3.y <- texture_location.y
 
-#line 91
+#line 108
 mov r3.zw, l(0,0,0,0)  // r3.w <- texture_location.z
 
-#line 93
+#line 110
 ld_indexable(texture2d)(float,float,float,float) r2.yzw, r3.xyzw, t41.wxyz
 mov r2.yzw, r2.yyzw  // r2.y <- <GetNoiseFactor return value>.x; r2.z <- <GetNoiseFactor return value>.y; r2.w <- <GetNoiseFactor return value>.z
 
@@ -230,25 +230,25 @@ mov r3.x, r0.x
 nop 
 mov r3.x, r3.x
 
-#line 83 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
+#line 100 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
 mov r3.y, l(1)  // r3.y <- mip_level
 
-#line 85
+#line 102
 resinfo_indexable(texture2d)(float,float,float,float)_uint r3.yz, r3.y, t41.zxyw
 mov r3.y, r3.y  // r3.y <- width
 mov r3.z, r3.z  // r3.z <- height
 
-#line 89
+#line 106
 udiv null, r4.x, r3.x, r3.y  // r4.x <- texture_location.x
 
-#line 90
+#line 107
 udiv r3.x, null, r3.x, r3.y
 udiv null, r4.y, r3.x, r3.z  // r4.y <- texture_location.y
 
-#line 91
+#line 108
 mov r4.zw, l(0,0,0,0)  // r4.w <- texture_location.z
 
-#line 93
+#line 110
 ld_indexable(texture2d)(float,float,float,float) r3.xyz, r4.xyzw, t41.xyzw
 mov r3.xyz, r3.xyzx  // r3.x <- <GetNoiseFactor return value>.x; r3.y <- <GetNoiseFactor return value>.y; r3.z <- <GetNoiseFactor return value>.z
 

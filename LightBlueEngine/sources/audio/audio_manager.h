@@ -7,6 +7,7 @@
 
 // ""インクルード
 // LightBlueEngine
+#include "engine_utility.h"
 #include "singleton.h"
 #include "audio.h"
 
@@ -19,7 +20,7 @@ enum class EnumBankSelect
 {
 	BGM,
 	SE,
-	VOICE
+	VOICE,
 };
 
 enum class EnumBGMBank
@@ -32,6 +33,8 @@ enum class EnumBGMBank
 	IMPACT_SPEED1,
 	IMPACT_SPEED2,
 	STANDBY,
+	BONUS_TIME,
+	RESULT,
 
 	NONE
 };
@@ -45,22 +48,14 @@ enum class EnumSEBank
 	ROTATE,
 	PUT,
 	ERASE,
+	ENTER_GAME,
+	CHAIN,
+	GAME_CLEAR,
 };
 
 enum class EnumVoiceBank
 {
-	COUNT_DOWN,
-	LEVEL_UP,
-	LEVEL,
-	TEN,
-	TWENTY,
-	THIRTY,
-	FOURTY,
-	FIFTY,
-	SIXTY,
-	SEVENTY,
-	EIGHTY,
-	NINETY,
+	NONE
 };
 
 // class >> [AudioManager]
@@ -79,10 +74,19 @@ public:
 	AudioManager& operator= (AudioManager&&) noexcept = delete;
 
 	// public:通常関数
-	void PlayBGM(EnumBGMBank,float = 1.0f);
+	void PlayBGM(EnumBGMBank, bool, float = 1.0f);
 	void StopBGM();
 	void PlaySE(EnumSEBank);
 	void PlayVoice(EnumVoiceBank);
+
+	// ゲッター関数
+	bool IsPlaying() 
+	{
+		if (playing_bgm != EnumBGMBank::NONE)
+			return bgm_bank[SCast(int, playing_bgm)]->GetIsPlaying();
+		else
+			return false;
+	}
 
 	// public:セッター関数
 	void SetAudioBankFromJSON(Audio*, std::filesystem::path);

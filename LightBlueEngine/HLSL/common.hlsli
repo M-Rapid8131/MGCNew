@@ -21,14 +21,30 @@ static const float	INV_GAMMA		= 1.0f / 2.2f;
 static const float	PI				= 3.141592f;
 static const float	EPSILON			= 1.0e-5f;
 static const float	FLT_MAX			= 3.402823466e+38F;
+static const float	TRANSITION_FADE = 0.1f;
 
 // 変数
 SamplerState	 sampler_states[4] : register(s0);
 
-Texture2D	mask_texture : register(t40);
-Texture2D	noise_texture : register(t41);
+Texture2D	transition_back_texture	: register(t39);
+Texture2D	transition_texture		: register(t40);
+Texture2D	noise_texture			: register(t41);
 
 // 定数バッファ
+cbuffer TRANSITION_CONSTANT_BUFFER : register(b7)
+{
+	int		using_transition_texture		= false;
+	int		using_transition_back_texture	= false;
+	int		reverse							= false;
+	
+	int		cbtransition_ipad;
+	
+	float	transition_prog;
+	float	transition_smooth;
+	
+	float2	cbtransition_fpad;
+};
+
 cbuffer SCENE_CONSTANT_BUFFER : register(b9)
 {
 	int						blur_lod;
@@ -39,7 +55,8 @@ cbuffer SCENE_CONSTANT_BUFFER : register(b9)
 	float3					camera_position;
 	float					blur_strength;
 	float					blur_size;
-	float3					cbscene_fpad;
+	float					post_effect_blend;
+	float2					cbscene_fpad;
 }
 
 cbuffer LIGHT_CONSTANT_BUFFER : register(b10)
@@ -47,7 +64,7 @@ cbuffer LIGHT_CONSTANT_BUFFER : register(b10)
 	float4	ambient_color				= { 0.2f, 0.2f, 0.2f, 0.2f };
 	float4	directional_light_color		= { 1.0f, 1.0f, 1.0f, 1.0f };
 	float3	directional_light_direction	= { 0.0f, 0.0f, 1.0f };
-	float	radiance						= 1.0f;
+	float	radiance					= 1.0f;
 	float3	directional_light_focus		= { 0.0f, 0.0f, 0.0f };
 	
 	float	cblight_fpad;
@@ -72,7 +89,7 @@ cbuffer COLOR_FILTER_CONSTANT_BUFFER : register(b12)
 cbuffer SHADOWMAP_CONSTANT_BUFFER : register(b13)
 {
 	row_major float4x4	light_view_projection;
-	float3				shadow_color		= {	0.3f,0.3f,0.3f };
+	float3				shadow_color	= {	0.3f,0.3f,0.3f };
 	float				shadow_bias		= 0.008f;
 }
 
@@ -106,6 +123,37 @@ float4 ApplyColorFilter(float4 base_color)
 	new_color.rgb = HSV2RGB(new_color.rgb);
 	new_color.a *= filter_alpha;
 	return new_color;
+}
+
+// ディゾルブ処理をしたカラーを返す関数。主にシーンチェンジで使用
+float4 ApplyTransition(float4 base_color, float2 texcoord)
+{
+	float4 new_color = base_color;
+	float4 sub_color = transition_back_texture.Sample(sampler_states[SS_LINEAR], texcoord);
+	
+	if(using_transition_texture)
+	{
+		float mask_value = transition_texture.Sample(sampler_states[SS_LINEAR], texcoord).r;
+		float ratio;
+		
+		if(reverse)
+		{
+			ratio = smoothstep(mask_value - transition_smooth, mask_value, transition_prog);
+		}	
+		else
+		{
+			ratio = smoothstep(transition_prog - transition_smooth, transition_prog, mask_value);
+		}	
+		new_color *= ratio;
+		sub_color *= (1.0f - ratio);
+	}
+	else
+	{
+		new_color *= transition_prog;
+		sub_color *= 1.0f - transition_prog;
+	}
+	
+	return new_color + sub_color;
 }
 
 #endif		// _COMMON_HLSL_

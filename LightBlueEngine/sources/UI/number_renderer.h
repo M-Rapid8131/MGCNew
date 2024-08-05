@@ -32,14 +32,14 @@ inline int PowInt(int num, int pow_factor)
 // 数字を描画するクラス。Spriteクラスを使用。
 class NumberRenderer
 {
-private:
-	// private:定数
-	const int	MINUS_POS		= 10;
-	const int	PERIOD_POS		= 11;
-	const float TEXT_SPR_WIDTH	= 120.0f;
-	const float TEXT_SPR_HEIGHT	= 150.0f;
-
 public:
+	// public:定数
+	static const int	MINUS_POS		= 10;
+	static const int	PERIOD_POS		= 11;
+	
+	static constexpr float	TEXT_SPR_WIDTH	= 120.0f;
+	static constexpr float	TEXT_SPR_HEIGHT	= 200.0f;
+
 	// public:コンストラクタ・デストラクタ
 	NumberRenderer();
 	~NumberRenderer();
@@ -60,8 +60,12 @@ public:
 	//				↓↓↓↓↓	↓↓↓
 	// 				１２３４５．６７８ ->number			
 
+	// public:ゲッター関数
+	DirectX::XMFLOAT4& GetNumberColor() { return number_color; };
+
 private:
 	// private:変数
+	DirectX::XMFLOAT4			number_color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	std::unique_ptr<Sprite>		number_sprite;
 };
 

@@ -19,11 +19,17 @@ enum class EnumCameraMode
 	CAMERA_MODE_NUM
 };
 
+enum class EnumCameraChannel
+{
+	TITLE,
+	GAME,
+};
+
 // using
 using Microsoft::WRL::ComPtr;
 
 // 定数
-static const DirectX::XMFLOAT3	DEFAULT_FPV_POSITION	= { 0.0f, 0.0f, 0.0f };
+static const DirectX::XMFLOAT3	DEFAULT_FPV_POSITION	= { 0.0f, 0.0f, 0.0f };	
 static const DirectX::XMFLOAT4	DEFAULT_FPV_DIRECTION	= { 0.0f, 0.0f, 1.0f, 0.0f };
 
 static const DirectX::XMFLOAT3	DEFAULT_TPV_TARGET		= { 0.0f, 0.0f, 0.0f };
@@ -35,7 +41,8 @@ class Camera
 {
 private:
 	// private:定数
-	static constexpr float BLUR_SIZE = 1.0f;
+	static constexpr float BLUR_SIZE		= 7.0f;
+	static constexpr float BLUR_ATTENUATION = 0.05f;
 
 	// private:定数バッファ構造体
 	// struct >> Camera >> [CbScene] register : b9
@@ -50,8 +57,9 @@ private:
 		DirectX::XMFLOAT3		camera_position;
 		float					blur_strength = 50.0f;
 		float					blur_size = 0.0f;
+		float					post_effect_blend = 1.0f;
 
-		float					cbscene_fpad[3];
+		float					cbscene_fpad[2];
 	};
 
 public:

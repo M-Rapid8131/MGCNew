@@ -14,7 +14,8 @@
 class SceneMainManu : public Scene
 {
 private:
-	static constexpr float BLOCK_SIZE = 10.0f;
+	static constexpr float BLOCK_SIZE	= 10.0f;
+	static constexpr float ROT_SPEED	= 0.2f;
 
 public:
 	// public:コンストラクタ・デストラクタ

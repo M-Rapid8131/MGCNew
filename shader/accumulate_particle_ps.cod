@@ -33,7 +33,7 @@
 //   uint disable;                      // Offset:    8 Size:     4 [unused]
 //   uint cbparticle_emitter_ipad;      // Offset:   12 Size:     4 [unused]
 //   float3 emit_position;              // Offset:   16 Size:    12 [unused]
-//   float emit_speed;                  // Offset:   28 Size:     4 [unused]
+//   float emit_speed;                  // Offset:   28 Size:     4
 //   float3 emit_force;                 // Offset:   32 Size:    12 [unused]
 //   float emit_accel;                  // Offset:   44 Size:     4 [unused]
 //   float3 emit_direction;             // Offset:   48 Size:    12 [unused]
@@ -578,7 +578,7 @@ mov r2.yzw, cb2[0].xxyz  // r2.y <- particle.color.x; r2.z <- particle.color.y; 
 mov r0.y, r0.y  // r0.y <- particle.color.w
 
 #line 52
-mov r3.xyz, r0.xzwx  // r3.x <- particle.velocity.x; r3.y <- particle.velocity.y; r3.z <- particle.velocity.z
+mul r3.xyz, r0.xzwx, cb5[1].wwww  // r3.x <- particle.velocity.x; r3.y <- particle.velocity.y; r3.z <- particle.velocity.z
 
 #line 53
 mov r4.xyz, l(0,0,0,0)  // r4.x <- particle.acceleration.x; r4.y <- particle.acceleration.y; r4.z <- particle.acceleration.z

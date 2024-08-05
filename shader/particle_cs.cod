@@ -14,7 +14,8 @@
 //   float3 camera_position;            // Offset:  144 Size:    12
 //   float blur_strength;               // Offset:  156 Size:     4 [unused]
 //   float blur_size;                   // Offset:  160 Size:     4 [unused]
-//   float3 cbscene_fpad;               // Offset:  164 Size:    12 [unused]
+//   float post_effect_blend;           // Offset:  164 Size:     4 [unused]
+//   float2 cbscene_fpad;               // Offset:  168 Size:     8 [unused]
 //
 // }
 //
@@ -142,23 +143,23 @@ mov r0.z, r0.z  // r0.z <- particle.particle_index
 nop 
 iadd r6.z, r0.y, cb4[0].y
 
-#line 83 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
+#line 100 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
 mov r6.w, l(1)  // r6.w <- mip_level
 
-#line 85
+#line 102
 resinfo_indexable(texture2d)(float,float,float,float)_uint r7.xy, r6.w, t41.xyzw  // r7.x <- width; r7.y <- height
 
-#line 89
+#line 106
 udiv null, r8.x, r6.z, r7.x  // r8.x <- texture_location.x
 
-#line 90
+#line 107
 udiv r6.z, null, r6.z, r7.x
 udiv null, r8.y, r6.z, r7.y  // r8.y <- texture_location.y
 
-#line 91
+#line 108
 mov r8.zw, l(0,0,0,0)  // r8.w <- texture_location.z
 
-#line 93
+#line 110
 ld_indexable(texture2d)(float,float,float,float) r7.xyz, r8.xyzw, t41.xyzw  // r7.x <- <GetNoiseFactor return value>.x; r7.y <- <GetNoiseFactor return value>.y; r7.z <- <GetNoiseFactor return value>.z
 
 #line 18 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_cs.hlsl"
@@ -285,23 +286,23 @@ if_nz r6.z
   nop 
   mov r6.w, r6.w
 
-#line 83 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
+#line 100 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
   mov r7.w, l(1)  // r7.w <- mip_level
 
-#line 85
+#line 102
   resinfo_indexable(texture2d)(float,float,float,float)_uint r10.xy, r7.w, t41.xyzw  // r10.x <- width; r10.y <- height
 
-#line 89
+#line 106
   udiv null, r11.x, r6.w, r10.x  // r11.x <- texture_location.x
 
-#line 90
+#line 107
   udiv r6.w, null, r6.w, r10.x
   udiv null, r11.y, r6.w, r10.y  // r11.y <- texture_location.y
 
-#line 91
+#line 108
   mov r11.zw, l(0,0,0,0)  // r11.w <- texture_location.z
 
-#line 93
+#line 110
   ld_indexable(texture2d)(float,float,float,float) r10.xyz, r11.xyzw, t41.xyzw  // r10.x <- <GetNoiseFactor return value>.x; r10.y <- <GetNoiseFactor return value>.y; r10.z <- <GetNoiseFactor return value>.z
 
 #line 91 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_header.hlsli"
@@ -326,11 +327,7 @@ if_nz r6.z
   mul r10.xyz, r10.xyzx, cb4[1].xxxx  // r10.x <- particle.acceleration.x; r10.y <- particle.acceleration.y; r10.z <- particle.acceleration.z
 
 #line 46
-  mul r11.xyz, r7.xyzx, l(2.000000, 2.000000, 2.000000, 0.000000)
-  mov r12.xyz, l(-1.000000,-1.000000,-1.000000,-0.000000)
-  add r11.xyz, r11.xyzx, r12.xyzx
-  mul r11.xyz, r11.xyzx, cb5[2].xyzx
-  add r11.xyz, r10.xyzx, r11.xyzx
+  add r11.xyz, r10.xyzx, cb5[2].xyzx
   mul r11.xyz, r11.xyzx, cb4[1].xxxx
   add r11.xyz, r4.xyzx, r11.xyzx  // r11.x <- particle.velocity.x; r11.y <- particle.velocity.y; r11.z <- particle.velocity.z
 
@@ -384,25 +381,25 @@ if_nz r6.z
       nop 
       mov r0.x, r0.x
 
-#line 83 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
+#line 100 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
       mov r6.w, l(1)  // r6.w <- mip_level
 
-#line 85
+#line 102
       resinfo_indexable(texture2d)(float,float,float,float)_uint r10.xy, r6.w, t41.xyzw
       mov r10.x, r10.x  // r10.x <- width
       mov r10.y, r10.y  // r10.y <- height
 
-#line 89
+#line 106
       udiv null, r11.x, r0.x, r10.x  // r11.x <- texture_location.x
 
-#line 90
+#line 107
       udiv r0.x, null, r0.x, r10.x
       udiv null, r11.y, r0.x, r10.y  // r11.y <- texture_location.y
 
-#line 91
+#line 108
       mov r11.zw, l(0,0,0,0)  // r11.w <- texture_location.z
 
-#line 93
+#line 110
       ld_indexable(texture2d)(float,float,float,float) r10.xyz, r11.xyzw, t41.xyzw
       mov r10.xyz, r10.xyzx  // r10.x <- <GetNoiseFactor return value>.x; r10.y <- <GetNoiseFactor return value>.y; r10.z <- <GetNoiseFactor return value>.z
 
@@ -434,23 +431,23 @@ if_nz r6.z
       nop 
       mov r0.x, r0.x
 
-#line 83 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
+#line 100 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
       mov r6.w, l(1)
 
-#line 85
+#line 102
       resinfo_indexable(texture2d)(float,float,float,float)_uint r10.xy, r6.w, t41.xyzw  // r10.x <- width; r10.y <- height
 
-#line 89
+#line 106
       udiv null, r11.x, r0.x, r10.x  // r11.x <- texture_location.x
 
-#line 90
+#line 107
       udiv r0.x, null, r0.x, r10.x
       udiv null, r11.y, r0.x, r10.y  // r11.y <- texture_location.y
 
-#line 91
+#line 108
       mov r11.zw, l(0,0,0,0)
 
-#line 93
+#line 110
       ld_indexable(texture2d)(float,float,float,float) r10.xyz, r11.xyzw, t41.xyzw  // r10.x <- <GetNoiseFactor return value>.x; r10.y <- <GetNoiseFactor return value>.y; r10.z <- <GetNoiseFactor return value>.z
 
 #line 91 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_header.hlsli"
@@ -562,4 +559,4 @@ endif
 
 #line 80
 ret 
-// Approximately 274 instruction slots used
+// Approximately 270 instruction slots used

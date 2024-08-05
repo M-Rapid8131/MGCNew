@@ -312,9 +312,6 @@ void JSONEditor::EditObject()
 {
 	Graphics* graphics = Graphics::GetInstance();
 
-	float width		= SCast(float, graphics->GetScreenWidth());
-	float height	= SCast(float, graphics->GetScreenHeight());
-
 	if (ImGui::Begin("Editting Object", (bool*)0, ImGuiWindowFlags_NoResize))
 	{
 		// ƒpƒ‰ƒ[ƒ^‚ÌÝ’è
@@ -524,9 +521,6 @@ void JSONEditor::EditObject()
 void JSONEditor::EditArray()
 {
 	Graphics* graphics = Graphics::GetInstance();
-
-	float width		= SCast(float, graphics->GetScreenWidth());
-	float height	= SCast(float, graphics->GetScreenHeight());
 
 	if (ImGui::Begin("Editting Array", (bool*)0, ImGuiWindowFlags_NoResize))
 	{
@@ -910,7 +904,7 @@ void JSONEditor::ImportJSON(std::filesystem::path json_path, ParamPtr parameter_
 
 	for (auto& param : param_ref)
 	{
-		param.PARAM_VALUE;
+		param.PARAM_VALUE.reset();
 	}
 	param_ref.clear();
 	param_ref.resize(0);
@@ -959,7 +953,6 @@ void JSONEditor::AddParameter(std::string param_name, std::any* initial_data, En
 		{
 			if(IsArray(param.PARAM_NAME))
 			{
-				std::stoi(param.PARAM_NAME);
 				param.PARAM_TYPE = EnumJSONType::ARRAY;
 			}
 			else
@@ -996,7 +989,6 @@ void JSONEditor::SetParameter(std::string param_name, std::any& new_param, bool 
 				{
 					if (IsArray(param.PARAM_NAME))
 					{
-						std::stoi(param.PARAM_NAME);
 						param.PARAM_TYPE = EnumJSONType::ARRAY;
 					}
 					else

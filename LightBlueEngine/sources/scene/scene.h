@@ -46,23 +46,23 @@ public:
 	virtual void		Render() = 0;
 
 	// public:ゲッター関数
-	bool			IsReady() const { return ready; }
-	bool			IsTransition() const { return transition; }
-	int				GetSceneStateNum() const { return SCast(int, scene_state); };
-	float			GetSceneTime() const { return scene_time; };
-	EnumSceneState	GetSceneState() const { return scene_state; };
+	bool			IsReady() const				{ return ready; }
+	bool			IsTransition() const		{ return transition; }
+	int				GetSceneStateNum() const	{ return SCast(int, scene_state); };
+	float			GetSceneTime() const		{ return scene_time; };
+	EnumSceneState	GetSceneState() const		{ return scene_state; };
 
 	// public:セッター関数
-	void				SetReady() { ready = true; }
+	void			SetReady() { ready = true; }
 
 protected:
 	// protected:変数
-	bool						ready = false;
-	bool						pause = false;
-	bool						transition = false;
-	float						scene_time = 0.0f;
+	bool						ready			= false;
+	bool						pause			= false;
+	bool						transition		= false;
+	float						scene_time		= 0.0f;
 	float						transition_time = 1.0f;			//トランジションの時間
-	EnumSceneState				scene_state = EnumSceneState::SCENE_SETTING;
+	EnumSceneState				scene_state		= EnumSceneState::SCENE_SETTING;
 };
 
 #endif // __SCENE_H__

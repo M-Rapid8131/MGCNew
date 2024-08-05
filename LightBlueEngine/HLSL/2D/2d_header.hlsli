@@ -26,14 +26,6 @@ cbuffer SCROLL_CONSTANT_BUFFER : register(b1)
 	float2 cbscroll_fpad;
 };
 
-cbuffer DISSOLVE_CONSTANT_BUFFER : register(b2)
-{
-	float	dissolve_prog;
-	float	dissolve_smooth;
-	
-	float2	cbdissolve_fpad;
-};
-
 // 関数
 // カラーのグレースケール計算をした値を返す関数。輝度法を使用
 float GrayScale(float3 base)
@@ -54,16 +46,6 @@ float Overlay(float base,float mix_factor)
 		new_factor = 2.0f * (base + mix_factor - base * mix_factor) - 1.0f;
 	}
 	return new_factor;
-}
-
-// ディゾルブ処理をしたカラーを返す関数。主にシーンチェンジで使用
-float4 ApplyDissolve(float4 base_color, float2 texcoord)
-{
-	float4	new_color	= base_color;
-	float	mask_value	= mask_texture.Sample(sampler_states[SS_LINEAR], texcoord).r;
-	float	alpha		= smoothstep(dissolve_prog - dissolve_smooth, dissolve_prog, mask_value);
-	new_color.a *= alpha;
-	return new_color;
 }
 
 // 色収差を適用したカラーを返す関数。主にゲーム画面全体のポストエフェクトで使用

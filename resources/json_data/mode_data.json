@@ -1,9 +1,43 @@
 {
     "NORMAL": {
         "InitLevel": 1,
-        "MaxLevel": 50,
-        "SpeedIncrease": 0.4,
-        "StandDecrease": 0.0
+        "MaxLevel": 100,
+        "StartSpeed": 0.5,
+        "SpeedIncrease": 0.05,
+        "SI_Rank": 2.0,
+        "StandDecrease": 0.0,
+        "SpeedRank" : [
+            1,
+            30,
+            60,
+            -1
+        ]
+    },
+    "EASY": {
+        "InitLevel": 1,
+        "MaxLevel": 30,
+        "StartSpeed": 0.5,
+        "SpeedIncrease": 0.05,
+        "SI_Rank": 0.0,
+        "StandDecrease": 0.0,
+        "SpeedRank" : [
+            1,
+            -1
+        ]
+    },
+    "NORMAL_DEMO": {
+        "InitLevel": 1,
+        "MaxLevel": 30,
+        "StartSpeed": 0.5,
+        "SpeedIncrease": 0.1,
+        "SI_Rank": 2.0,
+        "StandDecrease": 0.0,
+        "SpeedRank" : [
+            1,
+            10,
+            20,
+            -1
+        ]
     },
     "IMPACT": {
         "InitLevel": 31,
@@ -22,5 +56,11 @@
         "MaxLevel": 70,
         "SpeedIncrease": 2.0,
         "StandDecrease": 0.03
+    },
+    "BONUS": {
+        "InitLevel": 0,
+        "MaxLevel": 0,
+        "SpeedIncrease": 0.0,
+        "StandDecrease": 0.00
     }
 }

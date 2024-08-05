@@ -14,5 +14,6 @@ float4 ShaderMain(VS_OUT_3D pin) : SV_TARGET
 		discard;
 	
 	float3 color = material_data.emissive_factor * object_color;
+	color *= object_disolve;
 	return float4(color, material_data.emissive_strength);
 }

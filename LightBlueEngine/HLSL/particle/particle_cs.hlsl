@@ -43,7 +43,7 @@ void ShaderMain( uint3 dtid : SV_DispatchThreadID )
 		
 		// acceleration‚ğvelocity‚É‰ÁZ‚µAvelocity‚ğposition‚É‰ÁZ	
 		particle.acceleration	= (CalcEmitDirection(index) * emit_accel) * delta_time;
-		particle.velocity		+= (particle.acceleration + emit_force * CONVERT_TO_SNORM(random_f3)) * delta_time;
+		particle.velocity		+= (particle.acceleration + emit_force) * delta_time;
 		particle.velocity		*=	accel_attenuation;
 		particle.position		+=	particle.velocity * delta_time;
 

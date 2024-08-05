@@ -49,7 +49,7 @@ void ShaderMain(VS_OUT_3D model_pin)
 	particle.position		= model_pin.w_position.xyz - float3(1.0f, 0.0f, 0.0f);
 	particle.size			= emit_size;
 	particle.color			= float4(object_color, color.a);
-	particle.velocity		= norm_vec;
+	particle.velocity		= norm_vec * emit_speed;
 	particle.acceleration	= 0.0f;
 	particle.normal			= norm_vec;
 	particle.life			= life_time;

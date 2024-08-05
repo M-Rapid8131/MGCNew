@@ -17,11 +17,11 @@
 //-------------------------------------
 
 // コンストラクタ
-void Graphics::Initialize(HWND set_hwnd, bool windowed)
+void Graphics::Initialize(HWND set_hwnd, bool window_mode)
 {
 	hwnd = set_hwnd;
 
-	if (!windowed)
+	if (!window_mode)
 	{
 		StylizeWindow(TRUE);
 	}
@@ -280,6 +280,16 @@ void Graphics::Initialize(HWND set_hwnd, bool windowed)
 		rasterizer_states[SCast(size_t, EnumRasterizerState::PARTICLE)].GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
+	D3D11_BUFFER_DESC buffer_desc = {};
+	buffer_desc.ByteWidth = sizeof(CbTransition);
+	buffer_desc.Usage = D3D11_USAGE_DEFAULT;
+	buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	buffer_desc.CPUAccessFlags = 0;
+	buffer_desc.MiscFlags = 0;
+	buffer_desc.StructureByteStride = 0;
+
+	device->CreateBuffer(&buffer_desc, nullptr, transition_cbuffer.GetAddressOf());
+
 	// ピクセルシェーダー読み込み
 	Shader::CreatePSFromCso("shader/luminance_extraction_ps.cso", 
 		pixel_shaders[SCast(size_t, EnumPixelShader::LUMINANCE_EXTRACTION)].GetAddressOf());
@@ -299,6 +309,12 @@ void Graphics::Initialize(HWND set_hwnd, bool windowed)
 	// 計算シェーダー読み込み
 	Shader::CreateCSFromCso("shader/block_particle_cs.cso", 
 		compute_shaders[SCast(size_t, EnumComputeShader::BLOCK)].GetAddressOf());
+
+	Shader::CreateCSFromCso("shader/board_particle_start_cs.cso", 
+		compute_shaders[SCast(size_t, EnumComputeShader::BOARD_START)].GetAddressOf());
+
+	//Shader::CreateCSFromCso("shader/block_particle_cs.cso", 
+	//	compute_shaders[SCast(size_t, EnumComputeShader::BLOCK)].GetAddressOf());
 }
 
 // 更新処理
@@ -314,10 +330,10 @@ void Graphics::Update()
 	device_context->PSSetShaderResources(0, _countof(null_shader_resource_views), null_shader_resource_views);
 
 	FLOAT color[] = {
-		1.0f,
-		1.0f,
-		1.0f,
-		1.0f
+		0.0f,
+		0.0f,
+		0.0f,
+		0.0f
 	};
 
 	device_context->ClearRenderTargetView(render_target_view.Get(), color);
@@ -339,15 +355,36 @@ void Graphics::Update()
 	device_context->PSSetSamplers(
 		SCast(size_t, EnumSamplerState::BORDER), 1,
 		sampler_states[SCast(size_t, EnumSamplerState::BORDER)].GetAddressOf());
+	
+	device_context->UpdateSubresource(transition_cbuffer.Get(), 0, 0, &transition_constants, 0, 0);
+	device_context->PSSetConstantBuffers(7, 1, transition_cbuffer.GetAddressOf());
+
+	if (transition_texture)
+	{
+		device_context->PSSetShaderResources(40, 1, transition_texture.GetAddressOf());
+	}
+	if (transition_back_texture)
+	{
+		device_context->PSSetShaderResources(39, 1, transition_back_texture.GetAddressOf());
+	}
 }
 
 void Graphics::DebugGUI()
 {
+	bool reverse = SCast(bool, transition_constants.reverse);
+
 	if (ImGui::CollapsingHeader("Graphics"))
 	{
 		if(!gpu_information.empty())
 			ImGui::Text(gpu_information.c_str());
+		ImGui::Separator();
+		ImGui::DragFloat("transition_prog", &transition_constants.transition_prog, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("transition_smooth", &transition_constants.transition_smooth, 0.01f, 0.0f, 1.0f);
+
+		ImGui::Checkbox("reverse", &reverse);
 	}
+
+	transition_constants.reverse = reverse ? 1 : 0;
 }
 
 void Graphics::StylizeWindow(BOOL new_screen_state)
@@ -540,4 +577,22 @@ void Graphics::OnSizeChanged(LONG width, LONG height)
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 		CreateSwapChain(dxgi_factory6.Get());
 	}
+}
+
+void Graphics::LoadTransitionTexture(const wchar_t* w_filename)
+{
+	HRESULT hr = S_OK;
+	hr = TextureLoader::LoadTextureFromFile(w_filename, &transition_texture, &transition_texture_desc);
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	transition_constants.using_transition_texture = true;
+}
+
+void Graphics::LoadTransitionBackTexture(const wchar_t* w_filename)
+{
+	HRESULT hr = S_OK;
+	hr = TextureLoader::LoadTextureFromFile(w_filename, &transition_back_texture, &transition_back_texture_desc);
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	transition_constants.using_transition_back_texture = true;
 }
