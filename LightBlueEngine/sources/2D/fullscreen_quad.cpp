@@ -1,6 +1,7 @@
 // ""インクルード
 // LightBlueEngine
 #include "graphics/graphics.h"
+#include "graphics/texture.h"
 #include "shader.h"
 #include "fullscreen_quad.h"
 

@@ -213,11 +213,14 @@ IBL : specular_pmrem
 register t35 >>>>>>>>>>>>>>>>>>
 IBL : lut_ggx
 
-register t36-39
+register t36-38
 ‹ó‚«
 
+register t39 >>>>>>>>>>>>>>>>>>
+COMMON : transition_back_texture
+
 register t40 >>>>>>>>>>>>>>>>>>
-COMMON : mask_texture
+COMMON : transition_texture
 
 register t41 >>>>>>>>>>>>>>>>>>
 COMMON : noise_texture

@@ -68,7 +68,7 @@ void ShaderMain(uint3 dtid : SV_DispatchThreadID)
 {
 	uint index = dtid.x;
 	
-	float3 random_f3 = GetNoiseFactor(index);
+	float3 random_f3 = GetNoiseFactor(index + noise_gap);
 	float3 hover = float3(0.0f, 0.5f, 0.0f);
 	if (index <= emit_amounts)
 	{
@@ -79,10 +79,10 @@ void ShaderMain(uint3 dtid : SV_DispatchThreadID)
 		if(particle.size > 0.0f)
 			particle.size -= delta_time * 0.3f;
 		
-		particle.acceleration = normalize(particle.normal);
+		//particle.acceleration = particle.normal + CONVERT_TO_SNORM(random_f3);
 		
 		// acceleration‚ðvelocity‚É‰ÁŽZ‚µAvelocity‚ðposition‚É‰ÁŽZ
-		particle.velocity += particle.acceleration * delta_time * 3.0f;
+		particle.velocity += (particle.normal + CONVERT_TO_SNORM(random_f3)) * delta_time;
 		particle.position += particle.velocity * delta_time;
 		
 		if (length(particle.velocity) > MAX_SPEED)

@@ -1,0 +1,68 @@
+{
+    "Title": {
+        "EmitAmounts": 100000,
+        "RandomColor": false,
+        "Disable": false,
+        "EmitPosition": [
+            0.0,
+            0.0,
+            50.0
+        ],
+        "EmitSpeed": 10.0,
+        "EmitForce": [
+            0.0,
+            3.0,
+            0.0
+        ],
+        "EmitAccel": 10.0,
+        "EmitDirection": [
+            0.0,
+            -1.0,
+            0.0
+        ],
+        "SpreadRate" : 1.0,
+        "EmitColor": [
+            1.0,
+            1.0,
+            1.0,
+            0.75
+        ],
+        "EmitSize" : 0.2,
+        "LifeTime" : 10.0,
+        "StartDiff" : 0.005,
+        "EmitRadius" : 3.0
+    },
+    "Game1": {
+        "EmitAmounts": 50000,
+        "RandomColor": true,
+        "Disable": false,
+        "EmitPosition": [
+            0.0,
+            -60.0,
+            70.0
+        ],
+        "EmitSpeed": 5.0,
+        "EmitForce": [
+            0.0,
+            1.0,
+            0.0
+        ],
+        "EmitAccel": 10.0,
+        "EmitDirection": [
+            0.0,
+            -0.5,
+            -1.0
+        ],
+        "SpreadRate" : 1.0,
+        "EmitColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "EmitSize" : 0.2,
+        "LifeTime" : 15.0,
+        "StartDiff" : 0.01,
+        "EmitRadius" : 5.0
+    }
+}

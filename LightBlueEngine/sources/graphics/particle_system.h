@@ -7,6 +7,8 @@
 #include <DirectXMath.h>
 #include <vector>
 #include <functional>
+#include <string>
+#include <memory>
 
 // 前方宣言
 class Graphics;
@@ -60,13 +62,13 @@ private:
 	// struct >> ParticleSystem >> [CbParticle] register : b3
 	struct CbParticle
 	{
-		int					group_count;
-		int					noise_gap;
+		int					group_count			= 0;
+		int					noise_gap			= rand();
 
 		int					cbparticle_ipad[2];
 		
-		float				delta_time;
-		float				accel_attenuation;
+		float				delta_time			= 0.0f;
+		float				accel_attenuation	= 1.0f;
 
 		float				cbparticle_fpad[2];
 	};
@@ -88,25 +90,27 @@ public:
 	struct CbParticleEmitter
 	{
 		int				emit_amounts = 10000;
+		int				random_color = 0;
+		int				disable = 0;
 
-		int				cbparticle_emitter_ipad[3];
+		int				cbparticle_emitter_ipad;
 
-		DirectX::XMFLOAT4	emit_position	= { 0.0f, 0.0f, 0.0f, 0.0f };
-		DirectX::XMFLOAT4	emit_amplitude	= { 1.0f, 1.0f, 1.0f, 0.0f };
-		DirectX::XMFLOAT4	emit_direction	= { 0.0f, 1.0f, 0.0f, 0.0f };
-		DirectX::XMFLOAT4	emit_color		= { 1.0f,1.0f,1.0f, 1.0f };
-		float				spread_rate		= 1.0f;
-		float				emit_size		= DEFAULT_SIZE;
+		DirectX::XMFLOAT3	emit_position	= { 0.0f, 0.0f, 0.0f };
 		float				emit_speed		= 1.0f;
+		DirectX::XMFLOAT3	emit_force		= { 0.0f, 0.0f, 0.0f };
 		float				emit_accel		= DEFAULT_ACCEL;
+		DirectX::XMFLOAT3	emit_direction	= { 0.0f, 1.0f, 0.0f };
+		float				spread_rate		= 1.0f;
+		DirectX::XMFLOAT4	emit_color		= { 1.0f, 1.0f, 1.0f, 1.0f };
+		float				emit_size		= DEFAULT_SIZE;
 		float				life_time		= DEFAULT_LIFE;
 		float				start_diff		= 0.5f;
-
-		float				cbparticle_emitter_fpad[2];
+		float				emit_radius		= 0.0f;
 	};
 
 	// public:コンストラクタ・デストラクタ
-	ParticleSystem(CbParticleEmitter = {}, bool = false, const char* = nullptr);
+	ParticleSystem(const CbParticleEmitter = {}, bool = false, const char* = nullptr);
+	ParticleSystem(std::string = "");
 	~ParticleSystem() {};
 
 	// public:通常関数
@@ -118,7 +122,11 @@ public:
 	void Uninitialize();
 
 	// public:ゲッター関数
-	CbParticleEmitter& GetCbParticleEmitter() { return particle_emitter_constants; }
+	CbParticle&			GetCbParticle()			{ return particle_constants; }
+	CbParticleEmitter&	GetCbParticleEmitter()	{ return particle_emitter_constants; }
+
+	// public:セッター関数
+	void SetEmitterConstantsFromJSON(std::string = "");
 
 private:
 	// private:変数

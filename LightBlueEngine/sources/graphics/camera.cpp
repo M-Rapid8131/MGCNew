@@ -128,7 +128,8 @@ void Camera::Update()
 	DirectX::XMFLOAT3 moved_camera_focus	= XMFloatCalclation::XMFloat3Add(camera_focus, camera_shift);
 
 	camera_shift = XMFloatCalclation::XMFloat3Lerp(camera_shift, { 0.0f,0.0f,0.0f }, 0.1f);
-	scene_constants.blur_size = std::lerp(scene_constants.blur_size, 0.0f, 0.03f);
+	scene_constants.blur_size			= std::lerp(scene_constants.blur_size, 0.0f, BLUR_ATTENUATION);
+	scene_constants.post_effect_blend	= std::lerp(scene_constants.post_effect_blend, 1.0f, BLUR_ATTENUATION);
 
 	// ÉrÉÖÅ[çsóÒÇÃçÏê¨
 	DirectX::XMFLOAT4 direction = { 0.0f, 0.0f, 1.0f, 0.0f };

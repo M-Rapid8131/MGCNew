@@ -48,6 +48,16 @@ void GamesystemInput::Update(float elapsed_time)
 			controller.hold_timer		= 0.0f;
 			controller.barrage_timer	= 0.0f;
 		}
+
+		if (controller.rotate_fail)
+		{
+			controller.rotate_fail_timer += elapsed_time;
+			if (controller.rotate_fail_timer > FLIP_LIMIT)
+			{
+				controller.rotate_fail = false;
+				controller.rotate_fail_timer = 0.0f;
+			}
+		}
 	}
 }
 
@@ -74,51 +84,75 @@ void GamesystemInput::DebugGUI()
 	}
 }
 
-// ブロックを180度回転
-bool GamesystemInput::BlockFlip()
+void GamesystemInput::RotationFail(UINT id, EnumBlockRotation old_rotation)
 {
+	controllers[id].block_rotation = old_rotation;
+	controllers[id].rotate_fail = true;
+}
+
+// ブロックを180度回転
+bool GamesystemInput::BlockFlip(UINT id)
+{
+	GameController& controller = controllers[id];
+	if(controller.rotate_fail)
+	{
+		controller.rotate_fail			= false;
+		controller.rotate_fail_timer	= 0.0f;
+		return true;
+	}
 	return false;
 }
 
 // ブロック回転
-void GamesystemInput::BlockRotate(UINT id, GamePadButton input)
+bool GamesystemInput::BlockRotate(UINT id, GamePadButton input)
 {
-	EnumBlockRotation& rotation = controllers[id].block_rotation;
+	GameController&		controller	= controllers[id];
+	EnumBlockRotation&	rotation	= controller.block_rotation;
+
+	bool flip_succeed = false;
 	switch (rotation)
 	{
 	case EnumBlockRotation::RIGHT:
 		if (input & BTN_A)
-			rotation = EnumBlockRotation::UNDER;
-		else if (input & BTN_B)
 			rotation = EnumBlockRotation::TOP;
+		else if (input & BTN_B)
+			rotation = EnumBlockRotation::UNDER;
 		break;
 
 	case EnumBlockRotation::UNDER:
-		if (input & BTN_A)
-			rotation = EnumBlockRotation::LEFT;
-		else if(BlockFlip())
+		if(BlockFlip(id))
+		{
 			rotation = EnumBlockRotation::TOP;
-		else if (input & BTN_B)
+			flip_succeed = true;
+		}
+		else if (input & BTN_A)
 			rotation = EnumBlockRotation::RIGHT;
+		else if (input & BTN_B)
+			rotation = EnumBlockRotation::LEFT;
 		break;
 
 	case EnumBlockRotation::LEFT:
 		if (input & BTN_A)
-			rotation = EnumBlockRotation::TOP;
-		else if (input & BTN_B)
 			rotation = EnumBlockRotation::UNDER;
+		else if (input & BTN_B)
+			rotation = EnumBlockRotation::TOP;
 		break;
 
 	case EnumBlockRotation::TOP:
-		if (input & BTN_A)
-			rotation = EnumBlockRotation::RIGHT;
-		else if (BlockFlip())
+		if (BlockFlip(id))
+		{
 			rotation = EnumBlockRotation::UNDER;
-		else if (input & BTN_B)
+			flip_succeed = true;
+		}
+		else if (input & BTN_A)
 			rotation = EnumBlockRotation::LEFT;
+		else if (input & BTN_B)
+			rotation = EnumBlockRotation::RIGHT;
 		break;
 
 	default:
 		break;
 	}
+
+	return flip_succeed;
 }

@@ -105,6 +105,7 @@
     <ClInclude Include="sources\audio\audio.h" />
     <ClInclude Include="sources\audio\audio_manager.h" />
     <ClInclude Include="sources\audio\audio_source.h" />
+    <ClInclude Include="sources\easing.h" />
     <ClInclude Include="sources\engine_utility.h" />
     <ClInclude Include="sources\game_object\game_object.h" />
     <ClInclude Include="sources\game_system\gamesystem_director.h" />
@@ -280,6 +281,14 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Maintenance|x64'">Compute</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+    </FxCompile>
+    <FxCompile Include="HLSL\particle\board_particle_start_cs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Maintenance|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Maintenance|x64'">4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="HLSL\Particle\particle_cs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>

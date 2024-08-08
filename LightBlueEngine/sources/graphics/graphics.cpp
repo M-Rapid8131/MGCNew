@@ -10,74 +10,48 @@
 // define定数
 #define INTEL_VENDOR_ID		0x8086
 #define NVIDIA_VENDOR_ID	0x10DE
+#define AMD_VENDOR_ID		0x1002
 
 //--------------------------------------
 //	Graphics メンバ関数
 //-------------------------------------
 
 // コンストラクタ
-void Graphics::Initialize(HWND set_hwnd, bool windowed)
+void Graphics::Initialize(HWND set_hwnd, bool window_mode)
 {
 	hwnd = set_hwnd;
 
-	if (!windowed)
+	if (!window_mode)
 	{
 		StylizeWindow(TRUE);
 	}
 
-	RECT rc;
-	GetClientRect(hwnd, &rc);
-	LONG screen_w = rc.right - rc.left;
-	LONG screen_h = rc.bottom - rc.top;
-
-	screen_width	= screen_w;
-	screen_height	= screen_h;
-
 	HRESULT hr = S_OK;
 
-	// アダプタ検索
-	IDXGIFactory* factory;
-	CreateDXGIFactory(IID_PPV_ARGS(&factory));
-	IDXGIAdapter* adapter;
-	for (UINT adapter_index = 0; S_OK == factory->EnumAdapters(adapter_index, &adapter); ++adapter_index)
-	{
-		DXGI_ADAPTER_DESC adapter_desc;
-		adapter->GetDesc(&adapter_desc);
-		if (adapter_desc.VendorId == NVIDIA_VENDOR_ID)	break;
-		adapter->Release();
-	}
-	factory->Release();
-
 	UINT create_device_flags = 0;
+	UINT create_factory_flags = 0;
 
 #ifdef _DEBUG
 	create_device_flags |= D3D11_CREATE_DEVICE_DEBUG;
+	create_factory_flags |= DXGI_CREATE_FACTORY_DEBUG;
 #endif
 
-	D3D_FEATURE_LEVEL feature_level=
-		D3D_FEATURE_LEVEL_11_0;
-	// デバイスとスワップチェーン作成
-	DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
-	swap_chain_desc.BufferCount							= 1;
-	swap_chain_desc.BufferDesc.Width					= screen_w;
-	swap_chain_desc.BufferDesc.Height					= screen_h;
-	swap_chain_desc.BufferDesc.Format					= DXGI_FORMAT_R8G8B8A8_UNORM;
-	swap_chain_desc.BufferDesc.RefreshRate.Numerator	= SCast(UINT, refresh_rate);
-	swap_chain_desc.BufferDesc.RefreshRate.Denominator	= 1;
-	swap_chain_desc.BufferUsage							= DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swap_chain_desc.OutputWindow						= hwnd;
-	swap_chain_desc.SampleDesc.Count					= 1;
-	swap_chain_desc.SampleDesc.Quality					= 0;
-	swap_chain_desc.Windowed							= windowed;
-	swap_chain_desc.SwapEffect							= DXGI_SWAP_EFFECT_DISCARD;
-	hr = D3D11CreateDeviceAndSwapChain(adapter, D3D_DRIVER_TYPE_UNKNOWN, NULL, create_device_flags,
-		&feature_level, 1, D3D11_SDK_VERSION, &swap_chain_desc,
-		swap_chain.ReleaseAndGetAddressOf(), device.ReleaseAndGetAddressOf(), NULL, device_context.ReleaseAndGetAddressOf());
+	ComPtr<IDXGIFactory6> dxgi_factory6;
+	hr = CreateDXGIFactory2(create_factory_flags, IID_PPV_ARGS(dxgi_factory6.GetAddressOf()));
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	// アダプタ検索
+	AcquireHighPerformanceAdapter(dxgi_factory6.Get(), adapter3.GetAddressOf());
+
+	D3D_FEATURE_LEVEL feature_level = D3D_FEATURE_LEVEL_11_0;
+	hr = D3D11CreateDevice(adapter3.Get(), D3D_DRIVER_TYPE_UNKNOWN, 0, create_device_flags,
+		&feature_level, 1, D3D11_SDK_VERSION, device.GetAddressOf(), nullptr, device_context.GetAddressOf());
+
+	CreateSwapChain(dxgi_factory6.Get());
 
 	// レンダーターゲットの作成
 	ComPtr<ID3D11Texture2D> back_buffer = {};
-	hr = swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), RCast(LPVOID*, back_buffer.GetAddressOf()));
+	hr = swap_chain1->GetBuffer(0, __uuidof(ID3D11Texture2D), RCast(LPVOID*, back_buffer.GetAddressOf()));
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	hr = device->CreateRenderTargetView(back_buffer.Get(), NULL, render_target_view.ReleaseAndGetAddressOf());
@@ -119,23 +93,13 @@ void Graphics::Initialize(HWND set_hwnd, bool windowed)
 		&sampler_desc, sampler_states[SCast(size_t, EnumSamplerState::BORDER)].ReleaseAndGetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-	// ビューポートの設定
-	D3D11_VIEWPORT viewport = {};
-	viewport.TopLeftX		= 0;
-	viewport.TopLeftY		= 0;
-	viewport.Width			= SCast(float, screen_width);
-	viewport.Height			= SCast(float, screen_height);
-	viewport.MinDepth		= 0.0f;
-	viewport.MaxDepth		= 1.0f;
-	device_context->RSSetViewports(1, &viewport);
-
 	if(create_device_flags & D3D11_CREATE_DEVICE_BGRA_SUPPORT)
 	{
 		// Direct2D、DirectWriteの初期化
 		hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, graphics_2d.d2d1_factory.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
-		hr = swap_chain->GetBuffer(0, __uuidof(IDXGISurface), 
+		hr = swap_chain1->GetBuffer(0, __uuidof(IDXGISurface), 
 			RCast(void**, graphics_2d.surface.GetAddressOf()));
 		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
@@ -170,7 +134,7 @@ void Graphics::Initialize(HWND set_hwnd, bool windowed)
 	D3D11_DEPTH_STENCIL_DESC depth_stencil_desc = {};
 	depth_stencil_desc.DepthEnable		= TRUE;
 	depth_stencil_desc.DepthWriteMask	= D3D11_DEPTH_WRITE_MASK_ALL;
-	depth_stencil_desc.DepthFunc			= D3D11_COMPARISON_LESS_EQUAL;
+	depth_stencil_desc.DepthFunc		= D3D11_COMPARISON_LESS_EQUAL;
 	hr = device->CreateDepthStencilState(
 		&depth_stencil_desc,
 		depth_stencil_states[SCast(size_t, EnumDepthState::ZT_ON_ZW_ON)].ReleaseAndGetAddressOf());
@@ -316,6 +280,16 @@ void Graphics::Initialize(HWND set_hwnd, bool windowed)
 		rasterizer_states[SCast(size_t, EnumRasterizerState::PARTICLE)].GetAddressOf());
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
+	D3D11_BUFFER_DESC buffer_desc = {};
+	buffer_desc.ByteWidth = sizeof(CbTransition);
+	buffer_desc.Usage = D3D11_USAGE_DEFAULT;
+	buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	buffer_desc.CPUAccessFlags = 0;
+	buffer_desc.MiscFlags = 0;
+	buffer_desc.StructureByteStride = 0;
+
+	device->CreateBuffer(&buffer_desc, nullptr, transition_cbuffer.GetAddressOf());
+
 	// ピクセルシェーダー読み込み
 	Shader::CreatePSFromCso("shader/luminance_extraction_ps.cso", 
 		pixel_shaders[SCast(size_t, EnumPixelShader::LUMINANCE_EXTRACTION)].GetAddressOf());
@@ -335,6 +309,12 @@ void Graphics::Initialize(HWND set_hwnd, bool windowed)
 	// 計算シェーダー読み込み
 	Shader::CreateCSFromCso("shader/block_particle_cs.cso", 
 		compute_shaders[SCast(size_t, EnumComputeShader::BLOCK)].GetAddressOf());
+
+	Shader::CreateCSFromCso("shader/board_particle_start_cs.cso", 
+		compute_shaders[SCast(size_t, EnumComputeShader::BOARD_START)].GetAddressOf());
+
+	//Shader::CreateCSFromCso("shader/block_particle_cs.cso", 
+	//	compute_shaders[SCast(size_t, EnumComputeShader::BLOCK)].GetAddressOf());
 }
 
 // 更新処理
@@ -350,10 +330,10 @@ void Graphics::Update()
 	device_context->PSSetShaderResources(0, _countof(null_shader_resource_views), null_shader_resource_views);
 
 	FLOAT color[] = {
-		1.0f,
-		1.0f,
-		1.0f,
-		1.0f
+		0.0f,
+		0.0f,
+		0.0f,
+		0.0f
 	};
 
 	device_context->ClearRenderTargetView(render_target_view.Get(), color);
@@ -375,13 +355,43 @@ void Graphics::Update()
 	device_context->PSSetSamplers(
 		SCast(size_t, EnumSamplerState::BORDER), 1,
 		sampler_states[SCast(size_t, EnumSamplerState::BORDER)].GetAddressOf());
+	
+	device_context->UpdateSubresource(transition_cbuffer.Get(), 0, 0, &transition_constants, 0, 0);
+	device_context->PSSetConstantBuffers(7, 1, transition_cbuffer.GetAddressOf());
+
+	if (transition_texture)
+	{
+		device_context->PSSetShaderResources(40, 1, transition_texture.GetAddressOf());
+	}
+	if (transition_back_texture)
+	{
+		device_context->PSSetShaderResources(39, 1, transition_back_texture.GetAddressOf());
+	}
 }
 
-void Graphics::StylizeWindow(BOOL new_fullscreen)
+void Graphics::DebugGUI()
 {
-	windowed = new_fullscreen;
+	bool reverse = SCast(bool, transition_constants.reverse);
 
-	if (new_fullscreen)
+	if (ImGui::CollapsingHeader("Graphics"))
+	{
+		if(!gpu_information.empty())
+			ImGui::Text(gpu_information.c_str());
+		ImGui::Separator();
+		ImGui::DragFloat("transition_prog", &transition_constants.transition_prog, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("transition_smooth", &transition_constants.transition_smooth, 0.01f, 0.0f, 1.0f);
+
+		ImGui::Checkbox("reverse", &reverse);
+	}
+
+	transition_constants.reverse = reverse ? 1 : 0;
+}
+
+void Graphics::StylizeWindow(BOOL new_screen_state)
+{
+	windowed = new_screen_state;
+
+	if (new_screen_state)
 	{
 		GetWindowRect(hwnd, &windowed_rect);
 		SetWindowLongPtrA(hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW & ~(WS_CAPTION | WS_MAXIMIZEBOX | WS_SYSMENU | WS_THICKFRAME));
@@ -389,10 +399,10 @@ void Graphics::StylizeWindow(BOOL new_fullscreen)
 		RECT fullscreen_window_rect = {};
 
 		HRESULT hr = E_FAIL;
-		if (swap_chain)
+		if (swap_chain1)
 		{
 			ComPtr<IDXGIOutput> dxgi_output;
-			hr = swap_chain->GetContainingOutput(&dxgi_output);
+			hr = swap_chain1->GetContainingOutput(&dxgi_output);
 			if (hr == S_OK)
 			{
 				DXGI_OUTPUT_DESC output_desc;
@@ -441,4 +451,148 @@ void Graphics::StylizeWindow(BOOL new_fullscreen)
 
 		ShowWindow(hwnd, SW_NORMAL);
 	}
+}
+
+void Graphics::CreateSwapChain(IDXGIFactory6* factory6_ptr)
+{
+	HRESULT hr = S_OK;
+
+	if (swap_chain1)
+	{
+		ID3D11RenderTargetView* null_rtv = {};
+		device_context->OMSetRenderTargets(1, &null_rtv, nullptr);
+		render_target_view.Reset();
+
+		DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
+		swap_chain1->GetDesc(&swap_chain_desc);
+		hr = swap_chain1->ResizeBuffers(swap_chain_desc.BufferCount, screen_width, screen_height, swap_chain_desc.BufferDesc.Format, swap_chain_desc.Flags);
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+		ComPtr<ID3D11Texture2D> render_target_buffer;
+		hr = swap_chain1->GetBuffer(0, IID_PPV_ARGS(render_target_buffer.GetAddressOf()));
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+		D3D11_TEXTURE2D_DESC texture2d_desc;
+		render_target_buffer->GetDesc(&texture2d_desc);
+
+		hr = device->CreateRenderTargetView(render_target_buffer.Get(), nullptr, render_target_view.ReleaseAndGetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+	}
+	else
+	{
+		BOOL allow_tearing = FALSE;
+		if (SUCCEEDED(hr))
+		{
+			hr = factory6_ptr->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing, sizeof(allow_tearing));
+		}
+		
+		tearing_supported = SUCCEEDED(hr) && allow_tearing;
+
+		DXGI_SWAP_CHAIN_DESC1 swap_chain_desc1 = {};
+		swap_chain_desc1.Width				= SCast(UINT, screen_width);
+		swap_chain_desc1.Height				= SCast(UINT, screen_height);
+		swap_chain_desc1.Format				= DXGI_FORMAT_B8G8R8A8_UNORM;
+		swap_chain_desc1.Stereo				= FALSE;
+		swap_chain_desc1.SampleDesc.Count	= 1;
+		swap_chain_desc1.SampleDesc.Quality = 0;
+		swap_chain_desc1.BufferUsage		= DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swap_chain_desc1.BufferCount		= 2;
+		swap_chain_desc1.Scaling			= DXGI_SCALING_STRETCH;
+		swap_chain_desc1.SwapEffect			= DXGI_SWAP_EFFECT_FLIP_DISCARD;
+		swap_chain_desc1.AlphaMode			= DXGI_ALPHA_MODE_UNSPECIFIED;
+		swap_chain_desc1.Flags				= tearing_supported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+		hr = factory6_ptr->CreateSwapChainForHwnd(device.Get(), hwnd, &swap_chain_desc1, nullptr, nullptr, swap_chain1.ReleaseAndGetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+		ComPtr<ID3D11Texture2D> render_target_buffer;
+		hr = swap_chain1->GetBuffer(0, IID_PPV_ARGS(render_target_buffer.GetAddressOf()));
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		hr = device->CreateRenderTargetView(render_target_buffer.Get(), nullptr, render_target_view.ReleaseAndGetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+		// ビューポートの設定
+		D3D11_VIEWPORT viewport = {};
+		viewport.TopLeftX = 0;
+		viewport.TopLeftY = 0;
+		viewport.Width = SCast(float, screen_width);
+		viewport.Height = SCast(float, screen_height);
+		viewport.MinDepth = 0.0f;
+		viewport.MaxDepth = 1.0f;
+		device_context->RSSetViewports(1, &viewport);
+	}
+}
+
+void Graphics::AcquireHighPerformanceAdapter(IDXGIFactory6* factory6_ptr, IDXGIAdapter3** adapter3_dptr)
+{
+	std::function<std::string(std::wstring)> wstos = [](const std::wstring wstr) -> std::string {
+		char c[128];
+		wcstombs_s(nullptr, c, wstr.c_str(), sizeof(c));
+		std::string str;
+		str.assign(c);
+		return str;
+		};
+
+	HRESULT hr = S_OK;
+
+	ComPtr<IDXGIAdapter3> enumerated_adapter;
+	for (UINT adapter_index = 0;
+		DXGI_ERROR_NOT_FOUND != factory6_ptr->EnumAdapterByGpuPreference(
+			adapter_index, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(enumerated_adapter.ReleaseAndGetAddressOf()));
+		adapter_index++)
+	{
+		DXGI_ADAPTER_DESC1 adapter_desc1;
+		hr = enumerated_adapter->GetDesc1(&adapter_desc1);
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+		if (adapter_desc1.VendorId == AMD_VENDOR_ID || adapter_desc1.VendorId == NVIDIA_VENDOR_ID)
+		{
+			std::string desc = wstos(adapter_desc1.Description);
+			gpu_information.append("GPUDesc : " + desc + '\n');
+			gpu_information.append("VenderID : " + std::to_string(adapter_desc1.VendorId) + '\n');
+			gpu_information.append("DeviceID : " + std::to_string(adapter_desc1.DeviceId) + '\n');
+			gpu_information.append("SubSysID : " + std::to_string(adapter_desc1.SubSysId) + '\n');
+			gpu_information.append("Revision : " + std::to_string(adapter_desc1.Revision) + '\n');
+			gpu_information.append("DedicatedVideoMemory : " + std::to_string(adapter_desc1.DedicatedVideoMemory) + '\n');
+			gpu_information.append("DedicatedSystemMemory : " + std::to_string(adapter_desc1.DedicatedSystemMemory) + '\n');
+			gpu_information.append("SharedSystemMemory : " + std::to_string(adapter_desc1.SharedSystemMemory) + '\n');
+			gpu_information.append("AdapterLUID.HighPart : " + std::to_string(adapter_desc1.AdapterLuid.HighPart) + '\n');
+			gpu_information.append("AdapterLUID.LowPart : " + std::to_string(adapter_desc1.AdapterLuid.LowPart) + '\n');
+			gpu_information.append("Flags : " + std::to_string(adapter_desc1.Flags) + '\n');
+			break;
+		}
+	}
+	*adapter3_dptr = enumerated_adapter.Detach();
+}
+
+void Graphics::OnSizeChanged(LONG width, LONG height)
+{
+	HRESULT hr = S_OK;
+	if (width != screen_width || height != screen_height)
+	{
+		screen_width = width;
+		screen_height = height;
+
+		ComPtr<IDXGIFactory6> dxgi_factory6;
+		hr = swap_chain1->GetParent(IID_PPV_ARGS(dxgi_factory6.GetAddressOf()));
+		_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+		CreateSwapChain(dxgi_factory6.Get());
+	}
+}
+
+void Graphics::LoadTransitionTexture(const wchar_t* w_filename)
+{
+	HRESULT hr = S_OK;
+	hr = TextureLoader::LoadTextureFromFile(w_filename, &transition_texture, &transition_texture_desc);
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	transition_constants.using_transition_texture = true;
+}
+
+void Graphics::LoadTransitionBackTexture(const wchar_t* w_filename)
+{
+	HRESULT hr = S_OK;
+	hr = TextureLoader::LoadTextureFromFile(w_filename, &transition_back_texture, &transition_back_texture_desc);
+	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
+
+	transition_constants.using_transition_back_texture = true;
 }

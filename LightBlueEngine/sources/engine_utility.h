@@ -26,6 +26,11 @@
 // 0~255‚ð0.0~1.0‚É•ÏŠ·
 #define NormC(value_255)	value_255 / 255.0f
 
+// ’è”
+static const float MARGIN_S = 50.0f;
+static const float MARGIN_M = 150.0f;
+static const float MARGIN_L = 300.0f;
+
 // \‘¢‘Ì
 // struct >> [FlagSystem]
 template<typename Enum>

@@ -43,6 +43,18 @@ enum class EnumCameraIndex
 	MAIN_CAMERA,
 };
 
+// struct >> [GameData]
+struct GameData
+{
+	bool	cleared = false;
+	UINT	speed_level = 1;			// 現在のスピードレベル
+	UINT	init_level = 1;				// 初期レベル
+	UINT	max_level = 50;				// クリアに必要なレベル
+	UINT	deleted_block_count = 0;	// 消したブロックの数
+	UINT	level_up_block = 0;			// レベルアップに必要なブロック数
+	UINT	score = 0;					// スコア
+};
+
 // class >> [GamesystemDirector] 継承：Singleton<GamesystemDirector>
 // ゲームの様々な環境要素(AudioやGraphicsなど)を保持するクラス。
 class GamesystemDirector : public Singleton<GamesystemDirector>
@@ -74,6 +86,8 @@ public:
 	NumberRenderer*		GetNumberRenderer()		{ return number_renderer.get(); }
 	RandomNoise*		GetRandomNoise()		{ return random_noise.get(); }
 
+	GameData&			GetGameData(size_t index) { return saved_game_data.at(index); }
+
 
 	FlagSystem<EnumUsingClass>	GetFlagUsingClass() { return using_class_flag; }
 
@@ -83,7 +97,9 @@ public:
 	void MakeFontRenderer(const wchar_t*, DirectX::XMFLOAT4 = { 1.0f,1.0f,1.0f,1.0f });
 	void MakeNumberRenderer();
 	void MakeRandomNoise();
-	void SetRadialBlur() { camera->RadialBlur(); }
+	void SetRadialBlur()				{ camera->RadialBlur(); }
+	void ClearGameData()				{ saved_game_data.clear(); }
+	void SaveGameData(GameData& data)	{ saved_game_data.push_back(data); }
 
 private:
 	// private:変数
@@ -115,7 +131,9 @@ private:
 
 	FlagSystem<EnumUsingClass>			using_class_flag;
 
-	BOOL								fullscreen_mode = TRUE;
+	bool								show_imgui = true;
+	BOOL								windowed = FALSE;
+	std::vector<GameData>				saved_game_data;
 };
 
 #endif // __GAMESYSTEM_DIRECTOR_H__

@@ -7,9 +7,12 @@
 // LightBlueEngine
 #include "game_system/gamesystem_director.h"
 #include "game_system/gamesystem_input.h"
+#include "scene/scene_loading.h"
+#include "easing.h"
 
 // ゲームソースファイル
 #include "scene_game.h"
+#include "scene_result.h"
 
 // 定数
 const DirectX::XMFLOAT2 CONFIG_MOVE_POS		= {
@@ -27,19 +30,21 @@ const DirectX::XMFLOAT3 DEFAULT_CAMERA_TARGET		= { 0.0f,0.0f,0.0f };
 const DirectX::XMFLOAT4 DEFAULT_CAMERA_DIRECTION	= { 0.0f,0.0f,-1.0f, 0.0f };
 
 const ParticleSystem::CbParticleEmitter DEFAULT_EMITTER_SETTING = {
-	10000,							// emit_amounts
-	{ 0, 0, 0 },					// dummy
-	{ 0.0f, 0.0f, 50.0f, 0.0f },	// emit_position
-	{ 0.0f, 0.0f, 0.0f, 0.0f },		// emit_amplitude
-	{ 0.0f, 0.0f, -1.0f, 0.0f },	// emit_direction
+	50000,							// emit_amounts
+	true,							// random_color
+	false,							// disable
+	0,								// dummy
+	{ 0.0f, -60.0f, 70.0f },		// emit_position
+	5.0f,							// emit_speed
+	{ 0.0f, 1.0f, 0.0f },			// emit_force
+	100.0f,							// emit_accel
+	{ 0.0f, -0.5f, -1.0f },			// emit_direction
+	0.5f,							// spread_rate
 	{ 1.0f, 1.0f, 1.0f, 1.0f },		// emit_color
-	0.4f,							// spread_rate
 	0.2f,							// emit_size
-	10.0f,							// emit_speed
-	5.0f,							// emit_accel
-	10.0f,							// life_time
+	15.0f,							// life_time
 	0.01f,							// start_diff
-	{ 0.0f, 0.0f }					// dummy
+	5.0f							// emit_radius
 };
 
 const BloomEffect::CbBloom DEFAULT_MAIN_BLOOM = {
@@ -74,32 +79,64 @@ SceneGame::~SceneGame()
 // 初期化処理
 void SceneGame::Initialize()
 {
-	Graphics* graphics = Graphics::GetInstance();
+	Graphics*	graphics	= Graphics::GetInstance();
+	Camera*		camera		= GamesystemDirector::GetInstance()->GetCamera();
 
-	// カメラ作成
-	Camera::TPVData tpv_init = {};
-	tpv_init.tpv_target		= DEFAULT_CAMERA_TARGET;
-	tpv_init.tpv_direction	= DEFAULT_CAMERA_DIRECTION;
-	tpv_init.tpv_distance	= DEFAULT_CAMERA_DISTANCE;
+	// カメラ作成・設定
+	Camera::TPVData* tpv = camera->GetTPVCamera(SCast(size_t, EnumCameraChannel::GAME));
+	if (tpv)
+	{
+		tpv->tpv_target		= DEFAULT_CAMERA_TARGET;
+		tpv->tpv_direction	= DEFAULT_CAMERA_DIRECTION;
+		tpv->tpv_distance	= DEFAULT_CAMERA_DISTANCE;
+	}
+	else
+	{
+		Camera::TPVData tpv_init = {};
+		tpv_init.tpv_target		= DEFAULT_CAMERA_TARGET;
+		tpv_init.tpv_direction	= DEFAULT_CAMERA_DIRECTION;
+		tpv_init.tpv_distance	= DEFAULT_CAMERA_DISTANCE;
 
-	GamesystemDirector::GetInstance()->GetCamera()->AddTPVCamera(&tpv_init);
+		camera->AddTPVCamera(&tpv_init);
+	}
+	camera->SetTPVChannel(SCast(size_t, EnumCameraChannel::GAME));
 
+	// ライトの方向を設定
+	auto& cb_light = GamesystemDirector::GetInstance()->GetLight()->GetLightConstants();
+	cb_light.directional_light_direction.z = -1.0f;
+	cb_light.directional_light_direction.x = 0.0f;
+	cb_light.directional_light_direction.y = 0.0f;
+
+	// 盤面を作成
 	auto player_board = std::make_unique<ObjectBoard>(SCast(UINT, EnumPlayerID::PLAYER_1));
 	game_board.emplace_back(std::move(player_board));
 
-	main_bloom = std::make_unique<BloomEffect>(DEFAULT_MAIN_BLOOM, SCast(UINT, graphics->GetScreenWidth()), SCast(UINT, graphics->GetScreenHeight()));
+	// ブルームを作成
+	main_bloom		= std::make_unique<BloomEffect>(DEFAULT_MAIN_BLOOM, SCast(UINT, graphics->GetScreenWidth()), SCast(UINT, graphics->GetScreenHeight()));
+	emissive_bloom	= std::make_unique<BloomEffect>(DEFAULT_EMISSIVE_BLOOM, SCast(UINT, graphics->GetScreenWidth()), SCast(UINT, graphics->GetScreenHeight()));
 
-	emissive_bloom = std::make_unique<BloomEffect>(DEFAULT_EMISSIVE_BLOOM, SCast(UINT, graphics->GetScreenWidth()), SCast(UINT, graphics->GetScreenHeight()));
+	// パーティクルを作成
+	background_particle = std::make_unique<ParticleSystem>("Game1");
 
-	background_particle = std::make_unique<ParticleSystem>(DEFAULT_EMITTER_SETTING);
-
-	config_move = std::make_unique<Sprite>(L"./resources/sprite/config_move.png");
-	config_rotate = std::make_unique<Sprite>(L"./resources/sprite/config_rotate.png");
+	// 操作説明の画像を読み込み
+	config_move_pad			= std::make_unique<Sprite>(L"./resources/sprite/config/config_move_pad.png");
+	config_rotate_pad		= std::make_unique<Sprite>(L"./resources/sprite/config/config_rotate_pad.png");
+	config_move_keyboard	= std::make_unique<Sprite>(L"./resources/sprite/config/config_move_keyboard.png");
+	config_rotate_keyboard	= std::make_unique<Sprite>(L"./resources/sprite/config/config_rotate_keyboard.png");
 }
 
 // 更新処理
 void SceneGame::Update(float elapsed_time)
 {
+	GamesystemDirector* director	= GamesystemDirector::GetInstance();
+	FramebufferManager* fb_manager	= director->GetFramebufferManager();
+	Graphics*			graphics	= Graphics::GetInstance();
+
+	std::unique_ptr<SceneResult>	next_scene;
+	std::unique_ptr<SceneLoading>	scene_loading;
+
+	Graphics::CbTransition& transition_constants = graphics->GetCbTransition();
+
 	switch (scene_state)
 	{
 		using enum EnumSceneState;
@@ -109,25 +146,51 @@ void SceneGame::Update(float elapsed_time)
 		/* fall through */
 
 	case TRANSITION_IN_SETTING:
+		//fb_manager->.reverse = true;
+		transition_time = 1.0f;
+		transition = true;
+		transition_constants.reverse = false;
+		transition_constants.transition_prog = 1.0f;
 		scene_state = TRANSITION_IN;
 		/* fall through */
 
 	case TRANSITION_IN:
-		scene_state = SCENE_MAIN;
+		transition_time -= elapsed_time;
+		transition_constants.transition_prog = Easing::In(EnumEasingType::CUBIC, transition_time);
+		if (transition_time < 0.0f)
+		{
+			transition = false;
+			transition_time = 0.0f;
+			scene_state = SCENE_MAIN;
+		}
 		break;
 
 	case SCENE_MAIN:
 		break;
 
 	case TRANSITION_OUT_SETTING:
+		transition_time = 0.0f;
+		transition = true;
+		transition_constants.reverse = false;
+		transition_constants.transition_prog = 0.0f;
 		scene_state = TRANSITION_OUT;
 		/* fall through */
 
 	case TRANSITION_OUT:
-		scene_state = SCENE_CHANGE;
+		transition_time += elapsed_time;
+		transition_constants.transition_prog = Easing::In(EnumEasingType::CUBIC, transition_time);
+		if (transition_time > 1.0f)
+		{
+			transition = false;
+			transition_time = 1.0f;
+			scene_state = SCENE_CHANGE;
+		}
 		break;
 
 	case SCENE_CHANGE:
+		next_scene		= std::make_unique<SceneResult>();
+		scene_loading	= std::make_unique<SceneLoading>(next_scene.release());
+		director->GetSceneManager()->ChangeScene(scene_loading.release());
 		break;
 
 	default:
@@ -140,6 +203,12 @@ void SceneGame::Update(float elapsed_time)
 
 	// パーティクル更新
 	background_particle->Update(elapsed_time);
+	if (game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->GetBoardState().state == EnumBoardState::RESULT
+		&& scene_state == EnumSceneState::SCENE_MAIN)
+	{
+		scene_state = EnumSceneState::TRANSITION_OUT_SETTING;
+		director->SaveGameData(game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->GetGameData());
+	}
 
 	scene_time += elapsed_time;
 }
@@ -147,9 +216,9 @@ void SceneGame::Update(float elapsed_time)
 // ImGui表示
 void SceneGame::DebugGUI()
 {
-	float	time = scene_time;
-	int		state = GetSceneStateNum();
-	float	t_time = transition_time;
+	float	time	= scene_time;
+	int		state	= GetSceneStateNum();
+	float	t_time	= transition_time;
 
 #ifdef USE_IMGUI
 	if (ImGui::CollapsingHeader("SceneGame"))
@@ -168,8 +237,9 @@ void SceneGame::DebugGUI()
 // 描画処理
 void SceneGame::Render()
 {
-	Graphics* graphics = Graphics::GetInstance();
-	FramebufferManager* framebuffer_manager = GamesystemDirector::GetInstance()->GetFramebufferManager();
+	Graphics*			graphics			= Graphics::GetInstance();
+	FramebufferManager* framebuffer_manager	= GamesystemDirector::GetInstance()->GetFramebufferManager();
+	GamesystemInput*	input				= GamesystemInput::GetInstance();
 
 	ParticleSystem::CbParticleEmitter& emitter = background_particle->GetCbParticleEmitter();
 
@@ -220,7 +290,7 @@ void SceneGame::Render()
 
 		framebuffer_manager->GetFullscreenQuad()->Render(
 			scene_srvs,
-			SCast(uint32_t, EnumTexture::MAIN_TEXTURE), ARRAYSIZE(scene_srvs)
+			0, ARRAYSIZE(scene_srvs)
 			,nullptr, graphics->GetPixelShader(EnumPixelShader::BLUR).Get()
 		);
 
@@ -229,18 +299,30 @@ void SceneGame::Render()
 		graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
 		game_board.at(SCast(size_t, EnumPlayerID::PLAYER_1))->UIRender();
 
-		// スプライト系描画
-		if (game_board[0]->GetBoardState().state != EnumBoardState::STANDBY)
+		// 操作説明描画
+		switch (input->GetInputDevice())
 		{
-			config_move->Render(CONFIG_MOVE_POS, config_move->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
-			config_rotate->Render(CONFIG_ROTATE_POS, config_rotate->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
+			using enum EnumInputDevice;
+		case XBOX:
+			config_move_pad->Render(CONFIG_MOVE_POS, config_move_pad->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
+			config_rotate_pad->Render(CONFIG_ROTATE_POS, config_rotate_pad->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
+			break;
+
+		case KEYBOARD:
+			config_move_keyboard->Render(CONFIG_MOVE_POS, config_move_keyboard->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
+			config_rotate_keyboard->Render(CONFIG_ROTATE_POS, config_rotate_keyboard->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
+			break;
+
+		default:
+			break;
 		}
+
 	}
 	framebuffer_manager->Deactivate("main");
 
 	framebuffer_manager->GetFullscreenQuad()->Render(
 		framebuffer_manager->GetFramebuffer("main")->GetSceneSRV().GetAddressOf(),
-		SCast(uint32_t, EnumTexture::MAIN_TEXTURE), 1,
+		0, 1,
 		nullptr, graphics->GetPixelShader(EnumPixelShader::SCREEN_EFFECT).Get()
 	);
 }

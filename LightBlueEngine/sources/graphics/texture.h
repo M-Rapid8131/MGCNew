@@ -14,7 +14,10 @@
 // using
 using Microsoft::WRL::ComPtr;
 
-using TextureCache = std::map<std::wstring, ID3D11ShaderResourceView*>;
+using TextureCache = std::map<std::wstring, ComPtr<ID3D11ShaderResourceView>>;
+
+// 変数
+static TextureCache cached_textures;
 
 // namespace >> [TextureLoader]
 // テクスチャを読み込んだり、ダミーテクスチャを生成したりできる名前空間。
@@ -35,9 +38,6 @@ namespace TextureLoader
 		DWORD/*0xAABBGGRR*/, UINT);
 
 	D3D11_TEXTURE2D_DESC GetTexture2dDescFromSRV(ID3D11ShaderResourceView*);
-
-	// 変数
-	static TextureCache cached_textures;
 };
 
 #endif // __TEXTURE_H__

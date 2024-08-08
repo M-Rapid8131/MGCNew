@@ -428,6 +428,9 @@
     <ClInclude Include="sources\graphics\camera.h">
       <Filter>SourceCodes\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="sources\easing.h">
+      <Filter>SourceCodes\Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSL\2D\2d_header.hlsli">
@@ -590,6 +593,9 @@
     </FxCompile>
     <FxCompile Include="HLSL\2D\bloom\upsampling_ps.hlsl">
       <Filter>HLSL\2D\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\particle\board_particle_start_cs.hlsl">
+      <Filter>HLSL\Particle</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

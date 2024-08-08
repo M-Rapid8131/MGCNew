@@ -6,6 +6,7 @@
 #include <wrl.h>
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include "graphics/camera.h"
 
 // enum
 enum class EnumBufferPrimitiveRenderer

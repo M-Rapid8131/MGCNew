@@ -722,7 +722,7 @@ void GameModel::Render(bool using_shadow_map, const DirectX::XMFLOAT4X4& transfo
 		// ノードの個数分もループ
 		for (int node_index : scene.nodes)
 		{
-			RenderTraverse(node_index, transform,color);
+			RenderTraverse(node_index, transform, color);
 		}
 	}
 }

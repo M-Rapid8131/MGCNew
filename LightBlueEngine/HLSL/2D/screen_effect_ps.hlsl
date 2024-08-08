@@ -40,7 +40,6 @@ float4 ShaderMain(VS_OUT_2D pin) : SV_TARGET
 		float weight = lerp(start, end, rate);
 		
 		blur_color += color_map_2d.Sample(sampler_states[SS_LINEAR], blur_texcoord) * weight;
-
 	}
 	
 	// 色収差とブリーチバイパスを計算
@@ -50,7 +49,7 @@ float4 ShaderMain(VS_OUT_2D pin) : SV_TARGET
 	// 混ぜ合わせた値をカラーとする
 	float4 color = float4(lerp(bleach_bypass_color, chromatic_color, 0.75f), base_color.a);
 	
-	color = lerp(blur_color, color, 0.5f);
+	color = lerp(blur_color, color * post_effect_blend, 0.5f);
 	
-	return color;
+	return ApplyTransition(color, pin.texcoord);
 }

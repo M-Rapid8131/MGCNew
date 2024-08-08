@@ -46,12 +46,12 @@ HRESULT TextureLoader::LoadTextureFromFile(const wchar_t* filename,
 
 	if (it != cached_textures.end())
 	{
-		*shader_resource_view = it->second;
+		*shader_resource_view = it->second.Get();
 		(*shader_resource_view)->AddRef();
 	}
 	else
 	{
-		DirectX::TexMetadata		metadata = {};
+		DirectX::TexMetadata	metadata = {};
 		DirectX::ScratchImage	scratch_image;
 
 		// DDSファイル読み込み
@@ -137,7 +137,7 @@ HRESULT TextureLoader::LoadTextureFromMemory(std::wstring name, const void* data
 
 	if (it != cached_textures.end())
 	{
-		*shader_resource_view = it->second;
+		*shader_resource_view = it->second.Get();
 		(*shader_resource_view)->AddRef();
 	}
 	else
@@ -193,15 +193,15 @@ HRESULT TextureLoader::MakeDummyTexture(ID3D11ShaderResourceView** shader_resour
 	HRESULT hr = S_OK;
 
 	D3D11_TEXTURE2D_DESC texture2d_desc = {};
-	texture2d_desc.Width					= dimension;
+	texture2d_desc.Width				= dimension;
 	texture2d_desc.Height				= dimension;
-	texture2d_desc.MipLevels				= 1;
-	texture2d_desc.ArraySize				= 1;
+	texture2d_desc.MipLevels			= 1;
+	texture2d_desc.ArraySize			= 1;
 	texture2d_desc.Format				= DXGI_FORMAT_R8G8B8A8_UNORM;
 	texture2d_desc.SampleDesc.Count		= 1;
 	texture2d_desc.SampleDesc.Quality	= 0;
-	texture2d_desc.Usage					= D3D11_USAGE_DEFAULT;
-	texture2d_desc.BindFlags				= D3D11_BIND_SHADER_RESOURCE;
+	texture2d_desc.Usage				= D3D11_USAGE_DEFAULT;
+	texture2d_desc.BindFlags			= D3D11_BIND_SHADER_RESOURCE;
 
 	// テクスチャを指定した色で塗りつぶしていく
 	size_t texels = dimension * dimension;
@@ -220,9 +220,9 @@ HRESULT TextureLoader::MakeDummyTexture(ID3D11ShaderResourceView** shader_resour
 
 	// シェーダーリソースビュー生成
 	D3D11_SHADER_RESOURCE_VIEW_DESC shader_resource_view_desc{};
-	shader_resource_view_desc.Format = texture2d_desc.Format;
-	shader_resource_view_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	shader_resource_view_desc.Texture2D.MipLevels = 1;
+	shader_resource_view_desc.Format				= texture2d_desc.Format;
+	shader_resource_view_desc.ViewDimension			= D3D11_SRV_DIMENSION_TEXTURE2D;
+	shader_resource_view_desc.Texture2D.MipLevels	= 1;
 	hr = device->CreateShaderResourceView(texture2d.Get(), &shader_resource_view_desc,
 		shader_resource_view);
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));

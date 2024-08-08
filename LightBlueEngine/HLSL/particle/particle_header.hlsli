@@ -35,8 +35,8 @@ struct Particle
 	float	size;
 	float4	color;
 	float3	velocity;
-	float3	normal;
 	float3	acceleration;
+	float3	normal;
 	float	life;
 	float	start_time;
 };
@@ -59,19 +59,22 @@ cbuffer PARTICLE_CONSTANT_BUFFER : register(b4)
 cbuffer PARTICLE_EMITTER_CONSTANT_BUFFER : register(b5)
 {
 	uint emit_amounts;
+	uint random_color;
+	uint disable;
 	
-	uint3 cbparticle_emitter_ipad;
+	uint cbparticle_emitter_ipad;
 
-	float4	emit_position;
-	float4	emit_amplitude;
-	float4	emit_direction;
-	float4	emit_color;
-	float	spread_rate;
-	float	emit_size;
+	float3	emit_position;
 	float	emit_speed;
+	float3	emit_force;
 	float	emit_accel;
+	float3	emit_direction;
+	float	spread_rate;
+	float4	emit_color;
+	float	emit_size;
 	float	life_time;
 	float	start_diff;
+	float	emit_radius;
 }
 
 cbuffer PARTICLE_FLOCK_CONSTANT_BUFFER : register(b6)

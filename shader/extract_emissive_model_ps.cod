@@ -20,7 +20,7 @@
 //
 //   float3 object_color;               // Offset:    0 Size:    12
 //   float blink_factor;                // Offset:   12 Size:     4 [unused]
-//   float object_disolve;              // Offset:   16 Size:     4 [unused]
+//   float object_disolve;              // Offset:   16 Size:     4
 //   float3 cbobject_color_fpad;        // Offset:   20 Size:    12 [unused]
 //
 // }
@@ -322,7 +322,7 @@
 ps_5_0
 dcl_globalFlags refactoringAllowed | skipOptimization
 dcl_constantbuffer CB0[5], immediateIndexed
-dcl_constantbuffer CB2[1], immediateIndexed
+dcl_constantbuffer CB2[2], immediateIndexed
 dcl_sampler s2, mode_default
 dcl_resource_structured t0, 448
 dcl_resource_texture2d (float,float,float,float) t16
@@ -600,7 +600,10 @@ endif
 mul r0.xyz, r1.xyzx, cb2[0].xyzx  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z
 
 #line 17
+mul r0.xyz, r0.xyzx, cb2[1].xxxx
+
+#line 18
 mov o0.xyz, r0.xyzx
 mov o0.w, r2.y
 ret 
-// Approximately 136 instruction slots used
+// Approximately 137 instruction slots used

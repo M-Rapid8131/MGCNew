@@ -35,11 +35,11 @@ BloomEffect::BloomEffect(const CbBloom init_setting, UINT width, UINT height) : 
 	}
 
 	// シェーダー
-	Shader::CreatePSFromCso("shader/glow_extraction_ps.cso", glow_extraction_ps.GetAddressOf());
-	Shader::CreatePSFromCso("shader/downsampling_ps.cso", downsampling_ps.GetAddressOf());
-	Shader::CreatePSFromCso("shader/horizontal_ps.cso", horizontal_ps.GetAddressOf());
-	Shader::CreatePSFromCso("shader/vertical_ps.cso", vertical_ps.GetAddressOf());
-	Shader::CreatePSFromCso("shader/upsampling_ps.cso", upsampling_ps.GetAddressOf());
+	Shader::CreatePSFromCso("shader/glow_extraction_ps.cso",	glow_extraction_ps.GetAddressOf());
+	Shader::CreatePSFromCso("shader/downsampling_ps.cso",		downsampling_ps.GetAddressOf());
+	Shader::CreatePSFromCso("shader/horizontal_ps.cso",			horizontal_ps.GetAddressOf());
+	Shader::CreatePSFromCso("shader/vertical_ps.cso",			vertical_ps.GetAddressOf());
+	Shader::CreatePSFromCso("shader/upsampling_ps.cso",			upsampling_ps.GetAddressOf());
 
 	// 定数バッファ設定
 	D3D11_BUFFER_DESC buffer_desc = {};

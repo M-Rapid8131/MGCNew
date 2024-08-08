@@ -7,30 +7,36 @@
 // LightBlueEngine
 #include "game_system/gamesystem_director.h"
 #include "game_system/gamesystem_input.h"
+#include "scene/scene_loading.h"
+#include "easing.h"
 
 // ゲームソースファイル
 #include "scene_main_manu.h"
+#include "scene_game.h"
 
 // 定数
-const float				HSV_MAX = 360.0f;
-const float				DEFAULT_CAMERA_DISTANCE = 80.0f;
-const DirectX::XMFLOAT3 DEFAULT_CAMERA_TARGET = { 0.0f,0.0f,50.0f };
-const DirectX::XMFLOAT4 DEFAULT_CAMERA_DIRECTION = { 0.0f,0.0f,-1.0f, 0.0f };
+const float				HSV_MAX						= 360.0f;
+const float				HSV_MAX_TIME				= 90.0f;
+const float				DEFAULT_CAMERA_DISTANCE		= 80.0f;
+const DirectX::XMFLOAT3 DEFAULT_CAMERA_TARGET		= { 0.0f,0.0f,50.0f };
+const DirectX::XMFLOAT4 DEFAULT_CAMERA_DIRECTION	= { 0.0f,0.0f,-1.0f, 0.0f };
 
-ParticleSystem::CbParticleEmitter DEFAULT_EMITTER_SETTING = {
-	100000,							// emit_amounts
-	{ 0, 0, 0 },					// dummy
-	{ 0.0f, 0.0f, 50.0f, 0.0f },	// emit_position
-	{ 0.0f, 0.0f, 0.0f, 0.0f },		// emit_amplitude
-	{ 0.0f, 0.0f, -1.0f, 0.0f },	// emit_direction
-	{ 1.0f, 1.0f, 1.0f, 0.8f },		// emit_color
-	1.0f,							// spread_rate
-	0.15f,							// emit_size
-	10.0f,							// emit_speed
-	0.0f,							// emit_accel
-	10.0f,							// life_time
-	0.002f,							// start_diff
-	{ 0.0f, 0.0f }					// dummy
+const ParticleSystem::CbParticleEmitter DEFAULT_EMITTER_SETTING = {
+	100000,								// emit_amounts
+	false,								// random_color
+	false,								// disable
+	0,									// dummy
+	{ 0.0f, 0.0f, 50.0f },				// emit_position
+	10.0f,								// emit_speed
+	{ 0.0f, 3.0f, 0.0f },				// emit_force
+	10.0f,								// emit_accel
+	{ 0.0f, -1.0f, 0.0f },				// emit_direction
+	1.0f,								// spread_rate
+	{ 1.0f, 1.0f, 1.0f, NormC(200)},	// emit_color
+	0.2f,								// emit_size
+	10.0f,								// life_time
+	0.005f,								// start_diff
+	3.0f								// emit_radius
 };
 
 const BloomEffect::CbBloom DEFAULT_MAIN_BLOOM = {
@@ -67,12 +73,12 @@ DirectX::XMFLOAT3 HSV2RGB(const DirectX::XMFLOAT3 hsv)
 		float v_min = v_max - (hsv.y * v_max);
 
 		
-		float hsv_x = fmodf(hsv.x, 360.0f);
-		float huei = (int)(hsv_x / 60);
-		float huef = hsv_x / 60 - huei;
-		float p = v_max * (1.0f - hsv.y);
-		float q = v_max * (1.0f - hsv.y * huef);
-		float t = v_max * (1.0f - hsv.y * (1 - huef));
+		float	hsv_x	= fmodf(hsv.x, 360.0f);
+		int		huei	= (int)(hsv_x / 60.0f);
+		float	huef	= hsv_x / 60.0f - (float)(huei);
+		float	p		= v_max * (1.0f - hsv.y);
+		float	q		= v_max * (1.0f - hsv.y * huef);
+		float	t		= v_max * (1.0f - hsv.y * (1 - huef));
 
 		if (huei == 0)
 		{
@@ -128,67 +134,116 @@ void SceneMainManu::Initialize()
 {
 	Graphics*		graphics		= Graphics::GetInstance();
 	AudioManager*	audio_manarger	= GamesystemDirector::GetInstance()->GetAudioManager();
-	audio_manarger->PlayBGM(EnumBGMBank::STANDBY, 0.3f);
+	//audio_manarger->PlayBGM(EnumBGMBank::STANDBY, 0.3f);
+	audio_manarger->StopBGM();
 
-	// カメラ作成
-	Camera::TPVData tpv_init = {};
-	tpv_init.tpv_target		= DEFAULT_CAMERA_TARGET;
-	tpv_init.tpv_direction	= DEFAULT_CAMERA_DIRECTION;
-	tpv_init.tpv_distance	= DEFAULT_CAMERA_DISTANCE;
-	GamesystemDirector::GetInstance()->GetCamera()->AddTPVCamera(&tpv_init);
+	// カメラ作成・設定
+	Camera*				camera	= GamesystemDirector::GetInstance()->GetCamera();
+	Camera::TPVData*	tpv		= camera->GetTPVCamera(SCast(size_t, EnumCameraChannel::TITLE));
+	if (tpv)
+	{
+		tpv->tpv_target		= DEFAULT_CAMERA_TARGET;
+		tpv->tpv_direction	= DEFAULT_CAMERA_DIRECTION;
+		tpv->tpv_distance	= DEFAULT_CAMERA_DISTANCE;
+	}
+	else
+	{
+		Camera::TPVData tpv_init = {};
+		tpv_init.tpv_target		= DEFAULT_CAMERA_TARGET;
+		tpv_init.tpv_direction	= DEFAULT_CAMERA_DIRECTION;
+		tpv_init.tpv_distance	= DEFAULT_CAMERA_DISTANCE;
+
+		camera->AddTPVCamera(&tpv_init);
+	}
+	camera->SetTPVChannel(SCast(size_t, EnumCameraChannel::TITLE));
 
 	model = std::make_unique<GameModel>("resources/model/block/block.gltf");
 
 	main_bloom		= std::make_unique<BloomEffect>(DEFAULT_MAIN_BLOOM, SCast(UINT, graphics->GetScreenWidth()), SCast(UINT, graphics->GetScreenHeight()));
 	emissive_bloom	= std::make_unique<BloomEffect>(DEFAULT_EMISSIVE_BLOOM, SCast(UINT, graphics->GetScreenWidth()), SCast(UINT, graphics->GetScreenHeight()));
 
-	logo = std::make_unique<Sprite>(L"resources/sprite/logo.png");
+	logo		= std::make_unique<Sprite>(L"resources/sprite/logo.png");
+	menu_key	= std::make_unique<Sprite>(L"resources/sprite/title_button.png");
 
-	background_particle = std::make_unique<ParticleSystem>(DEFAULT_EMITTER_SETTING);
+	background_particle = std::make_unique<ParticleSystem>("Title");
 }
 
 // 更新処理
 void SceneMainManu::Update(float elapsed_time)
 {
+	GamesystemDirector*		director	= GamesystemDirector::GetInstance();
+	Camera*					camera		= director->GetCamera();
+	Light*					light		= director->GetLight();
+	Camera::TPVData*		tpv			= camera->GetTPVCamera();
+	GamePad*				game_pad	= GamesystemInput::GetInstance()->GetGamePad();
+	Graphics*				graphics	= Graphics::GetInstance();
+
+	std::unique_ptr<SceneGame>		next_scene;
+	std::unique_ptr<SceneLoading>	scene_loading;
+
+	Graphics::CbTransition&	transition_constants = graphics->GetCbTransition();
 	switch (scene_state)
 	{
 		using enum EnumSceneState;
 	case SCENE_SETTING:
+		director->ClearGameData();
 		scene_time = 0.0f;
 		scene_state = TRANSITION_IN_SETTING;
 		/* fall through */
 
 	case TRANSITION_IN_SETTING:
+		//fb_manager->.reverse = true;
+		transition_time = 1.0f;
+		transition = true;
+		transition_constants.reverse = false;
+		transition_constants.transition_prog = 1.0f;
 		scene_state = TRANSITION_IN;
 		/* fall through */
 
 	case TRANSITION_IN:
-		scene_state = SCENE_MAIN;
+		transition_time -= elapsed_time;
+		transition_constants.transition_prog = Easing::In(EnumEasingType::CUBIC, transition_time);
+		if (transition_time < 0.0f)
+		{
+			transition = false;
+			transition_time = 0.0f;
+			scene_state = SCENE_MAIN;
+		}
 		break;
 
 	case SCENE_MAIN:
 		break;
 
 	case TRANSITION_OUT_SETTING:
+		transition_time = 0.0f;
+		transition = true;
+		transition_constants.reverse = false;
+		transition_constants.transition_prog = 0.0f;
 		scene_state = TRANSITION_OUT;
 		/* fall through */
 
 	case TRANSITION_OUT:
-		scene_state = SCENE_CHANGE;
+		transition_time += elapsed_time;
+		transition_constants.transition_prog = Easing::In(EnumEasingType::CUBIC, transition_time);
+		if (transition_time > 1.0f)
+		{
+			transition = false;
+			transition_time = 1.0f;
+			scene_state = SCENE_CHANGE;
+		}
 		break;
 
 	case SCENE_CHANGE:
+		next_scene		= std::make_unique<SceneGame>();
+		scene_loading	= std::make_unique<SceneLoading>(next_scene.release());
+		director->GetSceneManager()->ChangeScene(scene_loading.release());
 		break;
-
 	default:
 		break;
 	}
 
-	Camera*				camera	= GamesystemDirector::GetInstance()->GetCamera();
-	Light*				light	= GamesystemDirector::GetInstance()->GetLight();
-	Camera::TPVData*	tpv		= camera->GetTPVCamera();
-
-	DirectX::XMFLOAT3	camera_rot = { 0.0f, 0.2f, 0.0f };
+	// カメラの回転
+	DirectX::XMFLOAT3	camera_rot = { 0.0f, ROT_SPEED, 0.0f };
 
 	DirectX::XMVECTOR	v_camera_rot	= DirectX::XMVectorScale(DirectX::XMLoadFloat3(&camera_rot), elapsed_time);
 	float				angle			= DirectX::XMVectorGetX(DirectX::XMVector3Length(v_camera_rot));
@@ -205,20 +260,32 @@ void SceneMainManu::Update(float elapsed_time)
 	);
 
 	q_rotation = DirectX::XMQuaternionNormalize(q_rotation);
+
+	// カメラの向き
 	DirectX::XMVECTOR v_direction = DirectX::XMLoadFloat4(&tpv->tpv_direction);
 	v_direction = DirectX::XMVector3Rotate(v_direction, q_rotation);
 	DirectX::XMStoreFloat4(&tpv->tpv_direction, v_direction);
+
+	// ライトの向き
 	DirectX::XMFLOAT3& light_direction = light->GetLightConstants().directional_light_direction;
 	DirectX::XMStoreFloat3(&light_direction, v_direction);
 
-	hsv_color.x = std::lerp(0.0f, HSV_MAX, fmodf(scene_time, HSV_MAX * 0.3f) / (HSV_MAX * 0.3f));
+	float hsv_rate = fmodf(scene_time, HSV_MAX_TIME) / HSV_MAX_TIME;
+	hsv_color.x = std::lerp(0.0f, HSV_MAX, hsv_rate);
 
+	// ブロック・パーティクルの色の変化
 	DirectX::XMFLOAT3 rgb_color = HSV2RGB(hsv_color);
 	ParticleSystem::CbParticleEmitter& emitter = background_particle->GetCbParticleEmitter();
 	emitter.emit_color.x = rgb_color.x;
 	emitter.emit_color.y = rgb_color.y;
 	emitter.emit_color.z = rgb_color.z;
 	background_particle->Update(elapsed_time);
+
+	if (game_pad->GetButtonDown() & BTN_START)
+	{
+		director->GetAudioManager()->PlaySE(EnumSEBank::ENTER_GAME);
+		scene_state = EnumSceneState::TRANSITION_OUT_SETTING;
+	}
 
 	scene_time += elapsed_time;
 }
@@ -309,21 +376,27 @@ void SceneMainManu::Render()
 
 		framebuffer_manager->GetFullscreenQuad()->Render(
 			scene_srvs,
-			SCast(uint32_t, EnumTexture::MAIN_TEXTURE), ARRAYSIZE(scene_srvs)
+			0, ARRAYSIZE(scene_srvs)
 			, nullptr, graphics->GetPixelShader(EnumPixelShader::BLUR).Get()
 		);
 
 		float width		= SCast(float, Graphics::GetInstance()->GetScreenWidth());
 		float height	= SCast(float, Graphics::GetInstance()->GetScreenHeight());
 
+		// ロゴ
 		DirectX::XMFLOAT2 size = logo->GetSpriteSizeWithScaling({ 0.5f, 0.5f });
-		logo->Render({ 0.0f, 0.0f }, size);
+		logo->Render({ MARGIN_S, MARGIN_S }, size);
+
+		// ゲームに進むボタンの表示
+		size = menu_key->GetSpriteSizeWithScaling({ 0.5f, 0.5f });
+		menu_key->Render({ width - size.x - MARGIN_S, height - size.y - MARGIN_S }, size);
 	}
 	framebuffer_manager->Deactivate("main");
 
+	graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
 	framebuffer_manager->GetFullscreenQuad()->Render(
 		framebuffer_manager->GetFramebuffer("main")->GetSceneSRV().GetAddressOf(),
-		SCast(uint32_t, EnumTexture::MAIN_TEXTURE), 1,
+		0, 1,
 		nullptr, graphics->GetPixelShader(EnumPixelShader::SCREEN_EFFECT).Get()
 	);
 }

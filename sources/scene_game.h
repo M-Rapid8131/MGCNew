@@ -28,8 +28,10 @@ private:
 	// private:ïœêî
 	float								roll_angle			= 0.0f;
 	std::unique_ptr<ParticleSystem>		background_particle;
-	std::unique_ptr<Sprite>				config_move;
-	std::unique_ptr<Sprite>				config_rotate;
+	std::unique_ptr<Sprite>				config_move_pad;
+	std::unique_ptr<Sprite>				config_rotate_pad;
+	std::unique_ptr<Sprite>				config_move_keyboard;
+	std::unique_ptr<Sprite>				config_rotate_keyboard;
 	std::unique_ptr<GameModel>			model;
 	std::unique_ptr<BloomEffect>		main_bloom;
 	std::unique_ptr<BloomEffect>		emissive_bloom;

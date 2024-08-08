@@ -43,11 +43,11 @@ AudioManager::~AudioManager()
 }
 
 // BGMÄ¶
-void AudioManager::PlayBGM(EnumBGMBank bgm,float volume)
+void AudioManager::PlayBGM(EnumBGMBank bgm, bool loop, float volume)
 {
 	size_t index = SCast(size_t,bgm);
 	bgm_bank.at(index)->Stop();
-	bgm_bank.at(index)->PlayUsingMediaFoundation(true,volume);
+	bgm_bank.at(index)->PlayUsingMediaFoundation(loop, volume);
 
 	playing_bgm = bgm;
 }
@@ -100,24 +100,33 @@ void AudioManager::SetAudioBankFromJSON(Audio* audio, std::filesystem::path json
 	se_params		= GET_PARAMETER_IN_PARAMPTR("SE",		Parameters, &aufio_params);
 	voice_params	= GET_PARAMETER_IN_PARAMPTR("VOICE",	Parameters, &aufio_params);
 
-	for(size_t i = 0; i < bgm_params->size(); i++)
+	if (bgm_params)
 	{
-		std::string audio_path = *(GET_PARAMETER_IN_PARAMPTR(std::to_string(i), std::string, bgm_params));
-		auto obj = audio->LoadAudioSourceUsingMF(stows(audio_path));
-		bgm_bank.push_back(std::move(obj));
+		for (size_t i = 0; i < bgm_params->size(); i++)
+		{
+			std::string audio_path = *(GET_PARAMETER_IN_PARAMPTR(std::to_string(i), std::string, bgm_params));
+			auto obj = audio->LoadAudioSourceUsingMF(stows(audio_path));
+			bgm_bank.push_back(std::move(obj));
+		}
 	}
 
-	for(size_t i = 0; i < se_params->size(); i++)
+	if (se_params)
 	{
-		std::string audio_path = *(GET_PARAMETER_IN_PARAMPTR(std::to_string(i), std::string, se_params));
-		auto obj = audio->LoadAudioSourceUsingMF(stows(audio_path).c_str());
-		se_bank.push_back(std::move(obj));
+		for (size_t i = 0; i < se_params->size(); i++)
+		{
+			std::string audio_path = *(GET_PARAMETER_IN_PARAMPTR(std::to_string(i), std::string, se_params));
+			auto obj = audio->LoadAudioSourceUsingMF(stows(audio_path).c_str());
+			se_bank.push_back(std::move(obj));
+		}
 	}
 
-	for(size_t i = 0; i < voice_params->size(); i++)
+	if(voice_params)
 	{
-		std::string audio_path = *(GET_PARAMETER_IN_PARAMPTR(std::to_string(i), std::string, voice_params));
-		auto obj = audio->LoadAudioSourceUsingMF(stows(audio_path).c_str());
-		voice_bank.push_back(std::move(obj));
+		for (size_t i = 0; i < voice_params->size(); i++)
+		{
+			std::string audio_path = *(GET_PARAMETER_IN_PARAMPTR(std::to_string(i), std::string, voice_params));
+			auto obj = audio->LoadAudioSourceUsingMF(stows(audio_path).c_str());
+			voice_bank.push_back(std::move(obj));
+		}
 	}
 }

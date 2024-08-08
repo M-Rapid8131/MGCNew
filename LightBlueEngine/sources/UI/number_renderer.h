@@ -32,28 +32,28 @@ inline int PowInt(int num, int pow_factor)
 // 数字を描画するクラス。Spriteクラスを使用。
 class NumberRenderer
 {
-private:
-	// private:定数
-	const int	MINUS_POS		= 10;
-	const int	PERIOD_POS		= 11;
-	const float TEXT_SPR_WIDTH	= 120.0f;
-	const float TEXT_SPR_HEIGHT	= 150.0f;
-
 public:
+	// public:定数
+	static const int	MINUS_POS		= 10;
+	static const int	PERIOD_POS		= 11;
+	
+	static constexpr float	TEXT_SPR_WIDTH	= 120.0f;
+	static constexpr float	TEXT_SPR_HEIGHT	= 200.0f;
+
 	// public:コンストラクタ・デストラクタ
 	NumberRenderer();
 	~NumberRenderer();
 
 	// public:通常関数
-	void RenderInt(int number, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 scale,
-		EnumNumberAlignment alignment = EnumNumberAlignment::LEFT_ALIGNMENT);
+	void RenderInt(int, DirectX::XMFLOAT2, DirectX::XMFLOAT2, 
+		EnumNumberAlignment = EnumNumberAlignment::LEFT_ALIGNMENT, DirectX::XMFLOAT4 = { 1.0f, 1.0f, 1.0f, 1.0f });
 	//	RenderIntについて
 	//		５４３２１(桁目) ->digits	
 	//		↓↓↓↓↓					
 	//		１２３４５ ->number			
 
-	void RenderFloat(float number, int decimal_points, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 scale, 
-		EnumNumberAlignment alignment = EnumNumberAlignment::LEFT_ALIGNMENT);
+	void RenderFloat(float, int, DirectX::XMFLOAT2, DirectX::XMFLOAT2, 
+		EnumNumberAlignment = EnumNumberAlignment::LEFT_ALIGNMENT, DirectX::XMFLOAT4 = { 1.0f, 1.0f, 1.0f, 1.0f });
 	//	RenderFloatについて
 	//		digits->８７６５４　３２１(桁目)
 	//				↓↓↓↓↓	１２３(小数点第N位)	<-decimal_points

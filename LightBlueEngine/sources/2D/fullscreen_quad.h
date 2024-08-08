@@ -24,13 +24,8 @@ public:
 
 private:
 	// ïœêî
-	D3D11_TEXTURE2D_DESC					mask_texture_desc			= {};
-	D3D11_TEXTURE2D_DESC					transition_texture_desc		= {};
-	ComPtr<ID3D11Buffer>					dissolve_cbuffer;
 	ComPtr<ID3D11VertexShader>				embedded_vertex_shader;
 	ComPtr<ID3D11PixelShader>				embedded_pixel_shader;
-	ComPtr<ID3D11ShaderResourceView>		mask_texture;
-	ComPtr<ID3D11ShaderResourceView>		transition_texture;
 };
 
 #endif // __FULLSCREEN_QUAD_H__

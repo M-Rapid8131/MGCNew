@@ -68,8 +68,8 @@ void AudioSource::PlayUsingMediaFoundation(bool loop,float volume)
 	XAUDIO2_BUFFER buffer = { 0 };
 	buffer.AudioBytes	= sizeof(BYTE) * SCast(UINT32,media_data.size());
 	buffer.pAudioData	= media_data.data();
-	buffer.LoopCount		= loop ? XAUDIO2_LOOP_INFINITE : 0;
-	buffer.Flags			= XAUDIO2_END_OF_STREAM;
+	buffer.LoopCount	= loop ? XAUDIO2_LOOP_INFINITE : 0;
+	buffer.Flags		= XAUDIO2_END_OF_STREAM;
 
 	is_playing = true;
 

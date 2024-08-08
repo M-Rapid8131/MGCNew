@@ -18,6 +18,15 @@ enum class EnumGamePadValue
 	OLD
 };
 
+enum class EnumInputDevice
+{
+	XBOX,
+	PS,
+	KEYBOARD,
+
+	UNDEFINE
+};
+
 // namespace
 inline namespace Button
 {
@@ -62,6 +71,7 @@ public:
 	GamePadButton	GetButtonDown() const		{ return button_down; }
 	GamePadButton	GetButtonUp() const			{ return button_up; }
 	GamePadButton	GetButton() const			{ return button_state[SCast(size_t,EnumGamePadValue::CURRENT)]; }
+	EnumInputDevice GetInputDevice()			{ return input_device; }
 
 	// public:セッター関数
 	void SetSlot(UINT i_slot)			{ slot = i_slot; }
@@ -79,6 +89,7 @@ private:
 	UINT			slot			= 0;
 	GamePadButton	button_down		= 0;
 	GamePadButton	button_up		= 0;
+	EnumInputDevice input_device	= EnumInputDevice::UNDEFINE;
 
 	GamePadButton	button_state[2] = { 0,0 };
 };

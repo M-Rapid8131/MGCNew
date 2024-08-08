@@ -19,11 +19,17 @@ enum class EnumCameraMode
 	CAMERA_MODE_NUM
 };
 
+enum class EnumCameraChannel
+{
+	TITLE,
+	GAME,
+};
+
 // using
 using Microsoft::WRL::ComPtr;
 
 // 定数
-static const DirectX::XMFLOAT3	DEFAULT_FPV_POSITION	= { 0.0f, 0.0f, 0.0f };
+static const DirectX::XMFLOAT3	DEFAULT_FPV_POSITION	= { 0.0f, 0.0f, 0.0f };	
 static const DirectX::XMFLOAT4	DEFAULT_FPV_DIRECTION	= { 0.0f, 0.0f, 1.0f, 0.0f };
 
 static const DirectX::XMFLOAT3	DEFAULT_TPV_TARGET		= { 0.0f, 0.0f, 0.0f };
@@ -35,7 +41,8 @@ class Camera
 {
 private:
 	// private:定数
-	static constexpr float BLUR_SIZE = 1.0f;
+	static constexpr float BLUR_SIZE		= 7.0f;
+	static constexpr float BLUR_ATTENUATION = 0.05f;
 
 	// private:定数バッファ構造体
 	// struct >> Camera >> [CbScene] register : b9
@@ -50,8 +57,9 @@ private:
 		DirectX::XMFLOAT3		camera_position;
 		float					blur_strength = 50.0f;
 		float					blur_size = 0.0f;
+		float					post_effect_blend = 1.0f;
 
-		float					cbscene_fpad[3];
+		float					cbscene_fpad[2];
 	};
 
 public:
@@ -82,8 +90,8 @@ public:
 	DirectX::XMFLOAT4X4&	GetProjection()		{ return projection; }
 	ComPtr<ID3D11Buffer>&	GetSceneCBuffer()	{ return scene_cbuffer; }	// shadow_map用
 	CbScene&				GetSceneConstants() { return scene_constants; }	// shadow_map用
-	FPVData*				GetFPVCamera(size_t index = 0) { return index < fpv_data.size() ? &fpv_data[index] : nullptr; }
-	TPVData*				GetTPVCamera(size_t index = 0) { return index < tpv_data.size() ? &tpv_data[index] : nullptr; }
+	FPVData*				GetFPVCamera(size_t channel = 0) { return channel < fpv_data.size() ? &fpv_data[channel] : nullptr; }
+	TPVData*				GetTPVCamera(size_t channel = 0) { return channel < tpv_data.size() ? &tpv_data[channel] : nullptr; }
 
 	// public:セッター関数
 	void SetView(const DirectX::XMFLOAT4X4 fm_view) { view = fm_view; }
@@ -102,6 +110,21 @@ public:
 	void AddTPVCamera(TPVData* = nullptr);
 	void SetCameraShift(const DirectX::XMFLOAT3 shift)	{ camera_shift = shift; }
 	void RadialBlur()									{ scene_constants.blur_size = BLUR_SIZE; }
+	void SetFPVChannel(size_t channel)					
+	{
+		if (fpv_data.size() > channel)
+		{
+			fpv_channel = channel;
+		}
+	}
+
+	void SetTPVChannel(size_t channel)					
+	{
+		if (tpv_data.size() > channel)
+		{
+			tpv_channel = channel;
+		}
+	}
 
 private:
 	// private:変数

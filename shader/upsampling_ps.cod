@@ -283,7 +283,7 @@ if_nz r0.w
 #line 16
 endif 
 
-#line 17
+#line 18
 mul o0.xyz, r0.xyzx, cb8[1].yyyy
 mov o0.w, l(1.000000)
 ret 

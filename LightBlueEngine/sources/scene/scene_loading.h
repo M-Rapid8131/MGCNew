@@ -15,6 +15,7 @@ class SceneLoading : public Scene
 {
 private:
 	// private:íËêî
+	static constexpr float EASING_LOOP_TIME = 2.0f;
 
 	// private:ç\ë¢ëÃ
 
@@ -38,9 +39,11 @@ public:
 
 private:
 	// private:ïœêî
-	std::unique_ptr<std::jthread>	thread = nullptr;
-	std::unique_ptr<Scene>			scene = nullptr;
-	std::unique_ptr<Sprite>			loading_sprite = nullptr;
+	float							easing_loop		= 0.0f;
+	std::unique_ptr<std::jthread>	thread			= nullptr;
+	std::unique_ptr<Scene>			scene			= nullptr;
+	std::unique_ptr<Sprite>			loading_sprite	= nullptr;
+	std::unique_ptr<Sprite>			loading_block	= nullptr;
 };
 
 #endif // __SCENE_LOADER_H__

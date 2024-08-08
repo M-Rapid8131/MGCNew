@@ -37,13 +37,16 @@ private:
 	static constexpr float HOLD_TIME_MOVE		= 0.2f;
 	static constexpr float BARRAGE_TIME_MOVE	= 0.02f;
 	static constexpr float HOLD_TIME_CANCEL		= 1.0f;
+	static constexpr float FLIP_LIMIT			= 0.5f;
 
 	// private:\‘¢‘Ì
 	// struct >> GamesystemInput >> [GameController]
 	struct GameController
 	{
-		float						hold_timer		= 0.0f;
-		float						barrage_timer	= 0.0f;
+		bool						rotate_fail			= false;
+		float						rotate_fail_timer	= 0.0f;
+		float						hold_timer			= 0.0f;
+		float						barrage_timer		= 0.0f;
 		EnumBlockRotation			block_rotation;
 		std::vector<GamePadButton>	command_buffer;
 	};
@@ -57,9 +60,10 @@ public:
 	void Initialize(HWND, UINT = MAX_PLAYER) override;
 	void Update(float) override;
 	void DebugGUI();
-	void BlockRotate(UINT, GamePadButton);
 	void ResetRotate(UINT id)			{ controllers[id].block_rotation = EnumBlockRotation::RIGHT; }
-	bool BlockFlip();
+	void RotationFail(UINT, EnumBlockRotation);
+	bool BlockRotate(UINT, GamePadButton);
+	bool BlockFlip(UINT);
 	bool ActivateMoveContinuous(UINT id){ return controllers[id].hold_timer > HOLD_TIME_MOVE; }
 	bool MachDrop(UINT id)				{ return game_pad[id]->GetButtonDown() & BTN_UP; }
 
