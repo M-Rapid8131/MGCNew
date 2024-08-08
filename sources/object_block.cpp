@@ -142,21 +142,21 @@ void ObjectBlock::BlockState::TransitionDisappearedState()
 // ƒuƒƒbƒN‚ð‘€ì‚µ‚Ä‚¢‚é‚Æ‚«
 void ObjectBlock::UpdateMoveState(float elapsed_time)
 {
-	bool lowest = false;
-	if (block_cell.column >= MAX_COLUMN) lowest = true;
-	bool fall = JudgeFallBlock();
-
 	if (flag_system.GetFlag(EnumBlockFlags::BLINK))
 		blink_time += elapsed_time;
 
-	if (!lowest && !fall)
-	{
+	EnumBlockRotation rotation = GamesystemInput::GetInstance()->GetBlockRotation(parent_board.GetPlayerID());
+	EnumBlockRotation top_rotation =
+		flag_system.GetFlag(EnumBlockFlags::BLINK)
+		? EnumBlockRotation::UNDER : EnumBlockRotation::TOP;
+
+	if(rotation == top_rotation)
+		DropBlock(parent_board.GetCurrentSpeed());
+
+	else if (parent_board.IsExistingBlockFromCell(BlockCell(block_cell.row, block_cell.column + 1)))
 		block_state.TransitionStandState();
-	}
-	else if (!lowest && fall)
-		block_cell.shift_y += parent_board.GetCurrentSpeed();
 	else
-		block_state.TransitionStandState();
+		DropBlock(parent_board.GetCurrentSpeed());
 
 }
 
@@ -183,7 +183,7 @@ void ObjectBlock::UpdateDropState(float elapsed_time)
 			moving = (*under_block_itr)->flag_system.GetFlag(EnumBlockFlags::MOVING);
 		if (moving)
 		{
-			block_cell.shift_y += parent_board.GetCurrentSpeed();
+			DropBlock(parent_board.GetCurrentSpeed());
 		}
 		else
 		{
@@ -193,7 +193,7 @@ void ObjectBlock::UpdateDropState(float elapsed_time)
 	else if (lowest)
 		block_state.TransitionPutState();
 	else
-		block_cell.shift_y += parent_board.GetCurrentSpeed();
+		DropBlock(parent_board.GetCurrentSpeed());
 
 }
 
@@ -445,28 +445,24 @@ void ObjectBlock::AccumulateBlockParticle(ID3D11PixelShader* accumlate_ps)
 	model->Render(false, particle_transform, block_color_factor, accumlate_ps);
 }
 
-void ObjectBlock::FollowPartnerBlock(EnumBlockRotation rotation, BlockCell& following_cell)
+void ObjectBlock::FollowPartnerBlock(EnumBlockRotation rotation)
 {
 	switch (rotation)
 	{
 	using enum EnumBlockRotation;
 	case RIGHT:
-		block_cell.row = following_cell.row + 1;
+	case LEFT:
+		block_cell.column = parent_board.GetRootBlockColumn();
 		break;
 	case UNDER:
-		block_cell.column = following_cell.column + 1;
-		break;
-	case LEFT:
-		block_cell.row = following_cell.row - 1;
+		block_cell.column = parent_board.GetRootBlockColumn() + 1;
 		break;
 	case TOP:
-		block_cell.column = following_cell.column - 1;
+		block_cell.column = parent_board.GetRootBlockColumn() - 1;
 		break;
 	default:
 		break;
 	}
-
-	block_cell.shift_y = following_cell.shift_y;
 
 	AdjustFromBlockCell();
 }
@@ -687,6 +683,8 @@ bool ObjectBlock::JudgeFallBlock()
 	const UINT STAND_HEIGHT = parent_board.GetStandCollisionHeight(block_cell.row - 1);
 	const UINT MODIFIED_MAX_COLUMN = flag_system.GetFlag(EnumBlockFlags::MOVING) && (rotation == top_rotation) ? STAND_HEIGHT : STAND_HEIGHT + 1;
 
+	int drop_count = 0;
+
 	while (block_cell.shift_y >= BLOCK_SIZE)
 	{
 		if (block_cell.column < MODIFIED_MAX_COLUMN)
@@ -699,6 +697,7 @@ bool ObjectBlock::JudgeFallBlock()
 			block_cell.shift_y = 0.0f;
 			block_cell.column = MODIFIED_MAX_COLUMN;
 		}
+		drop_count++;
 	}
 
 	AdjustFromBlockCell();
@@ -750,4 +749,38 @@ void ObjectBlock::SetDropping()
 	auto upper_itr = parent_board.GetBlockFromCell(UPPER_CELL);
 	if (!parent_board.IsInvalidBlockFromIterator(upper_itr))
 		(*upper_itr)->SetDropping();
+}
+
+void ObjectBlock::DropBlock(float speed)
+{
+	block_cell.shift_y += speed;
+
+	if (block_cell.shift_y < BLOCK_SIZE)	return;
+
+	parent_board.SetExistingBlockFromCell(block_cell, false);
+
+	UINT stand_height;
+	for (int i = MAX_COLUMN; i > 0; i--)
+	{
+		bool exist = parent_board.IsExistingBlockFromCell(BlockCell(block_cell.row, SCast(UINT, i)));
+		if (!exist)
+		{
+			stand_height = SCast(UINT, i);
+			break;
+		}
+	}
+
+	while (block_cell.shift_y >= BLOCK_SIZE)
+	{
+		block_cell.shift_y -= BLOCK_SIZE;
+		block_cell.column++;
+		if(block_cell.column >= stand_height)
+		{
+			block_cell.shift_y = 0.0f;
+			block_cell.column = stand_height;
+		}
+	}
+
+	AdjustFromBlockCell();
+	parent_board.SetExistingBlockFromCell(block_cell, true);
 }

@@ -56,10 +56,10 @@ enum class EnumCheckDirection
 enum class EnumGameMode
 {
 	NORMAL,
+	EASY,
 	IMPACT,
 	ENDLESS,
 	MISSION,
-	ULTIMATE,
 	BONUS,
 	NORMAL_DEMO,
 	
@@ -72,9 +72,9 @@ const float	SHAKE_FACTOR = 0.1f;
 const DirectX::XMFLOAT3 BOARD_COLOR_SET[SCast(int, EnumGameMode::UNDEFINE)] =
 {
 	{1.0f, 1.0f, 1.0f},
+	{0.0f, 1.0f, 0.0f},
 	{1.0f, 0.0f, 0.0f},
 	{0.0f, 1.0f, 1.0f},
-	{0.0f, 1.0f, 0.0f},
 	{1.0f, 0.0f, 1.0f},
 	{1.0f, 1.0f, 0.0f},
 	{1.0f, 1.0f, 1.0f},
@@ -87,8 +87,7 @@ protected:
 	// protected:定数
 	static const UINT ERASE_CONDITION			= 3;
 	static const UINT DEFAULT_START_LEVEL		= 1;
-	static const UINT LV_UP_BLOCK_COUNT			= 15;
-	static const UINT DEMO_LV_UP_BLOCK_COUNT	= 10;
+	static const UINT LV_UP_BLOCK_COUNT			= 5;
 	static const UINT SCORE_BASE				= 10;
 
 	static constexpr float				SPEED_FACTOR		= ObjectBlock::BLOCK_SIZE;
@@ -131,12 +130,15 @@ protected:
 		void Render();
 		void EmissiveRender();
 		void SetNewBlock();
+		void MoveBlock();
+		bool RotateBlock(bool);
 
 		// 変数
-		std::pair<bool, bool>	stand_switch;
+		bool					standing;
+		float					shift_y			= 0.0f;
+		BlockCell				root_cell		= { 0,0 };
 		std::list<PairBlock>	next_block;
-		BlockCell				left_cell		= { 0,0 };
-		BlockCell				right_cell		= { 0,0 };
+		//BlockCell				right_cell		= { 0,0 };
 		PairBlock				moving_block;
 		ObjectBoard*			obj;
 	};
@@ -196,6 +198,7 @@ public:
 	void	GameStart(int);
 	void	BonusStart();
 	void	AccumulateBoardParticle();
+	void	LevelUp();
 
 	bool	MoveToDeletedBlockList();
 	bool	CheckGameOver();
@@ -222,6 +225,7 @@ public:
 	const UINT							GetEraseBlockCount() const					{ return game_data.deleted_block_count; }
 	const UINT							GetStandCollisionHeight(UINT index) const	{ return stand_collision_heignt[index]; }
 	const UINT							GetPlayerID() const							{ return player_id; }
+	const UINT							GetRootBlockColumn() const					{ return root_block_column; }
 	const DirectX::XMFLOAT3				GetShakePosiiton() const					{ return shake_position; }
 	UPtrVector<ObjectBlock>::iterator	GetBlockFromCell(const BlockCell);
 	BoardState&							GetBoardState()								{ return board_state; }
@@ -256,6 +260,7 @@ protected:
 	float								current_speed			= 0.0f;		// 現在のブロック落下スピード
 	float								speed_increase_factor	= 0.0f;		// ブロック落下スピードの増加量
 	float								si_rank_bonus			= 0.0f;		// スピードランク上昇時の落下スピード増加量
+	UINT								current_rank			= -1;		// 現在のスピードランク
 	std::vector<int>					speed_rank;							// 落下スピードを大きく上昇させるレベルを格納。BGMもこれで変更
 
 	// 接地関係
@@ -264,6 +269,7 @@ protected:
 	float								stand_decrease_factor	= 0.0f;		// 接地からの猶予時間の減少量
 	float								waiting_time			= 0.0f;		// 全ブロック接地からの待機時間
 	float								waiting_time_limit		= 0.5f;		// 全ブロック接地から次の処理をするまでの時間
+	UINT								root_block_column = 0;
 
 	std::array<UINT, MAX_ROW>			stand_collision_heignt;
 

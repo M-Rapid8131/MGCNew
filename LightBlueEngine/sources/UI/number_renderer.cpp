@@ -29,7 +29,7 @@ NumberRenderer::~NumberRenderer()
 }
 
 // ®”•`‰æ
-void NumberRenderer::RenderInt(int number, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 scale, EnumNumberAlignment alignment)
+void NumberRenderer::RenderInt(int number, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 scale, EnumNumberAlignment alignment, DirectX::XMFLOAT4 color)
 {
 	int count	= 0;	// •`‰æ‚µ‚½”Žš‚ÌŒÂ”
 	int num		= 0;	// •`‰æ‚·‚é”Žš
@@ -61,7 +61,7 @@ void NumberRenderer::RenderInt(int number, DirectX::XMFLOAT2 pos, DirectX::XMFLO
 		number_sprite->Render(
 			{ modified_pos.x + (TEXT_SPR_WIDTH * scale.x) * SCast(float,count), modified_pos.y },
 			{ SCast(float, TEXT_SPR_WIDTH) * scale.x, SCast(float, TEXT_SPR_HEIGHT) * scale.y },
-			number_color,
+			color,
 			{ 0.0f,0.0f,0.0f },
 			{ TEXT_SPR_WIDTH * SCast(float, num),0.0f },
 			{ TEXT_SPR_WIDTH,TEXT_SPR_HEIGHT }
@@ -73,7 +73,7 @@ void NumberRenderer::RenderInt(int number, DirectX::XMFLOAT2 pos, DirectX::XMFLO
 }
 
 // ¬”ŠÜ‚Þ”‚Ì•`‰æ
-void NumberRenderer::RenderFloat(float number, int decimal_points, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 scale, EnumNumberAlignment alignment)
+void NumberRenderer::RenderFloat(float number, int decimal_points, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 scale, EnumNumberAlignment alignment, DirectX::XMFLOAT4 color)
 {
 	int count	= 0;	// •`‰æ‚µ‚½”Žš‚ÌŒÂ”
 	int adj_num = SCast(int, number) * PowInt(10, decimal_points);		// ¬”“_‚ðŠO‚·
@@ -111,7 +111,7 @@ void NumberRenderer::RenderFloat(float number, int decimal_points, DirectX::XMFL
 		number_sprite->Render(
 			{ modified_pos.x + (TEXT_SPR_WIDTH * scale.x) * SCast(float,count),modified_pos.y },
 			{ SCast(float, TEXT_SPR_WIDTH) * scale.x, SCast(float, TEXT_SPR_HEIGHT) * scale.y },
-			{ 1.0f,1.0f,1.0f,1.0f },
+			color,
 			{ 0.0f,0.0f,0.0f },
 			{ TEXT_SPR_WIDTH * SCast(float, num),0.0f },
 			{ TEXT_SPR_WIDTH,TEXT_SPR_HEIGHT }

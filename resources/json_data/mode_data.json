@@ -2,14 +2,16 @@
     "NORMAL": {
         "InitLevel": 1,
         "MaxLevel": 100,
-        "StartSpeed": 0.5,
-        "SpeedIncrease": 0.05,
-        "SI_Rank": 2.0,
+        "StartSpeed": 0.01,
+        "SpeedIncrease": 0.01,
+        "SIRank": 1.0,
         "StandDecrease": 0.0,
         "SpeedRank" : [
             1,
             30,
             60,
+            -1,
+            -1,
             -1
         ]
     },
@@ -18,49 +20,71 @@
         "MaxLevel": 30,
         "StartSpeed": 0.5,
         "SpeedIncrease": 0.05,
-        "SI_Rank": 0.0,
+        "SIRank": 0.0,
         "StandDecrease": 0.0,
         "SpeedRank" : [
             1,
+            -1,
+            -1,
+            -1,
+            -1,
             -1
         ]
     },
     "NORMAL_DEMO": {
         "InitLevel": 1,
         "MaxLevel": 30,
-        "StartSpeed": 0.5,
+        "StartSpeed": 1.0,
         "SpeedIncrease": 0.1,
-        "SI_Rank": 2.0,
+        "SIRank": 2.0,
         "StandDecrease": 0.0,
         "SpeedRank" : [
             1,
             10,
             20,
+            -1,
+            -1,
             -1
         ]
     },
     "IMPACT": {
-        "InitLevel": 31,
-        "MaxLevel": 70,
-        "SpeedIncrease": 1.0,
-        "StandDecrease": 0.01
+        "InitLevel": 1,
+        "MaxLevel": 130,
+        "StartSpeed": 5.0,
+        "SpeedIncrease": 0.01,
+        "SIRank": 2.0,
+        "StandDecrease": 0.005,
+        "SpeedRank" : [
+            -1,
+            -1,
+            1,
+            30,
+            60,
+            100
+        ]
     },
     "ENDLESS": {
         "InitLevel": 1,
-        "MaxLevel": 999,
-        "SpeedIncrease": 0.1,
-        "StandDecrease": 0.0
-    },
-    "ULTIMATE": {
-        "InitLevel": 51,
-        "MaxLevel": 70,
-        "SpeedIncrease": 2.0,
-        "StandDecrease": 0.03
+        "MaxLevel": 10000,
+        "StartSpeed": 0.1,
+        "SpeedIncrease": 0.005,
+        "SIRank": 0.0,
+        "StandDecrease": 0.00,
+        "SpeedRank" : [
+            1,
+            50,
+            100,
+            150,
+            200,
+            250
+        ]
     },
     "BONUS": {
         "InitLevel": 0,
         "MaxLevel": 0,
+        "StartSpeed": 10.0,
         "SpeedIncrease": 0.0,
+        "SIRank": 0.0,
         "StandDecrease": 0.00
     }
 }

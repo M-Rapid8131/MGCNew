@@ -45,27 +45,23 @@ public:
 	~NumberRenderer();
 
 	// public:’ÊíŠÖ”
-	void RenderInt(int number, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 scale,
-		EnumNumberAlignment alignment = EnumNumberAlignment::LEFT_ALIGNMENT);
+	void RenderInt(int, DirectX::XMFLOAT2, DirectX::XMFLOAT2, 
+		EnumNumberAlignment = EnumNumberAlignment::LEFT_ALIGNMENT, DirectX::XMFLOAT4 = { 1.0f, 1.0f, 1.0f, 1.0f });
 	//	RenderInt‚É‚Â‚¢‚Ä
 	//		‚T‚S‚R‚Q‚P(Œ…–Ú) ->digits	
 	//		«««««					
 	//		‚P‚Q‚R‚S‚T ->number			
 
-	void RenderFloat(float number, int decimal_points, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 scale, 
-		EnumNumberAlignment alignment = EnumNumberAlignment::LEFT_ALIGNMENT);
+	void RenderFloat(float, int, DirectX::XMFLOAT2, DirectX::XMFLOAT2, 
+		EnumNumberAlignment = EnumNumberAlignment::LEFT_ALIGNMENT, DirectX::XMFLOAT4 = { 1.0f, 1.0f, 1.0f, 1.0f });
 	//	RenderFloat‚É‚Â‚¢‚Ä
 	//		digits->‚W‚V‚U‚T‚S@‚R‚Q‚P(Œ…–Ú)
 	//				«««««	‚P‚Q‚R(¬”“_‘æNˆÊ)	<-decimal_points
 	//				«««««	«««
 	// 				‚P‚Q‚R‚S‚TD‚U‚V‚W ->number			
 
-	// public:ƒQƒbƒ^[ŠÖ”
-	DirectX::XMFLOAT4& GetNumberColor() { return number_color; };
-
 private:
 	// private:•Ï”
-	DirectX::XMFLOAT4			number_color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	std::unique_ptr<Sprite>		number_sprite;
 };
 

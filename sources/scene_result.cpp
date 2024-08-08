@@ -142,34 +142,39 @@ void SceneResult::Render()
 		float alpha = 0.0f;
 
 		// リザルト画面用の各スプライトを描画
-		DirectX::XMFLOAT2	result_size		= result_spr->GetSpriteSizeWithScaling(SPR_SCALE);
+		DirectX::XMFLOAT2	result_size = result_spr->GetSpriteSizeWithScaling(SPR_SCALE);
 		alpha = Easing::Out(EnumEasingType::QUART, EnumEasingMode::RATE,
 			appear_time.at("result"), appear_time.at("level"), scene_time);
 
 		result_spr->Render(
 			{ (width - result_size.x) * 0.5f, MARGIN_S },
 			result_size,
-			{1.0f, 1.0f, 1.0f, alpha}
+			{ 1.0f, 1.0f, 1.0f, alpha }
 		);
 
 
 		DirectX::XMFLOAT2 level_size = level_spr->GetSpriteSizeWithScaling(SPR_SCALE);
 		alpha = Easing::Out(EnumEasingType::QUART, EnumEasingMode::RATE,
 			appear_time.at("level"), appear_time.at("count"), scene_time);
-		number_renderer->GetNumberColor().w = alpha;
-		level_spr->Render(
+
+		DirectX::XMFLOAT4 level_number_color;
+		if (result.cleared)
+			level_number_color = { 1.0f, 1.0f, 0.0f, alpha };
+		else
+			level_number_color = { 1.0f, 1.0f, 1.0f, alpha };
+		
+			level_spr->Render(
 			{ MARGIN_L, MARGIN_S * 5.0f },
 			level_size,
 			{ 1.0f, 1.0f, 1.0f, alpha}
 		);
 
 		number_renderer->RenderInt(result.speed_level, { width - MARGIN_L, MARGIN_S * 5.0f },
-			SPR_SCALE, EnumNumberAlignment::RIGHT_ALIGNMENT);
+			SPR_SCALE, EnumNumberAlignment::RIGHT_ALIGNMENT, level_number_color);
 
 		DirectX::XMFLOAT2 block_count_size = block_count_spr->GetSpriteSizeWithScaling(SPR_SCALE);
 		alpha = Easing::Out(EnumEasingType::QUART, EnumEasingMode::RATE,
 			appear_time.at("count"), appear_time.at("score"), scene_time);
-		number_renderer->GetNumberColor().w = alpha;
 
 		block_count_spr->Render(
 			{ MARGIN_L, MARGIN_S * 8.0f },
@@ -178,12 +183,11 @@ void SceneResult::Render()
 		);
 
 		number_renderer->RenderInt(result.deleted_block_count, { width - MARGIN_L, MARGIN_S * 8.0f },
-			SPR_SCALE, EnumNumberAlignment::RIGHT_ALIGNMENT);
+			SPR_SCALE, EnumNumberAlignment::RIGHT_ALIGNMENT, { 1.0f, 1.0f, 1.0f, alpha });
 
 		DirectX::XMFLOAT2 score_size = score_spr->GetSpriteSizeWithScaling(SPR_SCALE);
 		alpha = Easing::Out(EnumEasingType::QUART, EnumEasingMode::RATE,
 			appear_time.at("score"), appear_time.at("score") + 0.5f, scene_time);
-		number_renderer->GetNumberColor().w = alpha;
 
 		score_spr->Render(
 			{ MARGIN_L, MARGIN_S * 11.0f },
@@ -192,7 +196,7 @@ void SceneResult::Render()
 		);
 
 		number_renderer->RenderInt(result.score, { width - MARGIN_L, MARGIN_S * 11.0f },
-			SPR_SCALE, EnumNumberAlignment::RIGHT_ALIGNMENT);
+			SPR_SCALE, EnumNumberAlignment::RIGHT_ALIGNMENT, { 1.0f, 1.0f, 1.0f, alpha });
 
 	}
 	framebuffer_manager->Deactivate("main");

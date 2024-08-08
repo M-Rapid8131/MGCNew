@@ -196,7 +196,7 @@ public:
 	void	AdjustFromBlockCell();
 	void	ResetShiftY();
 	void	AccumulateBlockParticle(ID3D11PixelShader*);
-	void	FollowPartnerBlock(EnumBlockRotation, BlockCell&);
+	void	FollowPartnerBlock(EnumBlockRotation);
 	void	MoveBlock(GamePadButton);
 	void	LiftBlock(EnumBlockRotation);
 	bool	RotateBlock(ObjectBlock*, EnumBlockRotation, bool = false);		// 右ブロックのみ使用
@@ -238,6 +238,7 @@ public:
 	}
 
 	void				SetDropping();
+	void				DropBlock(float speed);
 
 private:
 	// private:変数
