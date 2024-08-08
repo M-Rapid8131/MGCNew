@@ -73,6 +73,9 @@
     <Filter Include="HLSL\2D\Bloom">
       <UniqueIdentifier>{f7cd4714-b1ba-4ac8-9494-5076bb57bc52}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SourceCodes\Component">
+      <UniqueIdentifier>{1c611af0-5342-4806-adcb-bd6be83904c1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\input\game_pad.cpp">
@@ -430,6 +433,12 @@
     </ClInclude>
     <ClInclude Include="sources\easing.h">
       <Filter>SourceCodes\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\component\component_base.h">
+      <Filter>SourceCodes\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\component\component_presets.h">
+      <Filter>SourceCodes\Component</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
