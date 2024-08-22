@@ -154,6 +154,9 @@ void SceneGame::Initialize()
 		detail_spr = std::make_unique<Sprite>(w_game_mode_detail_filename[i]);
 	}
 
+	mode_arrow_u_sprite = std::make_unique<Sprite>(L"resources/sprite/mode_select_up.png");
+	mode_arrow_d_sprite = std::make_unique<Sprite>(L"resources/sprite/mode_select_down.png");
+
 	game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->ChangeBoardColorFromGameMode(game_mode_list[selecting_mode_num]);
 
 	const wchar_t* w_pause_menu_filename[] = {
@@ -223,6 +226,7 @@ void SceneGame::Update(float elapsed_time)
 
 			if ((PAD->GetButtonDown() & BTN_UP) && selecting_pause_menu_num > 0)
 			{
+				before_pause_menu_num = selecting_mode_num;
 				selecting_pause_menu_num--;
 				sprite_move_time = 1.0f;
 				audio_manager->PlaySE(EnumSEBank::LEVEL_UP);
@@ -230,6 +234,7 @@ void SceneGame::Update(float elapsed_time)
 
 			if ((PAD->GetButtonDown() & BTN_DOWN) && selecting_pause_menu_num < 2)
 			{
+				before_pause_menu_num = selecting_mode_num;
 				selecting_pause_menu_num++;
 				sprite_move_time = 1.0f;
 				audio_manager->PlaySE(EnumSEBank::LEVEL_UP);
@@ -366,7 +371,7 @@ void SceneGame::Update(float elapsed_time)
 			sprite_move_time = 0.0f;
 		}
 		move_easing_rate = Easing::In(EnumEasingType::QUINT, sprite_move_time);
-		sprite_move = move_easing_rate * MOVE_FACTOR;
+		sprite_move = move_easing_rate * MENU_DISTANCE;
 	}
 	else if (sprite_move_time < 0.0f)
 	{
@@ -376,7 +381,7 @@ void SceneGame::Update(float elapsed_time)
 			sprite_move_time = 0.0f;
 		}
 		move_easing_rate = Easing::In(EnumEasingType::QUINT, -sprite_move_time);
-		sprite_move = move_easing_rate * -MOVE_FACTOR;
+		sprite_move = move_easing_rate * -MENU_DISTANCE;
 	}
 
 	scene_time += elapsed_time;
@@ -490,6 +495,51 @@ void SceneGame::Render()
 				{ spr_wdt_select, spr_hgt_select }
 			);
 
+			float spr_wdt_arrow = mode_arrow_d_sprite->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).x;
+			float spr_hgt_arrow = mode_arrow_d_sprite->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).y;
+
+			if (selecting_mode_num > 0)
+			{
+				DirectX::XMFLOAT4 arrow_color;
+				arrow_color.x = BOARD_COLOR_SET[SCast(int, game_mode_list[selecting_mode_num - 1])].x;
+				arrow_color.y = BOARD_COLOR_SET[SCast(int, game_mode_list[selecting_mode_num - 1])].y;
+				arrow_color.z = BOARD_COLOR_SET[SCast(int, game_mode_list[selecting_mode_num - 1])].z;
+				arrow_color.w = 1.0f;
+
+				mode_arrow_u_sprite->Render(
+					{ (width - spr_wdt) * 0.5f, (height - spr_hgt) * 0.5f - spr_hgt_arrow + sprite_move },
+					{ spr_wdt_arrow, spr_hgt_arrow },
+					arrow_color
+					);
+
+				mode_arrow_u_sprite->Render(
+					{ (width + spr_wdt) * 0.5f - spr_wdt_arrow, (height - spr_hgt) * 0.5f - spr_hgt_arrow + sprite_move },
+					{ spr_wdt_arrow, spr_hgt_arrow },
+					arrow_color
+					);
+			}
+
+			if (selecting_mode_num < game_mode_list.size() - 1)
+			{
+				DirectX::XMFLOAT4 arrow_color;
+				arrow_color.x = BOARD_COLOR_SET[SCast(int, game_mode_list[selecting_mode_num + 1])].x;
+				arrow_color.y = BOARD_COLOR_SET[SCast(int, game_mode_list[selecting_mode_num + 1])].y;
+				arrow_color.z = BOARD_COLOR_SET[SCast(int, game_mode_list[selecting_mode_num + 1])].z;
+				arrow_color.w = 1.0f;
+
+				mode_arrow_d_sprite->Render(
+					{ (width - spr_wdt) * 0.5f, (height + spr_hgt_arrow) * 0.5f + sprite_move },
+					{ spr_wdt_arrow, spr_hgt_arrow },
+					arrow_color
+					);
+				
+				mode_arrow_d_sprite->Render(
+					{ (width + spr_wdt) * 0.5f - spr_wdt_arrow, (height + spr_hgt_arrow) * 0.5f + sprite_move },
+					{ spr_wdt_arrow, spr_hgt_arrow },
+					arrow_color
+					);
+			}
+
 			float spr_wdt_detail = game_mode_detail[selecting_mode_num]->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).x;
 			float spr_hgt_detail = game_mode_detail[selecting_mode_num]->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).y;
 
@@ -538,7 +588,11 @@ void SceneGame::Render()
 				float spr_wdt_menu = pause_menu[i]->GetSpriteSizeWithScaling({ 0.4f, 0.4f }).x;
 				float spr_hgt_menu = pause_menu[i]->GetSpriteSizeWithScaling({ 0.4f, 0.4f }).y;
 
-				float color_factor = (i == selecting_pause_menu_num) ? 0.5f + (1.0f - move_easing_rate) * 0.5f : 0.5f;
+				float color_factor = (i == selecting_pause_menu_num) 
+					? 0.5f + (1.0f - move_easing_rate) * 0.5f 
+					: (i == before_pause_menu_num) 
+						? 0.5f + move_easing_rate * 0.5f
+						: 0.5f;
 
 				pause_menu[i]->Render(
 					{ (width - spr_wdt_menu) * 0.5f, (height - spr_hgt_menu) * 0.5f + MENU_DISTANCE * (i - 1)},

@@ -217,7 +217,6 @@ public:
 	bool						GetErasing()						{ return flag_system.GetFlag(EnumBlockFlags::ERASING); };
 	const int					GetBlockColorNum()				{ return SCast(int, block_color); }
 	const float					GetBlockTopPosition()			{ return this->translation.y - BLOCK_SIZE * 0.5f; }
-	DirectX::XMFLOAT4X4			GetParticleTransform() const;
 	EnumBlockColor				GetBlockColor()					{ return block_color; }
 	GameModel*					GetModel() override				{ return model.get(); }
 	BlockCell&					GetBlockCell()					{ return block_cell; }
@@ -257,6 +256,7 @@ private:
 	// private:変数
 	// ブロックの色関係
 	float								blink_time;
+	float								drop_speed = 0.0f;
 	EnumBlockColor						block_color		= EnumBlockColor::UNDEFINE;		// blockの色
 	DirectX::XMFLOAT3					block_color_factor;
 	DirectX::XMFLOAT3					ghost_translation = {0.0f, 1.0f, 0.0f};

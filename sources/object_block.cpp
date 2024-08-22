@@ -106,6 +106,8 @@ void ObjectBlock::BlockState::TransitionPutState()
 
 	state = EnumBlockState::PUT;
 
+	obj->drop_speed = 0.0f;
+
 	obj->ResetShiftY();
 
 	obj->flag_system.SetFlag(EnumBlockFlags::FIRING_PARTICLE, false);
@@ -125,13 +127,6 @@ void ObjectBlock::BlockState::TransitionEraseState()
 	obj->EraseConfirm();
 
 	obj->parent_board.SetBlockColorFromCell(obj->block_cell, obj->block_color);
-
-	//auto call_back = [&](ID3D11PixelShader* accumulate_ps)
-	//{
-	//	Graphics* graphics = Graphics::GetInstance();
-	//	obj->model->Render(false, obj->transform, obj->block_color_factor, accumulate_ps);
-	//};
-	//obj->block_particle->AccumulateParticles(call_back);
 
 	obj->state_update = nullptr;
 }
@@ -173,31 +168,12 @@ void ObjectBlock::UpdateStandState(float elapsed_time)
 // ブロックが落下中のとき
 void ObjectBlock::UpdateDropState(float elapsed_time)
 {
-	bool lowest = false;
-	if (block_cell.column >= MAX_COLUMN) lowest = true;
-	flag_system.SetFlag(EnumBlockFlags::BLINK, false);
+	bool result = DropBlock(parent_board.GetCurrentSpeed());
 
-	bool fall = JudgeFallBlock();
-	if (!lowest && fall)
-	{
-		auto under_block_itr = parent_board.GetBlockFromCell(UNDER_CELL);
-		bool moving = true;
-		if (!parent_board.IsInvalidBlockFromIterator(under_block_itr))
-			moving = (*under_block_itr)->flag_system.GetFlag(EnumBlockFlags::MOVING);
-		if (moving)
-		{
-			DropBlock(parent_board.GetCurrentSpeed());
-		}
-		else
-		{
-			block_state.TransitionPutState();
-		}
-	}
-	else if (lowest)
+	if (result)
 		block_state.TransitionPutState();
 	else
-		DropBlock(parent_board.GetCurrentSpeed());
-
+		drop_speed += elapsed_time;
 }
 
 // ブロックが動いていないとき
@@ -222,16 +198,6 @@ void ObjectBlock::UpdatePutState(float elapsed_time)
 	{
 		SetDropping();
 	}
-}
-
-// パーティクルの行列を取得
-DirectX::XMFLOAT4X4 ObjectBlock::GetParticleTransform() const
-{
-	DirectX::XMFLOAT4X4 particle_transform;
-	DirectX::XMStoreFloat4x4(&particle_transform,
-		DirectX::XMLoadFloat4x4(&transform) * DirectX::XMMatrixTranslation(+1, 0, 0));
-
-	return particle_transform;
 }
 
 // コンストラクタ
@@ -278,7 +244,7 @@ ObjectBlock::ObjectBlock(bool obstacle, ObjectBoard* parent_board)
 
 	emitter.emit_size	= 0.2f;
 	emitter.spread_rate = 0.0f;
-	emitter.emit_speed	= parent_board->GetCurrentSpeed();
+	emitter.emit_speed	= 0.0f;
 	emitter.emit_accel	= -3.0f;
 	emitter.life_time	= PARTICLE_LIFE;
 	emitter.start_diff	= 0.01f;
@@ -764,6 +730,12 @@ void ObjectBlock::SetDropping()
 bool ObjectBlock::DropBlock(float speed)
 {
 	block_cell.shift_y += speed;
+
+	if (block_state.state == EnumBlockState::DROP)
+	{
+		if (parent_board.IsExistFromColorMatrix(BlockCell(UNDER_CELL)))
+			return true;
+	}
 
 	if (block_cell.shift_y < BLOCK_SIZE)
 	{

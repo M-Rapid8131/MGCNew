@@ -36,6 +36,7 @@ private:
 	bool								pausing_game				= false;
 	int									selecting_mode_num			= 0;
 	int									selecting_pause_menu_num	= 0;
+	int									before_pause_menu_num		= 0;
 	float								sprite_move					= 0.0f;
 	float								sprite_move_time			= 0.0f;
 	float								move_easing_rate			= 0.0f;
@@ -45,6 +46,8 @@ private:
 	std::unique_ptr<BloomEffect>		emissive_bloom;
 	std::unique_ptr<Sprite>				mode_select;
 	std::unique_ptr<Sprite>				pause_sprite;
+	std::unique_ptr<Sprite>				mode_arrow_u_sprite;
+	std::unique_ptr<Sprite>				mode_arrow_d_sprite;
 
 	UPtrVector<Sprite>					game_mode_sprite;
 	UPtrVector<Sprite>					game_mode_detail;

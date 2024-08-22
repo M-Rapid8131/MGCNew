@@ -95,6 +95,7 @@ protected:
 	static const UINT DIAGONAL_ADJUST			= MAX_ROW;
 
 	static constexpr float				SPEED_FACTOR		= ObjectBlock::BLOCK_SIZE;
+	static constexpr float				ACCEL_SPEED			= ObjectBlock::BLOCK_SIZE * 25.0f;
 	static constexpr float				SPEED_LIMIT			= ObjectBlock::BLOCK_SIZE * 2000.0f;
 	static constexpr float				BONUS_SPEED			= 500.0f;
 	static constexpr float				EASY_BONUS_SPEED	= 200.0f;
@@ -281,7 +282,7 @@ protected:
 	float								speed_increase_factor	= 0.0f;		// ブロック落下スピードの増加量
 	float								si_rank_bonus			= 0.0f;		// スピードランク上昇時の落下スピード増加量
 	UINT								current_rank			= -1;		// 現在のスピードランク
-	std::vector<int>					speed_rank;							// 落下スピードを大きく上昇させるレベルを格納。BGMもこれで変更
+	std::vector<int>					speed_rank;							// 落下スピードを大きく変化させるレベルを格納。BGMもこれで変更
 
 	// 接地関係
 	float								standing_time			= 0.0f;		// 接地からの時間

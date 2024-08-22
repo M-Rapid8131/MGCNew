@@ -115,22 +115,7 @@ void ObjectBoard::NextBlock::Update(float elapsed_time)
 
 		if (hold & BTN_DOWN)
 		{
-			int rank_dist;
-			if (obj->current_rank == 5)
-			{
-				rank_dist = 0;
-			}
-			else if (obj->speed_rank[obj->current_rank + 1] == -1)
-			{
-				rank_dist = obj->game_data.max_level - obj->speed_rank[obj->current_rank];
-			}
-			else
-			{
-				rank_dist = obj->speed_rank[obj->current_rank + 1] - obj->speed_rank[obj->current_rank];
-			}
-
-			float accel_speed = (SCast(float, rank_dist) / SCast(float, obj->current_rank + 1));
-			obj->current_speed += accel_speed;
+			obj->current_speed = obj->level_speed > ACCEL_SPEED ? obj->level_speed : ACCEL_SPEED;
 		}
 
 		if (input & BTN_UP)
@@ -681,27 +666,6 @@ void ObjectBoard::BoardState::TransitionGameOverState(bool cleared)
 	}
 
 	obj->MoveToDeletedBlockList();
-
-	ParticleSystem::CbParticleEmitter	cb_emitter;
-	cb_emitter.emit_amounts = 100000;
-	cb_emitter.emit_speed	= 5.0f;
-	cb_emitter.life_time	= 1.0f;
-	cb_emitter.emit_size	= 0.2f;
-	cb_emitter.emit_radius	= 0.5f;
-
-	EraseParticleData& erase_particle_data = obj->erase_block_particle.emplace_back();
-
-	erase_particle_data.first = std::make_unique<ParticleSystem>(cb_emitter, true, "accumulate_particle_ps.cso");
-
-	auto call_back = [&](ID3D11PixelShader* accumulate_ps) {
-		for (const auto& erased_block : obj->erased_block_list)
-		{
-			erased_block->AccumulateBlockParticle(accumulate_ps);
-		}
-		};
-	erase_particle_data.first->AccumulateParticles(call_back);
-
-	erase_particle_data.second = 1.0f;
 
 	for (int row = 0; row < MAX_ROW; row++)
 	{
