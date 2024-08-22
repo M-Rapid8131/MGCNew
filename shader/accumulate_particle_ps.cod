@@ -549,50 +549,49 @@ mov r0.y, r0.y  // r0.y <- <GetMaterialData return value>.basecolor_factor.w
 #line 16 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\accumulate_particle_ps.hlsl"
 mov r0.y, r0.y  // r0.y <- material_data.basecolor_factor.w
 
-#line 22
-mov r0.xzw, v2.xxyz  // r0.x <- norm_vec.x; r0.z <- norm_vec.y; r0.w <- norm_vec.z
-
-#line 40
+#line 17
 mov r0.y, r0.y  // r0.y <- color.w
 
-#line 41
-lt r1.x, r0.y, l(0.010000)
-if_nz r1.x
+#line 18
+lt r0.x, r0.y, l(0.010000)
+if_nz r0.x
 
-#line 42
+#line 19
   discard_nz l(-1)
 endif 
 
-#line 48
+#line 25
+mov r0.xzw, v2.xxyz  // r0.x <- norm_vec.x; r0.z <- norm_vec.y; r0.w <- norm_vec.z
+
+#line 37
 mov r1.x, l(0)  // r1.x <- particle.particle_index
 
-#line 49
-mov r1.yzw, l(-0.000000,-1.000000,-0.000000,-0.000000)
-add r1.yzw, r1.yyzw, v1.xxyz  // r1.y <- particle.position.x; r1.z <- particle.position.y; r1.w <- particle.position.z
+#line 38
+mov r1.yzw, v1.xxyz  // r1.y <- particle.position.x; r1.z <- particle.position.y; r1.w <- particle.position.z
 
-#line 50
+#line 39
 mov r2.x, cb5[5].x  // r2.x <- particle.size
 
-#line 51
+#line 40
 mov r2.yzw, cb2[0].xxyz  // r2.y <- particle.color.x; r2.z <- particle.color.y; r2.w <- particle.color.z
 mov r0.y, r0.y  // r0.y <- particle.color.w
 
-#line 52
+#line 41
 mul r3.xyz, r0.xzwx, cb5[1].wwww  // r3.x <- particle.velocity.x; r3.y <- particle.velocity.y; r3.z <- particle.velocity.z
 
-#line 53
+#line 42
 mov r4.xyz, l(0,0,0,0)  // r4.x <- particle.acceleration.x; r4.y <- particle.acceleration.y; r4.z <- particle.acceleration.z
 
-#line 54
+#line 43
 mov r0.xzw, r0.xxzw  // r0.x <- particle.normal.x; r0.z <- particle.normal.y; r0.w <- particle.normal.z
 
-#line 55
+#line 44
 mov r3.w, cb5[5].y  // r3.w <- particle.life
 
-#line 56
+#line 45
 mov r4.w, l(0)  // r4.w <- particle.start_time
 
-#line 58
+#line 47
 imm_atomic_alloc r5.x, u1
 store_structured u1.x, r5.x, l(0), r1.x
 store_structured u1.x, r5.x, l(4), r1.y
@@ -615,6 +614,6 @@ store_structured u1.x, r5.x, l(68), r0.w
 store_structured u1.x, r5.x, l(72), r3.w
 store_structured u1.x, r5.x, l(76), r4.w
 
-#line 59
+#line 48
 ret 
-// Approximately 120 instruction slots used
+// Approximately 119 instruction slots used

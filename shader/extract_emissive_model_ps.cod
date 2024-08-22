@@ -320,7 +320,7 @@
 // SV_TARGET                0   xyzw        0   TARGET   float   xyzw
 //
 ps_5_0
-dcl_globalFlags refactoringAllowed | skipOptimization
+dcl_globalFlags refactoringAllowed
 dcl_constantbuffer CB0[5], immediateIndexed
 dcl_constantbuffer CB2[2], immediateIndexed
 dcl_sampler s2, mode_default
@@ -329,281 +329,44 @@ dcl_resource_texture2d (float,float,float,float) t16
 dcl_resource_texture2d (float,float,float,float) t19
 dcl_input_ps linear v4.xy
 dcl_output o0.xyzw
-dcl_temps 10
-//
-// Initial variable locations:
-//   v0.x <- pin.position.x; v0.y <- pin.position.y; v0.z <- pin.position.z; v0.w <- pin.position.w; 
-//   v1.x <- pin.w_position.x; v1.y <- pin.w_position.y; v1.z <- pin.w_position.z; v1.w <- pin.w_position.w; 
-//   v2.x <- pin.w_normal.x; v2.y <- pin.w_normal.y; v2.z <- pin.w_normal.z; v2.w <- pin.w_normal.w; 
-//   v3.x <- pin.w_tangent.x; v3.y <- pin.w_tangent.y; v3.z <- pin.w_tangent.z; v3.w <- pin.w_tangent.w; 
-//   v4.x <- pin.texcoord.x; v4.y <- pin.texcoord.y; 
-//   v5.x <- pin.shadow_texcoord.x; v5.y <- pin.shadow_texcoord.y; v5.z <- pin.shadow_texcoord.z; 
-//   o0.x <- <ShaderMain return value>.x; o0.y <- <ShaderMain return value>.y; o0.z <- <ShaderMain return value>.z; o0.w <- <ShaderMain return value>.w
-//
-#line 19 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
-mov r0.x, l(2.200000)  // r0.x <- GAMMA
-
-#line 8 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\3D\extract_emissive_model_ps.hlsl"
-mov r0.y, cb0[4].y
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r1.x, r0.y, l(12), t0.xxxx  // r1.x <- mtl.emissive_factor.x
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r1.y, r0.y, l(16), t0.xxxx  // r1.y <- mtl.emissive_factor.y
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r1.z, r0.y, l(20), t0.xxxx  // r1.z <- mtl.emissive_factor.z
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r0.z, r0.y, l(36), t0.xxxx  // r0.z <- mtl.pbr_metallic_roughness.basecolor_factor.w
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r2.x, r0.y, l(40), t0.xxxx  // r2.x <- mtl.pbr_metallic_roughness.basecolor_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r3.x, r0.y, l(52), t0.xxxx  // r3.x <- mtl.pbr_metallic_roughness.basecolor_texture.khr_texture_transform.rotation
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r3.y, r0.y, l(64), t0.xxxx  // r3.y <- mtl.pbr_metallic_roughness.basecolor_texture.khr_texture_transform.scale.x
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r3.z, r0.y, l(68), t0.xxxx  // r3.z <- mtl.pbr_metallic_roughness.basecolor_texture.khr_texture_transform.scale.y
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r2.z, r0.y, l(80), t0.xxxx  // r2.z <- mtl.pbr_metallic_roughness.metallic_roughness_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r4.x, r0.y, l(148), t0.xxxx  // r4.x <- mtl.occulusion_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r2.w, r0.y, l(184), t0.xxxx  // r2.w <- mtl.emissive_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r5.x, r0.y, l(196), t0.xxxx  // r5.x <- mtl.emissive_texture.khr_texture_transform.rotation
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r5.y, r0.y, l(208), t0.xxxx  // r5.y <- mtl.emissive_texture.khr_texture_transform.scale.x
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r5.z, r0.y, l(212), t0.xxxx  // r5.z <- mtl.emissive_texture.khr_texture_transform.scale.y
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r4.y, r0.y, l(220), t0.xxxx  // r4.y <- mtl.clearcoat.clearcoat_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r4.z, r0.y, l(256), t0.xxxx  // r4.z <- mtl.clearcoat.clearcoat_roughness_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r4.w, r0.y, l(328), t0.xxxx  // r4.w <- mtl.transmission.transmission_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r2.y, r0.y, l(360), t0.xxxx  // r2.y <- mtl.emissive_strength.emissive_strength
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r6.x, r0.y, l(368), t0.xxxx  // r6.x <- mtl.specular.specular_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r6.y, r0.y, l(412), t0.xxxx  // r6.y <- mtl.specular.specular_color_texture.index
-
-#line 10
-nop 
-mov r4.xyzw, r4.xyzw
-mov r1.xyz, r1.xyzx
-mov r3.xyz, r3.xyzx
-mov r5.xyz, r5.xyzx
-mov r6.xy, r6.xyxx
-mov r0.z, r0.z
-mov r2.xyzw, r2.xyzw
-mov r7.xy, v4.xyxx
-
-#line 83 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\3D\3D_utility\material_data.hlsli"
-mov r0.z, r0.z  // r0.z <- basecolor.w
-
-#line 85
-ilt r0.y, l(-1), r2.x
+dcl_temps 5
+ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r0.xy, cb0[4].y, l(36), t0.xyxx
+ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r0.z, cb0[4].y, l(184), t0.xxxx
+ilt r0.y, l(-1), r0.y
 if_nz r0.y
-
-#line 87
-  nop 
-  mov r7.xy, r7.xyxx
-  mov r3.xyz, r3.xyzx
-
-#line 18 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\3D\Extension\transform.hlsli"
-  mov r3.x, r3.x  // r3.x <- ROTATION
-
-#line 19
-  mov r3.yz, r3.yyzy  // r3.y <- SCALE.x; r3.z <- SCALE.y
-
-#line 21
-  sincos null, r0.y, r3.x  // r0.y <- COSINE
-
-#line 22
-  sincos r0.w, null, r3.x  // r0.w <- SINE
-
-#line 24
-  mul r8.x, r0.y, r3.y  // r8.x <- mat._m00
-  mov r1.w, -r3.z
-  mul r9.x, r0.w, r1.w  // r9.x <- mat._m01
-  mul r8.y, r0.w, r3.y  // r8.y <- mat._m10
-  mul r9.y, r0.y, r3.z  // r9.y <- mat._m11
-  itof r0.yw, l(0, 0, 0, 0)  // r0.y <- mat._m20; r0.w <- mat._m21
-  mov r8.z, r0.y  // r8.z <- mat._m20
-  mov r9.z, r0.w  // r9.z <- mat._m21
-
-#line 31
-  itof r7.z, l(1)
-  dp3 r3.x, r7.xyzx, r8.xyzx  // r3.x <- transformed_texcoord.x
-  dp3 r3.y, r7.xyzx, r9.xyzx  // r3.y <- transformed_texcoord.y
-
-#line 33
-  mov r3.xy, r3.xyxx  // r3.x <- <TransformTexcoord return value>.x; r3.y <- <TransformTexcoord return value>.y
-
-#line 87 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\3D\3D_utility\material_data.hlsli"
-  mov r3.xy, r3.xyxx  // r3.x <- transformed_texcoord.x; r3.y <- transformed_texcoord.y
-
-#line 89
-  sample_indexable(texture2d)(float,float,float,float) r0.y, r3.xyxx, t16.xwyz, s2  // r0.y <- sampled.w
-
-#line 91
-  mul r2.x, r0.y, r0.z  // r2.x <- basecolor.w
-
-#line 92
-else   // Prior locations: r2.x <- mtl.pbr_metallic_roughness.basecolor_texture.index; r3.x <- mtl.pbr_metallic_roughness.basecolor_texture.khr_texture_transform.rotation; r3.y <- mtl.pbr_metallic_roughness.basecolor_texture.khr_texture_transform.scale.x; r3.x <- material.pbr_metallic_roughness.basecolor_texture.khr_texture_transform.rotation; r3.y <- material.pbr_metallic_roughness.basecolor_texture.khr_texture_transform.scale.x; r2.x <- material.pbr_metallic_roughness.basecolor_texture.index; r0.z <- basecolor.w
-  mov r2.x, r0.z  // r2.x <- basecolor.w
+  ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r0.y, cb0[4].y, l(52), t0.xxxx
+  ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r1.xy, cb0[4].y, l(64), t0.xyxx
+  sincos r2.x, r3.x, r0.y
+  mul r4.x, -r1.y, r2.x
+  mul r4.w, r1.x, r2.x
+  mul r4.yz, r1.xxyx, r3.xxxx
+  dp2 r1.x, v4.xyxx, r4.ywyy
+  dp2 r1.y, v4.xyxx, r4.xzxx
+  sample_indexable(texture2d)(float,float,float,float) r0.y, r1.xyxx, t16.xwyz, s2
+  mul r0.x, r0.y, r0.x
 endif 
-
-#line 94
-mov r2.x, r2.x  // r2.x <- material_data.basecolor_factor.w
-
-#line 101
-ilt r0.y, l(-1), r2.z
+ilt r0.y, l(-1), r0.z
 if_nz r0.y
-
-#line 103
-  nop 
-
-#line 108
+  ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r0.y, cb0[4].y, l(196), t0.xxxx
+  ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r0.zw, cb0[4].y, l(208), t0.xxxy
+  sincos r1.x, r2.x, r0.y
+  mul r3.x, -r0.w, r1.x
+  mul r3.w, r0.z, r1.x
+  mul r3.yz, r0.zzwz, r2.xxxx
+  dp2 r1.x, v4.xyxx, r3.ywyy
+  dp2 r1.y, v4.xyxx, r3.xzxx
+  sample_indexable(texture2d)(float,float,float,float) r1.xyzw, r1.xyxx, t19.xyzw, s2
+  log r0.yzw, |r1.xxyz|
+  mul r0.yzw, r0.yyzw, l(0.000000, 2.200000, 2.200000, 2.200000)
+  exp r0.yzw, r0.yyzw
+  mov o0.w, r1.w
+else 
+  ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r0.yzw, cb0[4].y, l(12), t0.xxyz
+  ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) o0.w, cb0[4].y, l(360), t0.xxxx
 endif 
-
-#line 119
-mov r1.xyz, r1.xyzx  // r1.x <- emissive.x; r1.y <- emissive.y; r1.z <- emissive.z
-
-#line 120
-mov r2.y, r2.y  // r2.y <- emissive_strength
-
-#line 122
-ilt r0.y, l(-1), r2.w
-if_nz r0.y
-
-#line 124
-  nop 
-  mov r7.xy, r7.xyxx
-  mov r5.xyz, r5.xyzx
-
-#line 18 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\3D\Extension\transform.hlsli"
-  mov r5.x, r5.x  // r5.x <- ROTATION
-
-#line 19
-  mov r5.yz, r5.yyzy  // r5.y <- SCALE.x; r5.z <- SCALE.y
-
-#line 21
-  sincos null, r0.y, r5.x  // r0.y <- COSINE
-
-#line 22
-  sincos r0.z, null, r5.x  // r0.z <- SINE
-
-#line 24
-  mul r3.x, r0.y, r5.y  // r3.x <- mat._m00
-  mov r0.w, -r5.z
-  mul r8.x, r0.z, r0.w  // r8.x <- mat._m01
-  mul r3.y, r0.z, r5.y  // r3.y <- mat._m10
-  mul r8.y, r0.y, r5.z  // r8.y <- mat._m11
-  itof r0.yz, l(0, 0, 0, 0)  // r0.y <- mat._m20; r0.z <- mat._m21
-  mov r3.z, r0.y  // r3.z <- mat._m20
-  mov r8.z, r0.z  // r8.z <- mat._m21
-
-#line 31
-  itof r7.z, l(1)
-  dp3 r3.x, r7.xyzx, r3.xyzx  // r3.x <- transformed_texcoord.x
-  dp3 r3.y, r7.xyzx, r8.xyzx  // r3.y <- transformed_texcoord.y
-
-#line 33
-  mov r3.xy, r3.xyxx  // r3.x <- <TransformTexcoord return value>.x; r3.y <- <TransformTexcoord return value>.y
-
-#line 124 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\3D\3D_utility\material_data.hlsli"
-  mov r3.xy, r3.xyxx  // r3.x <- transformed_texcoord.x; r3.y <- transformed_texcoord.y
-
-#line 126
-  sample_indexable(texture2d)(float,float,float,float) r3.xyzw, r3.xyxx, t19.xyzw, s2  // r3.x <- sampled.x; r3.y <- sampled.y; r3.z <- sampled.z; r3.w <- sampled.w
-
-#line 127
-  mov r0.yzw, -r3.xxyz
-  max r0.yzw, r0.yyzw, r3.xxyz
-  log r0.yzw, r0.yyzw
-  mul r0.xyz, r0.yzwy, r0.xxxx
-  exp r1.xyz, r0.xyzx  // r1.x <- sampled.x; r1.y <- sampled.y; r1.z <- sampled.z
-
-#line 128
-  mov r1.xyz, r1.xyzx  // r1.x <- emissive.x; r1.y <- emissive.y; r1.z <- emissive.z
-
-#line 129
-  mov r2.y, r3.w
-
-#line 130
-endif 
-
-#line 132
-mov r1.xyz, r1.xyzx  // r1.x <- material_data.emissive_factor.x; r1.y <- material_data.emissive_factor.y; r1.z <- material_data.emissive_factor.z
-
-#line 133
-mov r2.y, r2.y  // r2.y <- material_data.emissive_strength
-
-#line 138
-ilt r0.x, l(-1), r4.x
-if_nz r0.x
-
-#line 140
-  nop 
-
-#line 144
-endif 
-
-#line 152
-ilt r0.x, l(-1), r4.y
-if_nz r0.x
-
-#line 154
-  nop 
-
-#line 158
-endif 
-
-#line 165
-ilt r0.x, l(-1), r4.z
-if_nz r0.x
-
-#line 167
-  nop 
-
-#line 171
-endif 
-
-#line 181
-ilt r0.x, l(-1), r4.w
-if_nz r0.x
-
-#line 183
-  nop 
-
-#line 187
-endif 
-
-#line 196
-ilt r0.x, l(-1), r6.x
-if_nz r0.x
-
-#line 198
-  nop 
-
-#line 202
-endif 
-
-#line 204
-ilt r0.x, l(-1), r6.y
-if_nz r0.x
-
-#line 206
-  nop 
-
-#line 210
-endif 
-
-#line 219
-mov r1.xyz, r1.xyzx  // r1.x <- <GetMaterialData return value>.emissive_factor.x; r1.y <- <GetMaterialData return value>.emissive_factor.y; r1.z <- <GetMaterialData return value>.emissive_factor.z
-mov r2.x, r2.x  // r2.x <- <GetMaterialData return value>.basecolor_factor.w
-mov r2.y, r2.y  // r2.y <- <GetMaterialData return value>.emissive_strength
-
-#line 10 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\3D\extract_emissive_model_ps.hlsl"
-mov r1.xyz, r1.xyzx  // r1.x <- material_data.emissive_factor.x; r1.y <- material_data.emissive_factor.y; r1.z <- material_data.emissive_factor.z
-mov r2.xy, r2.xyxx  // r2.x <- material_data.basecolor_factor.w; r2.y <- material_data.emissive_strength
-
-#line 13
-lt r0.x, r2.x, l(0.010000)
-if_nz r0.x
-
-#line 14
-  discard_nz l(-1)
-endif 
-
-#line 16
-mul r0.xyz, r1.xyzx, cb2[0].xyzx  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z
-
-#line 17
-mul r0.xyz, r0.xyzx, cb2[1].xxxx
-
-#line 18
-mov o0.xyz, r0.xyzx
-mov o0.w, r2.y
+lt r0.x, r0.x, l(0.010000)
+discard_nz r0.x
+mul r0.xyz, r0.yzwy, cb2[0].xyzx
+mul o0.xyz, r0.xyzx, cb2[1].xxxx
 ret 
-// Approximately 137 instruction slots used
+// Approximately 39 instruction slots used

@@ -64,7 +64,7 @@
 // TEXCOORD                 1   xyz         5     NONE   float   xyz 
 //
 vs_5_0
-dcl_globalFlags refactoringAllowed | skipOptimization
+dcl_globalFlags refactoringAllowed
 dcl_constantbuffer CB9[9], immediateIndexed
 dcl_constantbuffer CB0[5], immediateIndexed
 dcl_input v0.xyz
@@ -77,252 +77,75 @@ dcl_output o2.xyzw
 dcl_output o3.xyzw
 dcl_output o4.xy
 dcl_output o5.xyz
-dcl_temps 13
-//
-// Initial variable locations:
-//   v0.x <- vin.position.x; v0.y <- vin.position.y; v0.z <- vin.position.z; v0.w <- vin.position.w; 
-//   v1.x <- vin.normal.x; v1.y <- vin.normal.y; v1.z <- vin.normal.z; v1.w <- vin.normal.w; 
-//   v2.x <- vin.tangent.x; v2.y <- vin.tangent.y; v2.z <- vin.tangent.z; v2.w <- vin.tangent.w; 
-//   v3.x <- vin.texcoord.x; v3.y <- vin.texcoord.y; 
-//   v4.x <- vin.joints.x; v4.y <- vin.joints.y; v4.z <- vin.joints.z; v4.w <- vin.joints.w; 
-//   v5.x <- vin.weights.x; v5.y <- vin.weights.y; v5.z <- vin.weights.z; v5.w <- vin.weights.w; 
-//   o5.x <- <ShaderMain return value>.shadow_texcoord.x; o5.y <- <ShaderMain return value>.shadow_texcoord.y; o5.z <- <ShaderMain return value>.shadow_texcoord.z; 
-//   o4.x <- <ShaderMain return value>.texcoord.x; o4.y <- <ShaderMain return value>.texcoord.y; 
-//   o3.x <- <ShaderMain return value>.w_tangent.x; o3.y <- <ShaderMain return value>.w_tangent.y; o3.z <- <ShaderMain return value>.w_tangent.z; o3.w <- <ShaderMain return value>.w_tangent.w; 
-//   o2.x <- <ShaderMain return value>.w_normal.x; o2.y <- <ShaderMain return value>.w_normal.y; o2.z <- <ShaderMain return value>.w_normal.z; o2.w <- <ShaderMain return value>.w_normal.w; 
-//   o1.x <- <ShaderMain return value>.w_position.x; o1.y <- <ShaderMain return value>.w_position.y; o1.z <- <ShaderMain return value>.w_position.z; o1.w <- <ShaderMain return value>.w_position.w; 
-//   o0.x <- <ShaderMain return value>.position.x; o0.y <- <ShaderMain return value>.position.y; o0.z <- <ShaderMain return value>.position.z; o0.w <- <ShaderMain return value>.position.w
-//
-#line 10 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\3D\3d_base_vs.hlsl"
-mov r0.x, v2.w  // r0.x <- sigma
-
-#line 12
-ilt r0.y, l(-1), cb0[4].z
-if_nz r0.y
-
-#line 21
-  itof r1.w, l(0)
-  mov r1.xyz, v1.xyzx
-  dp4 r0.y, r1.xyzw, r1.xyzw
-  rsq r0.y, r0.y
-  mul r0.yzw, r0.yyyy, v1.xxyz  // r0.y <- vin.normal.x; r0.z <- vin.normal.y; r0.w <- vin.normal.z
-
-#line 22
-  itof r1.w, l(0)
-  mov r1.xyz, v2.xyzx
-  dp4 r1.x, r1.xyzw, r1.xyzw
-  rsq r1.x, r1.x
-  mul r1.xyz, r1.xxxx, v2.xyzx  // r1.x <- vin.tangent.x; r1.y <- vin.tangent.y; r1.z <- vin.tangent.z
-
-#line 23
+dcl_temps 9
+ilt r0.x, l(-1), cb0[4].z
+if_nz r0.x
+  dp3 r0.x, v1.xyzx, v1.xyzx
+  rsq r0.x, r0.x
+  mul r0.xyz, r0.xxxx, v1.xyzx
+  dp3 r0.w, v2.xyzx, v2.xyzx
+  rsq r0.w, r0.w
+  mul r1.xyz, r0.wwww, v2.xyzx
 else 
-  mov r0.y, v1.x  // r0.y <- vin.normal.x
-  mov r0.z, v1.y  // r0.z <- vin.normal.y
-  mov r0.w, v1.z  // r0.w <- vin.normal.z
-  mov r1.x, v2.x  // r1.x <- vin.tangent.x
-  mov r1.y, v2.y  // r1.y <- vin.tangent.y
-  mov r1.z, v2.z  // r1.z <- vin.tangent.z
+  mov r0.xyz, v1.xyzx
+  mov r1.xyz, v2.xyzx
 endif 
-
-#line 27
-itof r1.w, l(1)  // r1.w <- vin.position.w
-
-#line 28
-mul r2.xyzw, cb9[1].xxxx, cb9[5].xyzw
-mul r3.xyzw, cb9[1].yyyy, cb9[6].xyzw
-add r2.xyzw, r2.xyzw, r3.xyzw
-mul r3.xyzw, cb9[1].zzzz, cb9[7].xyzw
-add r2.xyzw, r2.xyzw, r3.xyzw
-mul r3.xyzw, cb9[1].wwww, cb9[8].xyzw
-add r2.xyzw, r2.xyzw, r3.xyzw
-mul r3.xyzw, cb9[2].xxxx, cb9[5].xyzw
-mul r4.xyzw, cb9[2].yyyy, cb9[6].xyzw
-add r3.xyzw, r3.xyzw, r4.xyzw
-mul r4.xyzw, cb9[2].zzzz, cb9[7].xyzw
-add r3.xyzw, r3.xyzw, r4.xyzw
-mul r4.xyzw, cb9[2].wwww, cb9[8].xyzw
-add r3.xyzw, r3.xyzw, r4.xyzw
-mul r4.xyzw, cb9[3].xxxx, cb9[5].xyzw
-mul r5.xyzw, cb9[3].yyyy, cb9[6].xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-mul r5.xyzw, cb9[3].zzzz, cb9[7].xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-mul r5.xyzw, cb9[3].wwww, cb9[8].xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-mul r5.xyzw, cb9[4].xxxx, cb9[5].xyzw
-mul r6.xyzw, cb9[4].yyyy, cb9[6].xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, cb9[4].zzzz, cb9[7].xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, cb9[4].wwww, cb9[8].xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, r2.xyzw, cb0[0].xxxx
-mul r7.xyzw, r3.xyzw, cb0[0].yyyy
-add r6.xyzw, r6.xyzw, r7.xyzw
-mul r7.xyzw, r4.xyzw, cb0[0].zzzz
-add r6.xyzw, r6.xyzw, r7.xyzw
-mul r7.xyzw, r5.xyzw, cb0[0].wwww
-add r6.xyzw, r6.xyzw, r7.xyzw
-mul r7.xyzw, r2.xyzw, cb0[1].xxxx
-mul r8.xyzw, r3.xyzw, cb0[1].yyyy
-add r7.xyzw, r7.xyzw, r8.xyzw
-mul r8.xyzw, r4.xyzw, cb0[1].zzzz
-add r7.xyzw, r7.xyzw, r8.xyzw
-mul r8.xyzw, r5.xyzw, cb0[1].wwww
-add r7.xyzw, r7.xyzw, r8.xyzw
-mul r8.xyzw, r2.xyzw, cb0[2].xxxx
-mul r9.xyzw, r3.xyzw, cb0[2].yyyy
-add r8.xyzw, r8.xyzw, r9.xyzw
-mul r9.xyzw, r4.xyzw, cb0[2].zzzz
-add r8.xyzw, r8.xyzw, r9.xyzw
-mul r9.xyzw, r5.xyzw, cb0[2].wwww
-add r8.xyzw, r8.xyzw, r9.xyzw
-mul r2.xyzw, r2.xyzw, cb0[3].xxxx
+mul r2.xyzw, cb9[1].yyyy, cb9[6].xyzw
+mad r2.xyzw, cb9[1].xxxx, cb9[5].xyzw, r2.xyzw
+mad r2.xyzw, cb9[1].zzzz, cb9[7].xyzw, r2.xyzw
+mad r2.xyzw, cb9[1].wwww, cb9[8].xyzw, r2.xyzw
+mul r3.xyzw, cb9[2].yyyy, cb9[6].xyzw
+mad r3.xyzw, cb9[2].xxxx, cb9[5].xyzw, r3.xyzw
+mad r3.xyzw, cb9[2].zzzz, cb9[7].xyzw, r3.xyzw
+mad r3.xyzw, cb9[2].wwww, cb9[8].xyzw, r3.xyzw
+mul r4.xyzw, cb9[3].yyyy, cb9[6].xyzw
+mad r4.xyzw, cb9[3].xxxx, cb9[5].xyzw, r4.xyzw
+mad r4.xyzw, cb9[3].zzzz, cb9[7].xyzw, r4.xyzw
+mad r4.xyzw, cb9[3].wwww, cb9[8].xyzw, r4.xyzw
+mul r5.xyzw, cb9[4].yyyy, cb9[6].xyzw
+mad r5.xyzw, cb9[4].xxxx, cb9[5].xyzw, r5.xyzw
+mad r5.xyzw, cb9[4].zzzz, cb9[7].xyzw, r5.xyzw
+mad r5.xyzw, cb9[4].wwww, cb9[8].xyzw, r5.xyzw
+mul r6.xyzw, r3.xyzw, cb0[0].yyyy
+mad r6.xyzw, cb0[0].xxxx, r2.xyzw, r6.xyzw
+mad r6.xyzw, cb0[0].zzzz, r4.xyzw, r6.xyzw
+mad r6.xyzw, cb0[0].wwww, r5.xyzw, r6.xyzw
+mul r7.xyzw, r3.xyzw, cb0[1].yyyy
+mad r7.xyzw, cb0[1].xxxx, r2.xyzw, r7.xyzw
+mad r7.xyzw, cb0[1].zzzz, r4.xyzw, r7.xyzw
+mad r7.xyzw, cb0[1].wwww, r5.xyzw, r7.xyzw
+mul r8.xyzw, r3.xyzw, cb0[2].yyyy
+mad r8.xyzw, cb0[2].xxxx, r2.xyzw, r8.xyzw
+mad r8.xyzw, cb0[2].zzzz, r4.xyzw, r8.xyzw
+mad r8.xyzw, cb0[2].wwww, r5.xyzw, r8.xyzw
 mul r3.xyzw, r3.xyzw, cb0[3].yyyy
+mad r2.xyzw, cb0[3].xxxx, r2.xyzw, r3.xyzw
+mad r2.xyzw, cb0[3].zzzz, r4.xyzw, r2.xyzw
+mad r2.xyzw, cb0[3].wwww, r5.xyzw, r2.xyzw
+mul r3.xyzw, r7.xyzw, v0.yyyy
+mad r3.xyzw, v0.xxxx, r6.xyzw, r3.xyzw
+mad r3.xyzw, v0.zzzz, r8.xyzw, r3.xyzw
 add r2.xyzw, r2.xyzw, r3.xyzw
-mul r3.xyzw, r4.xyzw, cb0[3].zzzz
-add r2.xyzw, r2.xyzw, r3.xyzw
-mul r3.xyzw, r5.xyzw, cb0[3].wwww
-add r2.xyzw, r2.xyzw, r3.xyzw
-mul r3.xyzw, r6.xyzw, v0.xxxx
-mul r4.xyzw, r7.xyzw, v0.yyyy
-add r3.xyzw, r3.xyzw, r4.xyzw
-mul r4.xyzw, r8.xyzw, v0.zzzz
-add r3.xyzw, r3.xyzw, r4.xyzw
-mul r2.xyzw, r1.wwww, r2.xyzw
-add r2.xyzw, r2.xyzw, r3.xyzw  // r2.x <- vout.position.x; r2.y <- vout.position.y; r2.z <- vout.position.z; r2.w <- vout.position.w
-
-#line 29
-mul r3.xyzw, v0.xxxx, cb0[0].xyzw
-mul r4.xyzw, v0.yyyy, cb0[1].xyzw
-add r3.xyzw, r3.xyzw, r4.xyzw
-mul r4.xyzw, v0.zzzz, cb0[2].xyzw
-add r3.xyzw, r3.xyzw, r4.xyzw
-mul r4.xyzw, r1.wwww, cb0[3].xyzw
-add r3.xyzw, r3.xyzw, r4.xyzw  // r3.x <- vout.w_position.x; r3.y <- vout.w_position.y; r3.z <- vout.w_position.z; r3.w <- vout.w_position.w
-
-#line 31
-itof r4.x, l(0)  // r4.x <- vin.normal.w
-
-#line 32
-mul r5.xyzw, r0.yyyy, cb0[0].xyzw
-mul r6.xyzw, r0.zzzz, cb0[1].xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, r0.wwww, cb0[2].xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r4.xyzw, r4.xxxx, cb0[3].xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-dp4 r0.y, r4.xyzw, r4.xyzw
-rsq r0.y, r0.y
-mul r4.xyzw, r0.yyyy, r4.xyzw  // r4.x <- vout.w_normal.x; r4.y <- vout.w_normal.y; r4.z <- vout.w_normal.z; r4.w <- vout.w_normal.w
-
-#line 34
-itof r0.y, l(0)  // r0.y <- vin.tangent.w
-
-#line 35
-mul r5.xyzw, r1.xxxx, cb0[0].xyzw
-mul r6.xyzw, r1.yyyy, cb0[1].xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, r1.zzzz, cb0[2].xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, r0.yyyy, cb0[3].xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw
-dp4 r0.y, r5.xyzw, r5.xyzw
-rsq r0.y, r0.y
-mul r0.yzw, r0.yyyy, r5.xxyz  // r0.y <- vout.w_tangent.x; r0.z <- vout.w_tangent.y; r0.w <- vout.w_tangent.z
-
-#line 36
-mov r0.x, r0.x  // r0.x <- vout.w_tangent.w
-
-#line 38
-mov r1.xy, v3.xyxx  // r1.x <- vout.texcoord.x; r1.y <- vout.texcoord.y
-
-#line 41
-mul r5.xyzw, cb9[1].xxxx, cb9[5].xyzw
-mul r6.xyzw, cb9[1].yyyy, cb9[6].xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, cb9[1].zzzz, cb9[7].xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, cb9[1].wwww, cb9[8].xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, cb9[2].xxxx, cb9[5].xyzw
-mul r7.xyzw, cb9[2].yyyy, cb9[6].xyzw
-add r6.xyzw, r6.xyzw, r7.xyzw
-mul r7.xyzw, cb9[2].zzzz, cb9[7].xyzw
-add r6.xyzw, r6.xyzw, r7.xyzw
-mul r7.xyzw, cb9[2].wwww, cb9[8].xyzw
-add r6.xyzw, r6.xyzw, r7.xyzw
-mul r7.xyzw, cb9[3].xxxx, cb9[5].xyzw
-mul r8.xyzw, cb9[3].yyyy, cb9[6].xyzw
-add r7.xyzw, r7.xyzw, r8.xyzw
-mul r8.xyzw, cb9[3].zzzz, cb9[7].xyzw
-add r7.xyzw, r7.xyzw, r8.xyzw
-mul r8.xyzw, cb9[3].wwww, cb9[8].xyzw
-add r7.xyzw, r7.xyzw, r8.xyzw
-mul r8.xyzw, cb9[4].xxxx, cb9[5].xyzw
-mul r9.xyzw, cb9[4].yyyy, cb9[6].xyzw
-add r8.xyzw, r8.xyzw, r9.xyzw
-mul r9.xyzw, cb9[4].zzzz, cb9[7].xyzw
-add r8.xyzw, r8.xyzw, r9.xyzw
-mul r9.xyzw, cb9[4].wwww, cb9[8].xyzw
-add r8.xyzw, r8.xyzw, r9.xyzw
-mul r9.xyzw, r5.xyzw, cb0[0].xxxx
-mul r10.xyzw, r6.xyzw, cb0[0].yyyy
-add r9.xyzw, r9.xyzw, r10.xyzw
-mul r10.xyzw, r7.xyzw, cb0[0].zzzz
-add r9.xyzw, r9.xyzw, r10.xyzw
-mul r10.xyzw, r8.xyzw, cb0[0].wwww
-add r9.xyzw, r9.xyzw, r10.xyzw
-mul r10.xyzw, r5.xyzw, cb0[1].xxxx
-mul r11.xyzw, r6.xyzw, cb0[1].yyyy
-add r10.xyzw, r10.xyzw, r11.xyzw
-mul r11.xyzw, r7.xyzw, cb0[1].zzzz
-add r10.xyzw, r10.xyzw, r11.xyzw
-mul r11.xyzw, r8.xyzw, cb0[1].wwww
-add r10.xyzw, r10.xyzw, r11.xyzw
-mul r11.xyzw, r5.xyzw, cb0[2].xxxx
-mul r12.xyzw, r6.xyzw, cb0[2].yyyy
-add r11.xyzw, r11.xyzw, r12.xyzw
-mul r12.xyzw, r7.xyzw, cb0[2].zzzz
-add r11.xyzw, r11.xyzw, r12.xyzw
-mul r12.xyzw, r8.xyzw, cb0[2].wwww
-add r11.xyzw, r11.xyzw, r12.xyzw
-mul r5.xyzw, r5.xyzw, cb0[3].xxxx
-mul r6.xyzw, r6.xyzw, cb0[3].yyyy
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, r7.xyzw, cb0[3].zzzz
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, r8.xyzw, cb0[3].wwww
-add r5.xyzw, r5.xyzw, r6.xyzw
-mul r6.xyzw, r9.xyzw, v0.xxxx
-mul r7.xyzw, r10.xyzw, v0.yyyy
-add r6.xyzw, r6.xyzw, r7.xyzw
-mul r7.xyzw, r11.xyzw, v0.zzzz
-add r6.xyzw, r6.xyzw, r7.xyzw
-mul r5.xyzw, r1.wwww, r5.xyzw
-add r5.xyzw, r5.xyzw, r6.xyzw  // r5.x <- wvpPos.x; r5.y <- wvpPos.y; r5.z <- wvpPos.z; r5.w <- wvpPos.w
-
-#line 42
-div r5.xyz, r5.xyzx, r5.wwww
-
-#line 43
-mov r5.w, -r5.y  // r5.w <- wvpPos.y
-
-#line 44
-mul r1.zw, r5.xxxw, l(0.000000, 0.000000, 0.500000, 0.500000)
-add r5.xy, r1.zwzz, l(0.500000, 0.500000, 0.000000, 0.000000)  // r5.y <- wvpPos.y
-
-#line 45
-mov r5.xy, r5.xyxx  // r5.x <- vout.shadow_texcoord.x; r5.y <- vout.shadow_texcoord.y
-mov r5.z, r5.z  // r5.z <- vout.shadow_texcoord.z
-
-#line 47
+mul r3.xyzw, v0.yyyy, cb0[1].xyzw
+mad r3.xyzw, v0.xxxx, cb0[0].xyzw, r3.xyzw
+mad r3.xyzw, v0.zzzz, cb0[2].xyzw, r3.xyzw
+add o1.xyzw, r3.xyzw, cb0[3].xyzw
+mul r3.xyzw, r0.yyyy, cb0[1].xyzw
+mad r3.xyzw, r0.xxxx, cb0[0].xyzw, r3.xyzw
+mad r0.xyzw, r0.zzzz, cb0[2].xyzw, r3.xyzw
+dp4 r1.w, r0.xyzw, r0.xyzw
+rsq r1.w, r1.w
+mul o2.xyzw, r0.xyzw, r1.wwww
+mul r0.xyzw, r1.yyyy, cb0[1].xyzw
+mad r0.xyzw, r1.xxxx, cb0[0].xyzw, r0.xyzw
+mad r0.xyzw, r1.zzzz, cb0[2].xyzw, r0.xyzw
+dp4 r0.w, r0.xyzw, r0.xyzw
+rsq r0.w, r0.w
+mul o3.xyz, r0.wwww, r0.xyzx
+div r0.xyz, r2.xyzx, r2.wwww
 mov o0.xyzw, r2.xyzw
-mov o1.xyzw, r3.xyzw
-mov o2.xyzw, r4.xyzw
-mov o3.xyz, r0.yzwy
-mov o3.w, r0.x
-mov o5.xyz, r5.xyzx
-mov o4.xy, r1.xyxx
+mov o3.w, v2.w
+mad o5.xyz, r0.xyzx, l(0.500000, -0.500000, 1.000000, 0.000000), l(0.500000, 0.500000, 0.000000, 0.000000)
+mov o4.xy, v3.xyxx
 ret 
-// Approximately 193 instruction slots used
+// Approximately 70 instruction slots used

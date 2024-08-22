@@ -13,13 +13,13 @@ void SpriteUI::Initialize(const std::wstring& w_sprite_filename, const std::wstr
 }
 
 // •`‰æˆ—
-void SpriteUI::Render()
+void SpriteUI::Render(float alpha)
 {
 	DirectX::XMFLOAT2 shaked_position = XMFloatCalclation::XMFloat2Add(position, shake_position);
 
 	DirectX::XMFLOAT4 flash_color;
 	flash_color.x = 1.0f;
-	flash_color.w = 1.0f;
+	flash_color.w = alpha;
 
 	flash_color.y = 1.0f - (flash_time * 0.5f);
 	flash_color.z = 1.0f - (flash_time * 0.5f);
@@ -36,7 +36,7 @@ void SpriteUI::Render()
 		DirectX::XMFLOAT2	size				= sprite_image.at(value).size;
 		DirectX::XMFLOAT2	sprite_position = image_position.at(index_count);
 
-		sprite->Render(XMFloatCalclation::XMFloat2Add(sprite_position, shaked_position), size);
+		sprite->Render(XMFloatCalclation::XMFloat2Add(sprite_position, shaked_position), size, {1.0f, 1.0f, 1.0f, alpha});
 		index_count++;
 	}
 }

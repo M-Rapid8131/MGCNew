@@ -143,25 +143,25 @@ mov r1.x, r1.x  // r1.x <- particle.particle_index
 nop 
 iadd r0.z, r0.y, cb4[0].y
 
-#line 100 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
+#line 101 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
 mov r0.w, l(1)  // r0.w <- mip_level
 
-#line 102
+#line 103
 resinfo_uint r15.xyzw, r0.w, t41.xyzw
 mov r15.x, r15.x  // r15.x <- width
 mov r15.y, r15.y  // r15.y <- height
 
-#line 106
+#line 107
 udiv null, r16.x, r0.z, r15.x  // r16.x <- texture_location.x
 
-#line 107
+#line 108
 udiv r0.z, null, r0.z, r15.x
 udiv null, r16.y, r0.z, r15.y  // r16.y <- texture_location.y
 
-#line 108
+#line 109
 mov r16.zw, l(0,0,0,0)  // r16.w <- texture_location.z
 
-#line 110
+#line 111
 ld r15.xyzw, r16.xyzw, t41.xyzw  // r15.x <- <GetNoiseFactor return value>.x; r15.y <- <GetNoiseFactor return value>.y; r15.z <- <GetNoiseFactor return value>.z
 
 #line 18 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\particle\board_particle_start_cs.hlsl"

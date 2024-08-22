@@ -9,7 +9,8 @@
         "./resources/audio/BGM/bgm_standby.wav",
         "./resources/audio/BGM/bgm_bonus_time.wav",
         "./resources/audio/BGM/bgm_easy_bonus_time.wav",
-        "./resources/audio/BGM/bgm_result.wav"
+        "./resources/audio/BGM/bgm_result.wav",
+        "./resources/audio/BGM/bgm_mode_select.wav"
     ],
     "SE": [
 		"./resources/audio/SE/se_count_down.wav",

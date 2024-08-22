@@ -31,7 +31,7 @@ public:
 
 	// public:’ÊíŠÖ”
 	void Initialize(const std::wstring&, const std::wstring&, const DirectX::XMFLOAT2);
-	void Render();
+	void Render(float = 1.0f);
 
 	// public:ƒQƒbƒ^[ŠÖ”
 	bool			GetIsSelecting() const	{ return is_selecting; }

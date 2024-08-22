@@ -47,7 +47,7 @@ public:
 	void Initialize(const wchar_t*, const std::wstring&, const DirectX::XMFLOAT2);
 	void Update(float);
 	void DebugGUI();
-	void Render();
+	void Render(EnumNumberAlignment, float = 1.0f, DirectX::XMFLOAT3 = {1.0f, 1.0f, 1.0f}, std::string = "");
 
 	// public:ÉQÉbÉ^Å[ä÷êî
 	bool			GetIsSelecting() const { return is_selecting; }

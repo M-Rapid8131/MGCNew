@@ -46,7 +46,7 @@
 // TEXCOORD                 0   xy          2     NONE   float   xy  
 //
 vs_5_0
-dcl_globalFlags refactoringAllowed | skipOptimization
+dcl_globalFlags refactoringAllowed
 dcl_constantbuffer CB9[9], immediateIndexed
 dcl_input v0.xyzw
 dcl_input v1.xyzw
@@ -54,62 +54,28 @@ dcl_input v2.xy
 dcl_output_siv o0.xyzw, position
 dcl_output o1.xyzw
 dcl_output o2.xy
-dcl_temps 5
-//
-// Initial variable locations:
-//   v0.x <- vin.position.x; v0.y <- vin.position.y; v0.z <- vin.position.z; v0.w <- vin.position.w; 
-//   v1.x <- vin.color.x; v1.y <- vin.color.y; v1.z <- vin.color.z; v1.w <- vin.color.w; 
-//   v2.x <- vin.texcoord.x; v2.y <- vin.texcoord.y; 
-//   o2.x <- <ShaderMain return value>.texcoord.x; o2.y <- <ShaderMain return value>.texcoord.y; 
-//   o1.x <- <ShaderMain return value>.color.x; o1.y <- <ShaderMain return value>.color.y; o1.z <- <ShaderMain return value>.color.z; o1.w <- <ShaderMain return value>.color.w; 
-//   o0.x <- <ShaderMain return value>.position.x; o0.y <- <ShaderMain return value>.position.y; o0.z <- <ShaderMain return value>.position.z; o0.w <- <ShaderMain return value>.position.w
-//
-#line 8 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\3D\primitive_renderer_vs.hlsl"
-mul r0.xyzw, cb9[1].xxxx, cb9[5].xyzw
+dcl_temps 2
+mul r0.xyzw, cb9[2].yyyy, cb9[6].xyzw
+mad r0.xyzw, cb9[2].xxxx, cb9[5].xyzw, r0.xyzw
+mad r0.xyzw, cb9[2].zzzz, cb9[7].xyzw, r0.xyzw
+mad r0.xyzw, cb9[2].wwww, cb9[8].xyzw, r0.xyzw
+mul r0.xyzw, r0.xyzw, v0.yyyy
 mul r1.xyzw, cb9[1].yyyy, cb9[6].xyzw
-add r0.xyzw, r0.xyzw, r1.xyzw
-mul r1.xyzw, cb9[1].zzzz, cb9[7].xyzw
-add r0.xyzw, r0.xyzw, r1.xyzw
-mul r1.xyzw, cb9[1].wwww, cb9[8].xyzw
-add r0.xyzw, r0.xyzw, r1.xyzw
-mul r1.xyzw, cb9[2].xxxx, cb9[5].xyzw
-mul r2.xyzw, cb9[2].yyyy, cb9[6].xyzw
-add r1.xyzw, r1.xyzw, r2.xyzw
-mul r2.xyzw, cb9[2].zzzz, cb9[7].xyzw
-add r1.xyzw, r1.xyzw, r2.xyzw
-mul r2.xyzw, cb9[2].wwww, cb9[8].xyzw
-add r1.xyzw, r1.xyzw, r2.xyzw
-mul r2.xyzw, cb9[3].xxxx, cb9[5].xyzw
-mul r3.xyzw, cb9[3].yyyy, cb9[6].xyzw
-add r2.xyzw, r2.xyzw, r3.xyzw
-mul r3.xyzw, cb9[3].zzzz, cb9[7].xyzw
-add r2.xyzw, r2.xyzw, r3.xyzw
-mul r3.xyzw, cb9[3].wwww, cb9[8].xyzw
-add r2.xyzw, r2.xyzw, r3.xyzw
-mul r3.xyzw, cb9[4].xxxx, cb9[5].xyzw
-mul r4.xyzw, cb9[4].yyyy, cb9[6].xyzw
-add r3.xyzw, r3.xyzw, r4.xyzw
-mul r4.xyzw, cb9[4].zzzz, cb9[7].xyzw
-add r3.xyzw, r3.xyzw, r4.xyzw
-mul r4.xyzw, cb9[4].wwww, cb9[8].xyzw
-add r3.xyzw, r3.xyzw, r4.xyzw
-mul r0.xyzw, r0.xyzw, v0.xxxx
-mul r1.xyzw, r1.xyzw, v0.yyyy
-add r0.xyzw, r0.xyzw, r1.xyzw
-mul r1.xyzw, r2.xyzw, v0.zzzz
-add r0.xyzw, r0.xyzw, r1.xyzw
-mul r1.xyzw, r3.xyzw, v0.wwww
-add r0.xyzw, r0.xyzw, r1.xyzw  // r0.x <- vout.position.x; r0.y <- vout.position.y; r0.z <- vout.position.z; r0.w <- vout.position.w
-
-#line 9
-mov r1.xyzw, v1.xyzw  // r1.x <- vout.color.x; r1.y <- vout.color.y; r1.z <- vout.color.z; r1.w <- vout.color.w
-
-#line 10
-mov r2.xy, v2.xyxx  // r2.x <- vout.texcoord.x; r2.y <- vout.texcoord.y
-
-#line 11
-mov o0.xyzw, r0.xyzw
-mov o1.xyzw, r1.xyzw
-mov o2.xy, r2.xyxx
+mad r1.xyzw, cb9[1].xxxx, cb9[5].xyzw, r1.xyzw
+mad r1.xyzw, cb9[1].zzzz, cb9[7].xyzw, r1.xyzw
+mad r1.xyzw, cb9[1].wwww, cb9[8].xyzw, r1.xyzw
+mad r0.xyzw, v0.xxxx, r1.xyzw, r0.xyzw
+mul r1.xyzw, cb9[3].yyyy, cb9[6].xyzw
+mad r1.xyzw, cb9[3].xxxx, cb9[5].xyzw, r1.xyzw
+mad r1.xyzw, cb9[3].zzzz, cb9[7].xyzw, r1.xyzw
+mad r1.xyzw, cb9[3].wwww, cb9[8].xyzw, r1.xyzw
+mad r0.xyzw, v0.zzzz, r1.xyzw, r0.xyzw
+mul r1.xyzw, cb9[4].yyyy, cb9[6].xyzw
+mad r1.xyzw, cb9[4].xxxx, cb9[5].xyzw, r1.xyzw
+mad r1.xyzw, cb9[4].zzzz, cb9[7].xyzw, r1.xyzw
+mad r1.xyzw, cb9[4].wwww, cb9[8].xyzw, r1.xyzw
+mad o0.xyzw, v0.wwww, r1.xyzw, r0.xyzw
+mov o1.xyzw, v1.xyzw
+mov o2.xy, v2.xyxx
 ret 
-// Approximately 41 instruction slots used
+// Approximately 23 instruction slots used
