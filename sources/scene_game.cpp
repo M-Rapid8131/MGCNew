@@ -355,14 +355,6 @@ void SceneGame::Update(float elapsed_time)
 	// パーティクル更新
 	background_particle->Update(elapsed_time);
 
-	//if (game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->ChangeParticleType())
-	//{
-	//	int level = game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->GetGameData().speed_level;
-	//	std::string key = "Game" + std::to_string(level / 10 + 1);
-	//	background_particle->SetEmitterConstantsFromJSON(key);
-	//	game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->ChangedParticleType();
-	//}
-
 	if (sprite_move_time > 0.0f)
 	{
 		sprite_move_time -= elapsed_time;

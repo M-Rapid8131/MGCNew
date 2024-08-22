@@ -117,9 +117,6 @@ void ObjectBoard::NextBlock::Update(float elapsed_time)
 		{
 			obj->current_speed = obj->level_speed > ACCEL_SPEED ? obj->level_speed : ACCEL_SPEED;
 		}
-
-		if (input & BTN_UP)
-			SuperDrop();
 	}
 
 	MoveBlock(elapsed_time);
