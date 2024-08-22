@@ -48,6 +48,12 @@ private:
 	std::unique_ptr<Sprite>				pause_sprite;
 	std::unique_ptr<Sprite>				mode_arrow_u_sprite;
 	std::unique_ptr<Sprite>				mode_arrow_d_sprite;
+	std::unique_ptr<Sprite>				config_move_pad;
+	std::unique_ptr<Sprite>				config_rotate_pad;
+	std::unique_ptr<Sprite>				config_move_keyboard;
+	std::unique_ptr<Sprite>				config_rotate_keyboard;
+	std::unique_ptr<Sprite>				rule;
+
 
 	UPtrVector<Sprite>					game_mode_sprite;
 	UPtrVector<Sprite>					game_mode_detail;

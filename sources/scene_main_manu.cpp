@@ -134,8 +134,7 @@ void SceneMainManu::Initialize()
 {
 	Graphics*		graphics		= Graphics::GetInstance();
 	AudioManager*	audio_manarger	= GamesystemDirector::GetInstance()->GetAudioManager();
-	//audio_manarger->PlayBGM(EnumBGMBank::STANDBY, 0.3f);
-	audio_manarger->StopBGM();
+	audio_manarger->PlayBGM(EnumBGMBank::STANDBY, 1.0f);
 
 	// ƒJƒƒ‰ì¬EÝ’è
 	Camera*				camera	= GamesystemDirector::GetInstance()->GetCamera();

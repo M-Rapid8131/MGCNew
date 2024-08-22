@@ -16,6 +16,11 @@
 #include "scene_result.h"
 
 // 定数
+const DirectX::XMFLOAT2 RULE_POS		= {
+	Graphics::GetInstance()->GetScreenWidth() * 0.03f,
+	Graphics::GetInstance()->GetScreenHeight() * 0.25f
+};
+
 const DirectX::XMFLOAT2 CONFIG_MOVE_POS		= {
 	Graphics::GetInstance()->GetScreenWidth() * 0.7f,
 	Graphics::GetInstance()->GetScreenHeight() * 0.05f
@@ -126,6 +131,13 @@ void SceneGame::Initialize()
 
 	// パーティクルを作成
 	background_particle = std::make_unique<ParticleSystem>("Game1");
+
+	// 操作説明の画像を読み込み
+	config_move_pad			= std::make_unique<Sprite>(L"./resources/sprite/config/config_move_pad.png");
+	config_rotate_pad		= std::make_unique<Sprite>(L"./resources/sprite/config/config_rotate_pad.png");
+	config_move_keyboard	= std::make_unique<Sprite>(L"./resources/sprite/config/config_move_keyboard.png");
+	config_rotate_keyboard	= std::make_unique<Sprite>(L"./resources/sprite/config/config_rotate_keyboard.png");
+	rule					= std::make_unique<Sprite>(L"./resources/sprite/rule.png");
 
 	const wchar_t* w_game_mode_filename[] = {
 		L"resources/sprite/mode/easy.png",
@@ -465,8 +477,31 @@ void SceneGame::Render()
 		graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
 		game_board.at(SCast(size_t, EnumPlayerID::PLAYER_1))->UIRender();
 
+		if(playing_game)
+		{
+			// 操作説明描画
+			switch (input->GetInputDevice())
+			{
+				using enum EnumInputDevice;
+			case XBOX:
+				config_move_pad->Render(CONFIG_MOVE_POS, config_move_pad->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
+				config_rotate_pad->Render(CONFIG_ROTATE_POS, config_rotate_pad->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
+				break;
+
+			case KEYBOARD:
+				config_move_keyboard->Render(CONFIG_MOVE_POS, config_move_keyboard->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
+				config_rotate_keyboard->Render(CONFIG_ROTATE_POS, config_rotate_keyboard->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
+				break;
+
+			default:
+				break;
+			}
+
+			rule->Render(RULE_POS, rule->GetSpriteSizeWithScaling({0.3f,0.3f}));
+		}
+
 		// モード選択画面
-		if (!playing_game)
+		else
 		{
 			float width		= SCast(float, graphics->GetScreenWidth());
 			float height	= SCast(float, graphics->GetScreenHeight());
