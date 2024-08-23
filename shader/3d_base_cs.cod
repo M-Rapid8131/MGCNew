@@ -15,12 +15,7 @@
 // -------------------- ----- ------ -------- -------- ------- ------
 // no Output
 cs_4_0
-dcl_globalFlags refactoringAllowed | skipOptimization
+dcl_globalFlags refactoringAllowed
 dcl_thread_group 512, 1, 1
-//
-// Initial variable locations:
-//   vThreadID.x <- dtid.x; vThreadID.y <- dtid.y; vThreadID.z <- dtid.z
-//
-#line 10 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\3D\3d_base_cs.hlsl"
 ret 
 // Approximately 1 instruction slots used

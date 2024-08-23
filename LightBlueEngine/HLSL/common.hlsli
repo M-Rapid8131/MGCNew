@@ -20,6 +20,7 @@ static const float	GAMMA			= 2.2f;
 static const float	INV_GAMMA		= 1.0f / 2.2f;
 static const float	PI				= 3.141592f;
 static const float	EPSILON			= 1.0e-5f;
+static const float	FLT_EPSILON		= 1.192092896e-07F;
 static const float	FLT_MAX			= 3.402823466e+38F;
 static const float	TRANSITION_FADE = 0.1f;
 

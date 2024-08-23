@@ -64,5 +64,302 @@
         "LifeTime" : 15.0,
         "StartDiff" : 0.01,
         "EmitRadius" : 5.0
+    },
+    "Game2": {
+        "EmitAmounts": 50000,
+        "RandomColor": true,
+        "Disable": false,
+        "EmitPosition": [
+            0.0,
+            60.0,
+            70.0
+        ],
+        "EmitSpeed": 5.0,
+        "EmitForce": [
+            0.0,
+            -1.0,
+            0.0
+        ],
+        "EmitAccel": 10.0,
+        "EmitDirection": [
+            0.0,
+            -0.5,
+            -1.0
+        ],
+        "SpreadRate" : 0.5,
+        "EmitColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "EmitSize" : 0.2,
+        "LifeTime" : 15.0,
+        "StartDiff" : 0.01,
+        "EmitRadius" : 5.0
+    },
+    "Game3": {
+        "EmitAmounts": 50000,
+        "RandomColor": true,
+        "Disable": false,
+        "EmitPosition": [
+            60.0,
+            0.0,
+            70.0
+        ],
+        "EmitSpeed": 20.0,
+        "EmitForce": [
+            0.0,
+            0.0,
+            -1.0
+        ],
+        "EmitAccel": 10.0,
+        "EmitDirection": [
+            -1.0,
+            0.0,
+            0.0
+        ],
+        "SpreadRate" : 0.2,
+        "EmitColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "EmitSize" : 0.2,
+        "LifeTime" : 10.0,
+        "StartDiff" : 0.01,
+        "EmitRadius" : 30.0
+    },
+    "Game4": {
+        "EmitAmounts": 50000,
+        "RandomColor": true,
+        "Disable": false,
+        "EmitPosition": [
+            0.0,
+            -60.0,
+            70.0
+        ],
+        "EmitSpeed": 5.0,
+        "EmitForce": [
+            0.0,
+            1.0,
+            0.0
+        ],
+        "EmitAccel": 10.0,
+        "EmitDirection": [
+            0.0,
+            -0.5,
+            -1.0
+        ],
+        "SpreadRate" : 1.0,
+        "EmitColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "EmitSize" : 0.2,
+        "LifeTime" : 15.0,
+        "StartDiff" : 0.01,
+        "EmitRadius" : 5.0
+    },
+    "Game5": {
+        "EmitAmounts": 50000,
+        "RandomColor": true,
+        "Disable": false,
+        "EmitPosition": [
+            0.0,
+            -60.0,
+            70.0
+        ],
+        "EmitSpeed": 5.0,
+        "EmitForce": [
+            0.0,
+            1.0,
+            0.0
+        ],
+        "EmitAccel": 10.0,
+        "EmitDirection": [
+            0.0,
+            -0.5,
+            -1.0
+        ],
+        "SpreadRate" : 1.0,
+        "EmitColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "EmitSize" : 0.2,
+        "LifeTime" : 15.0,
+        "StartDiff" : 0.01,
+        "EmitRadius" : 5.0
+    },
+    "Game6": {
+        "EmitAmounts": 50000,
+        "RandomColor": true,
+        "Disable": false,
+        "EmitPosition": [
+            0.0,
+            -60.0,
+            70.0
+        ],
+        "EmitSpeed": 5.0,
+        "EmitForce": [
+            0.0,
+            1.0,
+            0.0
+        ],
+        "EmitAccel": 10.0,
+        "EmitDirection": [
+            0.0,
+            -0.5,
+            -1.0
+        ],
+        "SpreadRate" : 1.0,
+        "EmitColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "EmitSize" : 0.2,
+        "LifeTime" : 15.0,
+        "StartDiff" : 0.01,
+        "EmitRadius" : 5.0
+    },
+    "Game7": {
+        "EmitAmounts": 50000,
+        "RandomColor": true,
+        "Disable": false,
+        "EmitPosition": [
+            0.0,
+            -60.0,
+            70.0
+        ],
+        "EmitSpeed": 5.0,
+        "EmitForce": [
+            0.0,
+            1.0,
+            0.0
+        ],
+        "EmitAccel": 10.0,
+        "EmitDirection": [
+            0.0,
+            -0.5,
+            -1.0
+        ],
+        "SpreadRate" : 1.0,
+        "EmitColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "EmitSize" : 0.2,
+        "LifeTime" : 15.0,
+        "StartDiff" : 0.01,
+        "EmitRadius" : 5.0
+    },
+    "Game8": {
+        "EmitAmounts": 50000,
+        "RandomColor": true,
+        "Disable": false,
+        "EmitPosition": [
+            0.0,
+            -60.0,
+            70.0
+        ],
+        "EmitSpeed": 5.0,
+        "EmitForce": [
+            0.0,
+            1.0,
+            0.0
+        ],
+        "EmitAccel": 10.0,
+        "EmitDirection": [
+            0.0,
+            -0.5,
+            -1.0
+        ],
+        "SpreadRate" : 1.0,
+        "EmitColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "EmitSize" : 0.2,
+        "LifeTime" : 15.0,
+        "StartDiff" : 0.01,
+        "EmitRadius" : 5.0
+    },
+    "Game9": {
+        "EmitAmounts": 50000,
+        "RandomColor": true,
+        "Disable": false,
+        "EmitPosition": [
+            0.0,
+            -60.0,
+            70.0
+        ],
+        "EmitSpeed": 5.0,
+        "EmitForce": [
+            0.0,
+            1.0,
+            0.0
+        ],
+        "EmitAccel": 10.0,
+        "EmitDirection": [
+            0.0,
+            -0.5,
+            -1.0
+        ],
+        "SpreadRate" : 1.0,
+        "EmitColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "EmitSize" : 0.2,
+        "LifeTime" : 15.0,
+        "StartDiff" : 0.01,
+        "EmitRadius" : 5.0
+    },
+    "Game10": {
+        "EmitAmounts": 50000,
+        "RandomColor": true,
+        "Disable": false,
+        "EmitPosition": [
+            0.0,
+            -60.0,
+            70.0
+        ],
+        "EmitSpeed": 5.0,
+        "EmitForce": [
+            0.0,
+            1.0,
+            0.0
+        ],
+        "EmitAccel": 10.0,
+        "EmitDirection": [
+            0.0,
+            -0.5,
+            -1.0
+        ],
+        "SpreadRate" : 1.0,
+        "EmitColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "EmitSize" : 0.2,
+        "LifeTime" : 15.0,
+        "StartDiff" : 0.01,
+        "EmitRadius" : 5.0
     }
 }

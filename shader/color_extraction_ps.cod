@@ -27,37 +27,18 @@
 // SV_TARGET                0   xyzw        0   TARGET   float   xyzw
 //
 ps_5_0
-dcl_globalFlags refactoringAllowed | skipOptimization
+dcl_globalFlags refactoringAllowed
 dcl_sampler s1, mode_default
 dcl_resource_texture2d (float,float,float,float) t0
 dcl_input_ps linear v2.xy
 dcl_output o0.xyzw
-dcl_temps 3
-//
-// Initial variable locations:
-//   v0.x <- pin.position.x; v0.y <- pin.position.y; v0.z <- pin.position.z; v0.w <- pin.position.w; 
-//   v1.x <- pin.color.x; v1.y <- pin.color.y; v1.z <- pin.color.z; v1.w <- pin.color.w; 
-//   v2.x <- pin.texcoord.x; v2.y <- pin.texcoord.y; 
-//   o0.x <- <ShaderMain return value>.x; o0.y <- <ShaderMain return value>.y; o0.z <- <ShaderMain return value>.z; o0.w <- <ShaderMain return value>.w
-//
-#line 11 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\color_extraction_ps.hlsl"
-sample_indexable(texture2d)(float,float,float,float) r0.xyzw, v2.xyxx, t0.xyzw, s1  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z; r0.w <- color.w
-
-#line 12
-mov r1.xyz, l(-0.600000,-0.600000,-0.600000,-0.000000)
-add r2.xyz, r1.xyzx, l(1.000000, 1.000000, 1.000000, 0.000000)
-add r0.xyz, r0.xyzx, r1.xyzx
-div r1.xyz, l(1.000000, 1.000000, 1.000000, 1.000000), r2.xyzx
-mul r0.xyz, r0.xyzx, r1.xyzx
-max r0.xyz, r0.xyzx, l(0.000000, 0.000000, 0.000000, 0.000000)
-min r0.xyz, r0.xyzx, l(1.000000, 1.000000, 1.000000, 0.000000)
-mul r1.xyz, r0.xyzx, l(-2.000000, -2.000000, -2.000000, 0.000000)
-add r1.xyz, r1.xyzx, l(3.000000, 3.000000, 3.000000, 0.000000)
-mul r0.xyz, r0.xyzx, r0.xyzx
-mul r0.xyz, r0.xyzx, r1.xyzx  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z
-
-#line 14
-mov o0.xyz, r0.xyzx
+dcl_temps 2
+sample_indexable(texture2d)(float,float,float,float) r0.xyzw, v2.xyxx, t0.xyzw, s1
+add r0.xyz, r0.xyzx, l(-0.600000, -0.600000, -0.600000, 0.000000)
 mov o0.w, r0.w
+mul_sat r0.xyz, r0.xyzx, l(2.500000, 2.500000, 2.500000, 0.000000)
+mad r1.xyz, r0.xyzx, l(-2.000000, -2.000000, -2.000000, 0.000000), l(3.000000, 3.000000, 3.000000, 0.000000)
+mul r0.xyz, r0.xyzx, r0.xyzx
+mul o0.xyz, r0.xyzx, r1.xyzx
 ret 
-// Approximately 15 instruction slots used
+// Approximately 8 instruction slots used

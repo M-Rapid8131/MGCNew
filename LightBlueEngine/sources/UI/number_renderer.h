@@ -35,10 +35,11 @@ class NumberRenderer
 public:
 	// public:定数
 	static const int	MINUS_POS		= 10;
-	static const int	PERIOD_POS		= 11;
+	static const int	COLON_POS		= 11;
+	static const int	SLASH_POS		= 12;
 	
-	static constexpr float	TEXT_SPR_WIDTH	= 120.0f;
-	static constexpr float	TEXT_SPR_HEIGHT	= 200.0f;
+	static constexpr float	TEXT_SPR_WIDTH	= 160.0f;
+	static constexpr float	TEXT_SPR_HEIGHT	= 256.0f;
 
 	// public:コンストラクタ・デストラクタ
 	NumberRenderer();
@@ -46,14 +47,14 @@ public:
 
 	// public:通常関数
 	void RenderInt(int, DirectX::XMFLOAT2, DirectX::XMFLOAT2, 
-		EnumNumberAlignment = EnumNumberAlignment::LEFT_ALIGNMENT, DirectX::XMFLOAT4 = { 1.0f, 1.0f, 1.0f, 1.0f });
+		EnumNumberAlignment = EnumNumberAlignment::LEFT_ALIGNMENT, DirectX::XMFLOAT4 = { 1.0f, 1.0f, 1.0f, 1.0f }, std::string = {});
 	//	RenderIntについて
 	//		５４３２１(桁目) ->digits	
 	//		↓↓↓↓↓					
 	//		１２３４５ ->number			
 
 	void RenderFloat(float, int, DirectX::XMFLOAT2, DirectX::XMFLOAT2, 
-		EnumNumberAlignment = EnumNumberAlignment::LEFT_ALIGNMENT, DirectX::XMFLOAT4 = { 1.0f, 1.0f, 1.0f, 1.0f });
+		EnumNumberAlignment = EnumNumberAlignment::LEFT_ALIGNMENT, DirectX::XMFLOAT4 = { 1.0f, 1.0f, 1.0f, 1.0f }, std::string = {});
 	//	RenderFloatについて
 	//		digits->８７６５４　３２１(桁目)
 	//				↓↓↓↓↓	１２３(小数点第N位)	<-decimal_points

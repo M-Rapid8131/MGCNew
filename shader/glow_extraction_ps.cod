@@ -43,38 +43,24 @@
 // SV_TARGET                0   xyzw        0   TARGET   float   xyzw
 //
 ps_5_0
-dcl_globalFlags refactoringAllowed | skipOptimization
+dcl_globalFlags refactoringAllowed
 dcl_constantbuffer CB8[2], immediateIndexed
 dcl_sampler s0, mode_default
 dcl_resource_texture2d (float,float,float,float) t0
 dcl_input_ps linear v2.xy
 dcl_output o0.xyzw
 dcl_temps 2
-//
-// Initial variable locations:
-//   v0.x <- pin.position.x; v0.y <- pin.position.y; v0.z <- pin.position.z; v0.w <- pin.position.w; 
-//   v1.x <- pin.color.x; v1.y <- pin.color.y; v1.z <- pin.color.z; v1.w <- pin.color.w; 
-//   v2.x <- pin.texcoord.x; v2.y <- pin.texcoord.y; 
-//   o0.x <- <ShaderMain return value>.x; o0.y <- <ShaderMain return value>.y; o0.z <- <ShaderMain return value>.z; o0.w <- <ShaderMain return value>.w
-//
-#line 9 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\bloom\glow_extraction_ps.hlsl"
-sample_indexable(texture2d)(float,float,float,float) r0.xyzw, v2.xyxx, t0.xyzw, s0  // r0.x <- sampled_color.x; r0.y <- sampled_color.y; r0.z <- sampled_color.z; r0.w <- sampled_color.w
-
-#line 11
-max r1.x, r0.z, r0.y
-max r1.x, r0.x, r1.x
-mov r1.y, -cb8[1].x
-add r1.z, r1.y, cb8[1].z
-add r1.x, r1.y, r1.x
-div r1.y, l(1.000000, 1.000000, 1.000000, 1.000000), r1.z
-mul r1.x, r1.y, r1.x
-max r1.x, r1.x, l(0.000000)
-min r1.x, r1.x, l(1.000000)
-mul r1.y, r1.x, l(-2.000000)
-add r1.y, r1.y, l(3.000000)
-mul r1.x, r1.x, r1.x
-mul r1.x, r1.x, r1.y
-mul o0.xyz, r0.xyzx, r1.xxxx
-mov o0.w, r0.w
+add r0.x, -cb8[1].x, cb8[1].z
+div r0.x, l(1.000000, 1.000000, 1.000000, 1.000000), r0.x
+sample_indexable(texture2d)(float,float,float,float) r1.xyzw, v2.xyxx, t0.xyzw, s0
+max r0.y, r1.z, r1.y
+max r0.y, r0.y, r1.x
+add r0.y, r0.y, -cb8[1].x
+mul_sat r0.x, r0.x, r0.y
+mad r0.y, r0.x, l(-2.000000), l(3.000000)
+mul r0.x, r0.x, r0.x
+mul r0.x, r0.x, r0.y
+mul o0.xyz, r1.xyzx, r0.xxxx
+mov o0.w, r1.w
 ret 
-// Approximately 17 instruction slots used
+// Approximately 13 instruction slots used

@@ -14,6 +14,9 @@ void ShaderMain(VS_OUT_3D model_pin)
 	const SbMaterial MATERIAL = materials[material];
 	
 	MaterialData material_data = GetMaterialData(MATERIAL, model_pin.texcoord);
+	float4 color = material_data.basecolor_factor;
+	if (color.a < 0.01f)
+		discard;
 	
 	// •K—v‚È•Ï”
 	const float3 projection_vec = model_pin.w_position.xyz;
@@ -27,26 +30,12 @@ void ShaderMain(VS_OUT_3D model_pin)
 	
 	const float3 bitangent = normalize(cross(norm_vec, tangent) * sigma);
 	
-	// normal
-	//if (MATERIAL.normal_texture.index > -1)
-	//{
-	//	float2 transformed_texcoord = TransformTexcoord(model_pin.texcoord, MATERIAL.normal_texture.khr_texture_transform);
-	//	float3 normal = material_textures[TEX_NORMAL].Sample(sampler_states[SS_LINEAR], transformed_texcoord).xyz;
-	//	normal = (normal * 2.0) - 1.0;
-	//	normal = normalize(normal * float3(MATERIAL.normal_texture.scale, MATERIAL.normal_texture.scale, 1.0));
-	//	norm_vec = normalize((normal.x * tangent) + (normal.y * bitangent) + (normal.z * norm_vec));
-	//}
-	
-	float4 color = material_data.basecolor_factor;
-	if (color.a < 0.01f)
-		discard;
-
 	uint num_structs, stride;
 	append_particle_buffer.GetDimensions(num_structs, stride);
 	
 	Particle particle;
 	particle.particle_index = 0;
-	particle.position		= model_pin.w_position.xyz - float3(1.0f, 0.0f, 0.0f);
+	particle.position		= model_pin.w_position.xyz;
 	particle.size			= emit_size;
 	particle.color			= float4(object_color, color.a);
 	particle.velocity		= norm_vec * emit_speed;

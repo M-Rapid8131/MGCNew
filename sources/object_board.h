@@ -17,7 +17,8 @@
 #include "object_block.h"
 
 // using
-using PairBlock = std::pair<std::unique_ptr<ObjectBlock>, std::unique_ptr<ObjectBlock>>;
+using PairBlock			= std::pair<std::unique_ptr<ObjectBlock>, std::unique_ptr<ObjectBlock>>;
+using EraseParticleData = std::pair<std::unique_ptr<ParticleSystem>, float>;
 
 template<typename T>
 using UPtrVector = std::vector<std::unique_ptr<T>>;
@@ -33,11 +34,13 @@ enum class EnumBoardFlags
 	PLAYING,
 	CAN_MOVE,
 	WAITING,
-	BLOCK_REGISTERED
+	BLOCK_REGISTERED,
+	CHANGE_PARTICLE_TYPE,
 };
 
 enum class EnumBoardState
 {
+	STANDBY,		// モード選択中
 	START,			// ゲームスタート
 	DROP_START,		// ブロック落下スタート
 	MOVING,			// ブロック操作中
@@ -53,6 +56,13 @@ enum class EnumCheckDirection
 	HORIZONTAL,
 };
 
+enum class EnumGameStyle
+{
+	STANDARD,
+	FLEX,
+	SUDDEN_DEATH
+};
+
 enum class EnumGameMode
 {
 	NORMAL,
@@ -60,8 +70,8 @@ enum class EnumGameMode
 	IMPACT,
 	ENDLESS,
 	MISSION,
+	TEMPEST,
 	BONUS,
-	NORMAL_DEMO,
 	
 	UNDEFINE
 };
@@ -76,8 +86,8 @@ const DirectX::XMFLOAT3 BOARD_COLOR_SET[SCast(int, EnumGameMode::UNDEFINE)] =
 	{1.0f, 0.0f, 0.0f},
 	{0.0f, 1.0f, 1.0f},
 	{1.0f, 0.0f, 1.0f},
+	{0.4f, 0.0f, 1.0f},
 	{1.0f, 1.0f, 0.0f},
-	{1.0f, 1.0f, 1.0f},
 };
 
 // class >> [ObjectBoard] 継承：glTFObject
@@ -89,15 +99,21 @@ protected:
 	static const UINT DEFAULT_START_LEVEL		= 1;
 	static const UINT LV_UP_BLOCK_COUNT			= 5;
 	static const UINT SCORE_BASE				= 10;
+	static const UINT DIAGONAL_ADJUST			= MAX_ROW;
 
 	static constexpr float				SPEED_FACTOR		= ObjectBlock::BLOCK_SIZE;
-	static constexpr float				MODIFY_SPEED		= 0.6f;
+	static constexpr float				ACCEL_SPEED			= ObjectBlock::BLOCK_SIZE * 25.0f;
+	static constexpr float				SPEED_LIMIT			= ObjectBlock::BLOCK_SIZE * 2000.0f;
+	static constexpr float				BONUS_SPEED			= 500.0f;
+	static constexpr float				EASY_BONUS_SPEED	= 200.0f;
 	static constexpr float				ZOOM_MIN			= 10.0f;
 	static constexpr float				DEFAULT_ZOOM		= 60.0f;
 	static constexpr float				ZOOM_OUT_RATE		= 0.025f;
 	static constexpr float				ZOOM_MAX			= 200.0f;
 	static constexpr float				COUNT_DOWN			= 3.0f;
 	static constexpr float				CAMERA_ANGLE_LIMIT	= 0.25f;
+	static constexpr float				DEFAULT_WAIT_TIME	= 0.5f;
+	static constexpr float				TEMPEST_WAIT_TIME	= 0.1f;
 	static constexpr DirectX::XMFLOAT3	ROOT_POSITION		= { -9.0f, 17.5f, 0.0f };
 	static constexpr DirectX::XMFLOAT4	DEFAULT_DIRECTION	= { 0.0f, 0.0f, -1.0f, 0.0f };
 	
@@ -108,6 +124,7 @@ protected:
 	struct BoardState
 	{
 		// 関数
+		void TransitionStandbyState();
 		void TransitionStartState(int);
 		void TransitionDropStartState();
 		void TransitionMovingState();
@@ -130,7 +147,8 @@ protected:
 		void Render();
 		void EmissiveRender();
 		void SetNewBlock();
-		void MoveBlock();
+		void SuperDrop();
+		void MoveBlock(float);
 		bool RotateBlock(bool);
 
 		// 変数
@@ -194,11 +212,15 @@ public:
 	void	BoardShake(DirectX::XMFLOAT3);
 	void	VerticalLineCheck(const UINT);
 	void	HorizontalLineCheck(const UINT);
+	void	DiagonalLineCheckLU(const UINT);
+	void	DiagonalLineCheckLD(const UINT);
 	void	SortInList(UPtrVector<ObjectBlock>&);
 	void	GameStart(int);
-	void	BonusStart();
+	void	BonusStart(bool);
 	void	AccumulateBoardParticle();
 	void	LevelUp();
+	void	FlexLevelUp(UINT);
+	void	UpdateStandCollisionHeight();
 
 	bool	MoveToDeletedBlockList();
 	bool	CheckGameOver();
@@ -218,10 +240,13 @@ public:
 	void	UpdateGameOverState(float);
 
 	// public:ゲッター関数
-	const bool							IsExistingBlockFromCell(BlockCell);
+	const bool							IsPausing()									{ return pause; }
+	const bool							ChangeParticleType()						{ return flag_system.GetFlag(EnumBoardFlags::CHANGE_PARTICLE_TYPE); }
+	const bool							IsExistFromColorMatrix(BlockCell);
 	const bool							IsInvalidBlockFromCell(BlockCell);
 	const bool							IsInvalidBlockFromIterator(UPtrVector<ObjectBlock>::iterator);
 	const float							GetCurrentSpeed() const						{ return current_speed; }
+	const UINT							GetCurrentRank() const						{ return current_rank; }
 	const UINT							GetEraseBlockCount() const					{ return game_data.deleted_block_count; }
 	const UINT							GetStandCollisionHeight(UINT index) const	{ return stand_collision_heignt[index]; }
 	const UINT							GetPlayerID() const							{ return player_id; }
@@ -230,18 +255,22 @@ public:
 	UPtrVector<ObjectBlock>::iterator	GetBlockFromCell(const BlockCell);
 	BoardState&							GetBoardState()								{ return board_state; }
 	GameData&							GetGameData()								{ return game_data; }
+	const EnumBlockColor&				GetBlockColorFromMatrix(const BlockCell);
 
 	template<typename Enum>
 	FlagSystem<Enum>&					GetFlagSystem()				{ return flag_system; }
 
 	// public:セッター関数
-	void									IncreaseEraseBlockCount()	{ game_data.deleted_block_count++; }
+	void								ChangeBoardColorFromGameMode(const EnumGameMode game_mode) { board_color = BOARD_COLOR_SET[SCast(size_t, game_mode)]; }
+	void								ChangedParticleType()		{ flag_system.SetFlag(EnumBoardFlags::CHANGE_PARTICLE_TYPE, false); }
+	void								IncreaseEraseBlockCount()	{ game_data.deleted_block_count++; }
 
-	void	 SetExistingBlockFromCell(const BlockCell cell, bool flg)
+	void	 SetBlockColorFromCell(const BlockCell cell, const EnumBlockColor color)
 	{
 		if (cell.row < 1 || cell.row > MAX_ROW)				return;
 		if (cell.column < 1 || cell.column > MAX_COLUMN)		return;
-		existing_matrix[cell.row - 1][cell.column - 1] = flg;
+		block_color_matrix[cell.row - 1][cell.column - 1] = color;
+		existing_matrix[cell.row - 1][cell.column - 1] = (color != EnumBlockColor::UNDEFINE);
 	}
 
 protected:
@@ -253,7 +282,7 @@ protected:
 	DirectX::XMFLOAT3					shake_speed				= {0.0f,0.0f,0.0f}; // 元の位置から移動させるための速度
 	DirectX::XMFLOAT3					board_color				= {1.0f,1.0f,1.0f}; // 元の位置から移動させるための速度
 	std::unique_ptr<GameModel>			board_model;								// 盤面のモデル
-	std::unique_ptr<ParticleSystem>		erase_block_particle;						// ブロック消去演出パーティクル
+	std::vector<EraseParticleData>		erase_block_particle;						// ブロック消去演出パーティクル
 
 	// スピード関係
 	float								level_speed				= 0.0f;		// 現在のレベルのブロック落下スピード
@@ -261,7 +290,7 @@ protected:
 	float								speed_increase_factor	= 0.0f;		// ブロック落下スピードの増加量
 	float								si_rank_bonus			= 0.0f;		// スピードランク上昇時の落下スピード増加量
 	UINT								current_rank			= -1;		// 現在のスピードランク
-	std::vector<int>					speed_rank;							// 落下スピードを大きく上昇させるレベルを格納。BGMもこれで変更
+	std::vector<int>					speed_rank;							// 落下スピードを大きく変化させるレベルを格納。BGMもこれで変更
 
 	// 接地関係
 	float								standing_time			= 0.0f;		// 接地からの時間
@@ -274,6 +303,8 @@ protected:
 	std::array<UINT, MAX_ROW>			stand_collision_heignt;
 
 	// UI関係
+	float								ui_alpha = 1.0f;
+	DirectX::XMFLOAT3					ui_color = { 1.0f, 1.0f, 1.0f };
 	UPtrVector<ValueUI>					value_ui;
 	UPtrVector<SpriteUI>				sprite_ui;
 
@@ -281,11 +312,13 @@ protected:
 	NextBlock							next_block;
 	DeleteBlockSorter					delete_block_sorter;
 	UPtrVector<ObjectBlock>				block_list;
+	UPtrVector<ObjectBlock>				erased_block_list;
 
-	std::vector<std::vector<bool>>		existing_matrix;					// ブロックが存在しているかしていないかだけを記録している変数
+	std::vector<std::vector<bool>>				existing_matrix;					// ブロックが存在しているかしていないかだけを記録している変数
+	std::vector<std::vector<EnumBlockColor>>	block_color_matrix;					// ブロックの色を記録する変数
 
 	// ゲームシステム関係
-	bool								demo_mode				= false;
+	bool								pause					= false;
 	float								count_down_time			= COUNT_DOWN;
 	float								count_down_se_time		= 1.0f;
 	float								count_down_se_span		= 1.0f;
@@ -296,6 +329,8 @@ protected:
 	UINT								chain					= 0;		// 連鎖数
 	UINT								player_id				= 0;		// プレイヤー番号
 	EnumGameMode						game_mode				= EnumGameMode::UNDEFINE;
+	EnumGameMode						before_game_mode		= EnumGameMode::UNDEFINE;
+	EnumGameStyle						game_style				= EnumGameStyle::STANDARD;
 	BoardState							board_state;						// 盤面の状態
 	GameData							game_data;
 	StateUpdate							state_update;						// 状態ごとの処理を格納する関数ポインタ

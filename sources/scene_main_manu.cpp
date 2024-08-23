@@ -134,8 +134,7 @@ void SceneMainManu::Initialize()
 {
 	Graphics*		graphics		= Graphics::GetInstance();
 	AudioManager*	audio_manarger	= GamesystemDirector::GetInstance()->GetAudioManager();
-	//audio_manarger->PlayBGM(EnumBGMBank::STANDBY, 0.3f);
-	audio_manarger->StopBGM();
+	audio_manarger->PlayBGM(EnumBGMBank::STANDBY, 1.0f);
 
 	// カメラ作成・設定
 	Camera*				camera	= GamesystemDirector::GetInstance()->GetCamera();
@@ -162,8 +161,9 @@ void SceneMainManu::Initialize()
 	main_bloom		= std::make_unique<BloomEffect>(DEFAULT_MAIN_BLOOM, SCast(UINT, graphics->GetScreenWidth()), SCast(UINT, graphics->GetScreenHeight()));
 	emissive_bloom	= std::make_unique<BloomEffect>(DEFAULT_EMISSIVE_BLOOM, SCast(UINT, graphics->GetScreenWidth()), SCast(UINT, graphics->GetScreenHeight()));
 
-	logo		= std::make_unique<Sprite>(L"resources/sprite/logo.png");
-	menu_key	= std::make_unique<Sprite>(L"resources/sprite/title_button.png");
+	logo				= std::make_unique<Sprite>(L"resources/sprite/logo.png");
+	menu_key_pad		= std::make_unique<Sprite>(L"resources/sprite/config/start_pad.png");
+	menu_key_keyboard	= std::make_unique<Sprite>(L"resources/sprite/config/start_keyboard.png");
 
 	background_particle = std::make_unique<ParticleSystem>("Title");
 }
@@ -315,7 +315,7 @@ void SceneMainManu::Render()
 {
 	Graphics*			graphics			= Graphics::GetInstance();
 	FramebufferManager* framebuffer_manager = GamesystemDirector::GetInstance()->GetFramebufferManager();
-
+	
 	DirectX::XMFLOAT3 rgb_color = HSV2RGB(hsv_color);
 
 	ParticleSystem::CbParticleEmitter& emitter = background_particle->GetCbParticleEmitter();
@@ -388,8 +388,23 @@ void SceneMainManu::Render()
 		logo->Render({ MARGIN_S, MARGIN_S }, size);
 
 		// ゲームに進むボタンの表示
-		size = menu_key->GetSpriteSizeWithScaling({ 0.5f, 0.5f });
-		menu_key->Render({ width - size.x - MARGIN_S, height - size.y - MARGIN_S }, size);
+		EnumInputDevice input_device = GamesystemInput::GetInstance()->GetInputDevice();
+
+		size = menu_key_pad->GetSpriteSizeWithScaling({ 0.5f, 0.5f });
+
+		switch (input_device)
+		{
+		case EnumInputDevice::XBOX:
+			menu_key_pad->Render({ width - size.x - MARGIN_S, height - size.y - MARGIN_S }, size);
+			break;
+		case EnumInputDevice::PS:
+			break;
+		case EnumInputDevice::KEYBOARD:
+			menu_key_keyboard->Render({ width - size.x - MARGIN_S, height - size.y - MARGIN_S }, size);
+			break;
+		default:
+			break;
+		}
 	}
 	framebuffer_manager->Deactivate("main");
 

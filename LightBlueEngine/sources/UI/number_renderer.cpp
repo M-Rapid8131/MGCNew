@@ -29,11 +29,27 @@ NumberRenderer::~NumberRenderer()
 }
 
 // êÆêîï`âÊ
-void NumberRenderer::RenderInt(int number, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 scale, EnumNumberAlignment alignment, DirectX::XMFLOAT4 color)
+void NumberRenderer::RenderInt(int number, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 scale, EnumNumberAlignment alignment, DirectX::XMFLOAT4 color, std::string command)
 {
 	int count	= 0;	// ï`âÊÇµÇΩêîéöÇÃå¬êî
 	int num		= 0;	// ï`âÊÇ∑ÇÈêîéö
 	int digits  = GetDigits(number);
+	int render_count = 0;
+	if (!command.empty())
+	{
+		digits = 0;
+		for (int i = 0; i < command.size(); i++)
+		{
+			const char cmd = command.at(i);
+			if (cmd == 'N')
+			{
+				digits++;
+			}
+
+			render_count++;
+		}
+		render_count--;
+	}
 
 	DirectX::XMFLOAT2 modified_pos = {0.0f, 0.0f};		// ÉAÉâÉCÉÅÉìÉgí≤êÆå„ÇÃà íu
 	
@@ -44,36 +60,104 @@ void NumberRenderer::RenderInt(int number, DirectX::XMFLOAT2 pos, DirectX::XMFLO
 		break;
 	case EnumNumberAlignment::CENTER_ALIGNMENT:
 		modified_pos.y = pos.y;
-		modified_pos.x = pos.x - (TEXT_SPR_WIDTH * scale.x) * (SCast(float, digits) * 0.5f);
+		if(command.empty())
+			modified_pos.x = pos.x - (TEXT_SPR_WIDTH * scale.x) * (SCast(float, digits) * 0.4f);
+		else
+			modified_pos.x = pos.x - (TEXT_SPR_WIDTH * scale.x) * (SCast(float, render_count) * 0.4f);
 		break;
 	case EnumNumberAlignment::RIGHT_ALIGNMENT:
 		modified_pos.y = pos.y;
-		modified_pos.x = pos.x - (TEXT_SPR_WIDTH * scale.x) * SCast(float, digits);
+		if (command.empty())
+			modified_pos.x = pos.x - (TEXT_SPR_WIDTH * scale.x) * SCast(float, digits) * 0.8f;
+		else
+			modified_pos.x = pos.x - (TEXT_SPR_WIDTH * scale.x) * SCast(float, render_count) * 0.8f;
 		break;
 	default:
 		break;
 	}
 
 	// ï∂éöï`âÊ
-	while (digits > 0)
+	if (command.empty())
 	{
-		num = number / PowInt(10, digits - 1);
-		number_sprite->Render(
-			{ modified_pos.x + (TEXT_SPR_WIDTH * scale.x) * SCast(float,count), modified_pos.y },
-			{ SCast(float, TEXT_SPR_WIDTH) * scale.x, SCast(float, TEXT_SPR_HEIGHT) * scale.y },
-			color,
-			{ 0.0f,0.0f,0.0f },
-			{ TEXT_SPR_WIDTH * SCast(float, num),0.0f },
-			{ TEXT_SPR_WIDTH,TEXT_SPR_HEIGHT }
-		);
-		number = number % PowInt(10, digits - 1);
-		digits--;
-		count++;
+		while (digits > 0)
+		{
+			num = number / PowInt(10, digits - 1);
+			number_sprite->Render(
+				{ modified_pos.x + (TEXT_SPR_WIDTH * scale.x) * (SCast(float,count) * 0.8f), modified_pos.y },
+				{ SCast(float, TEXT_SPR_WIDTH) * scale.x, SCast(float, TEXT_SPR_HEIGHT) * scale.y },
+				color,
+				{ 0.0f,0.0f,0.0f },
+				{ TEXT_SPR_WIDTH * SCast(float, num),0.0f },
+				{ TEXT_SPR_WIDTH,TEXT_SPR_HEIGHT }
+			);
+			number = number % PowInt(10, digits - 1);
+			digits--;
+			count++;
+		}
+	}
+	else
+	{
+		for (int i = 0; i < command.size(); i++)
+		{
+			const char cmd = command.at(i);
+			switch (cmd)
+			{
+			case 'N':
+				num = number / PowInt(10, digits - 1);
+				number_sprite->Render(
+					{ modified_pos.x + (TEXT_SPR_WIDTH * scale.x) * SCast(float,count) * 0.8f, modified_pos.y },
+					{ SCast(float, TEXT_SPR_WIDTH) * scale.x, SCast(float, TEXT_SPR_HEIGHT) * scale.y },
+					color,
+					{ 0.0f,0.0f,0.0f },
+					{ TEXT_SPR_WIDTH * SCast(float, num),0.0f },
+					{ TEXT_SPR_WIDTH,TEXT_SPR_HEIGHT }
+				);
+				number = number % PowInt(10, digits - 1);
+				digits--;
+				count++;
+				break;
+			case 'M':
+				number_sprite->Render(
+					{ modified_pos.x + (TEXT_SPR_WIDTH * scale.x) * SCast(float,count) * 0.8f, modified_pos.y },
+					{ SCast(float, TEXT_SPR_WIDTH) * scale.x, SCast(float, TEXT_SPR_HEIGHT) * scale.y },
+					color,
+					{ 0.0f,0.0f,0.0f },
+					{ TEXT_SPR_WIDTH * SCast(float, MINUS_POS),0.0f },
+					{ TEXT_SPR_WIDTH,TEXT_SPR_HEIGHT }
+				);
+				count++;
+				break;
+			case 'C':
+				number_sprite->Render(
+					{ modified_pos.x + (TEXT_SPR_WIDTH * scale.x) * SCast(float,count) * 0.8f, modified_pos.y },
+					{ SCast(float, TEXT_SPR_WIDTH) * scale.x, SCast(float, TEXT_SPR_HEIGHT) * scale.y },
+					color,
+					{ 0.0f,0.0f,0.0f },
+					{ TEXT_SPR_WIDTH * SCast(float, COLON_POS),0.0f },
+					{ TEXT_SPR_WIDTH,TEXT_SPR_HEIGHT }
+				);
+				count++;
+				break;
+			case 'S':
+				number_sprite->Render(
+					{ modified_pos.x + (TEXT_SPR_WIDTH * scale.x) * SCast(float,count) * 0.8f, modified_pos.y },
+					{ SCast(float, TEXT_SPR_WIDTH) * scale.x, SCast(float, TEXT_SPR_HEIGHT) * scale.y },
+					color,
+					{ 0.0f,0.0f,0.0f },
+					{ TEXT_SPR_WIDTH * SCast(float, SLASH_POS),0.0f },
+					{ TEXT_SPR_WIDTH,TEXT_SPR_HEIGHT }
+				);
+				count++;
+				break;
+			default:
+				break;
+			}
+		}
 	}
 }
 
 // è¨êîä‹ÇﬁêîÇÃï`âÊ
-void NumberRenderer::RenderFloat(float number, int decimal_points, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 scale, EnumNumberAlignment alignment, DirectX::XMFLOAT4 color)
+void NumberRenderer::RenderFloat(float number, int decimal_points, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 scale, EnumNumberAlignment alignment, DirectX::XMFLOAT4 color, std::string command)
 {
 	int count	= 0;	// ï`âÊÇµÇΩêîéöÇÃå¬êî
 	int adj_num = SCast(int, number) * PowInt(10, decimal_points);		// è¨êîì_ÇäOÇ∑
@@ -100,29 +184,46 @@ void NumberRenderer::RenderFloat(float number, int decimal_points, DirectX::XMFL
 	}
 
 	// ï∂éöï`âÊ
-	while (digits > 0)
+	if(command.empty())
 	{
-		bool period = (decimal_points == digits) && (num != PERIOD_POS);
-
-		// è¨êîì_Çï`âÊÇ∑ÇÈÇ©î€Ç©
-		if (period)	num = PERIOD_POS;
-		else		num = adj_num / PowInt(10, digits - 1);
-
-		number_sprite->Render(
-			{ modified_pos.x + (TEXT_SPR_WIDTH * scale.x) * SCast(float,count),modified_pos.y },
-			{ SCast(float, TEXT_SPR_WIDTH) * scale.x, SCast(float, TEXT_SPR_HEIGHT) * scale.y },
-			color,
-			{ 0.0f,0.0f,0.0f },
-			{ TEXT_SPR_WIDTH * SCast(float, num),0.0f },
-			{ TEXT_SPR_WIDTH,TEXT_SPR_HEIGHT }
-		);
-
-		if (!period)
+		while (digits > 0)
 		{
-			adj_num = adj_num % PowInt(10, digits - 1);
-			digits--;
-		}
+			bool period = (decimal_points == digits) && (num != COLON_POS);
 
-		count++;
+			// è¨êîì_Çï`âÊÇ∑ÇÈÇ©î€Ç©
+			if (period)	num = COLON_POS;
+			else		num = adj_num / PowInt(10, digits - 1);
+
+			number_sprite->Render(
+				{ modified_pos.x + (TEXT_SPR_WIDTH * scale.x) * SCast(float,count),modified_pos.y },
+				{ SCast(float, TEXT_SPR_WIDTH) * scale.x, SCast(float, TEXT_SPR_HEIGHT) * scale.y },
+				color,
+				{ 0.0f,0.0f,0.0f },
+				{ TEXT_SPR_WIDTH * SCast(float, num),0.0f },
+				{ TEXT_SPR_WIDTH,TEXT_SPR_HEIGHT }
+			);
+
+			if (!period)
+			{
+				adj_num = adj_num % PowInt(10, digits - 1);
+				digits--;
+			}
+
+			count++;
+		}
+	}
+	else
+	{
+		for (int i = 0; i < command.size(); i++)
+		{
+			const char cmd = command.at(i);
+			switch (cmd)
+			{
+			case 'N':
+				break;
+			default:
+				break;
+			}
+		}
 	}
 }

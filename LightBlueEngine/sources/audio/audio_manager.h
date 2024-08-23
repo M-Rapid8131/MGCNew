@@ -35,6 +35,7 @@ enum class EnumBGMBank
 	BONUS_TIME,
 	EASY_BONUS_TIME,
 	RESULT,
+	MODE_SELECT,
 
 	NONE
 };

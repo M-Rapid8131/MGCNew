@@ -181,50 +181,7 @@ ParticleSystem::ParticleSystem(std::string json_key)
 
 	HRESULT	hr = S_OK;
 
-	JSONEditor* json_editor = JSONEditor::GetInstance();
-	Parameters json_params;
-	ParamPtr particle_params;
-
-	json_editor->ImportJSON(std::filesystem::path("./resources/json_data/particle_data.json"), &json_params);
-	particle_params = GET_PARAMETER_IN_PARAMPTR(json_key, Parameters, &json_params);
-	CbParticleEmitter emitter_setting;
-	emitter_setting.emit_amounts	= *(GET_PARAMETER_IN_PARAMPTR("EmitAmounts", int, particle_params));
-	emitter_setting.random_color	= *(GET_PARAMETER_IN_PARAMPTR("RandomColor", bool, particle_params));
-	emitter_setting.disable			= *(GET_PARAMETER_IN_PARAMPTR("Disable", bool, particle_params));
-
-	ParamPtr emit_position_param	= GET_PARAMETER_IN_PARAMPTR("EmitPosition", Parameters, particle_params);
-	emitter_setting.emit_position.x	= *(GET_PARAMETER_IN_PARAMPTR("0", float, emit_position_param));
-	emitter_setting.emit_position.y	= *(GET_PARAMETER_IN_PARAMPTR("1", float, emit_position_param));
-	emitter_setting.emit_position.z	= *(GET_PARAMETER_IN_PARAMPTR("2", float, emit_position_param));
-
-	emitter_setting.emit_speed = *(GET_PARAMETER_IN_PARAMPTR("EmitSpeed", float, particle_params));
-
-	ParamPtr emit_force_param		= GET_PARAMETER_IN_PARAMPTR("EmitForce", Parameters, particle_params);
-	emitter_setting.emit_force.x	= *(GET_PARAMETER_IN_PARAMPTR("0", float, emit_force_param));
-	emitter_setting.emit_force.y	= *(GET_PARAMETER_IN_PARAMPTR("1", float, emit_force_param));
-	emitter_setting.emit_force.z	= *(GET_PARAMETER_IN_PARAMPTR("2", float, emit_force_param));
-
-	emitter_setting.emit_accel		= *(GET_PARAMETER_IN_PARAMPTR("EmitAccel", float, particle_params));
-
-	ParamPtr emit_direction_param	= GET_PARAMETER_IN_PARAMPTR("EmitDirection", Parameters, particle_params);
-	emitter_setting.emit_direction.x	= *(GET_PARAMETER_IN_PARAMPTR("0", float, emit_direction_param));
-	emitter_setting.emit_direction.y	= *(GET_PARAMETER_IN_PARAMPTR("1", float, emit_direction_param));
-	emitter_setting.emit_direction.z	= *(GET_PARAMETER_IN_PARAMPTR("2", float, emit_direction_param));
-
-	emitter_setting.spread_rate		= *(GET_PARAMETER_IN_PARAMPTR("SpreadRate", float, particle_params));
-
-	ParamPtr emit_color_param	= GET_PARAMETER_IN_PARAMPTR("EmitColor", Parameters, particle_params);
-	emitter_setting.emit_color.x	= *(GET_PARAMETER_IN_PARAMPTR("0", float, emit_color_param));
-	emitter_setting.emit_color.y	= *(GET_PARAMETER_IN_PARAMPTR("1", float, emit_color_param));
-	emitter_setting.emit_color.z	= *(GET_PARAMETER_IN_PARAMPTR("2", float, emit_color_param));
-	emitter_setting.emit_color.w	= *(GET_PARAMETER_IN_PARAMPTR("3", float, emit_color_param));
-
-	emitter_setting.emit_size		= *(GET_PARAMETER_IN_PARAMPTR("EmitSize", float, particle_params));
-	emitter_setting.life_time		= *(GET_PARAMETER_IN_PARAMPTR("LifeTime", float, particle_params));
-	emitter_setting.start_diff		= *(GET_PARAMETER_IN_PARAMPTR("StartDiff", float, particle_params));
-	emitter_setting.emit_radius		= *(GET_PARAMETER_IN_PARAMPTR("EmitRadius", float, particle_params));
-
-	particle_emitter_constants = emitter_setting;
+	SetEmitterConstantsFromJSON(json_key);
 
 	D3D11_BUFFER_DESC buffer_desc = {};
 
@@ -312,7 +269,7 @@ ParticleSystem::ParticleSystem(std::string json_key)
 	_ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
 	// コンスタントバッファ
-	device_context->UpdateSubresource(particle_emitter_cbuffer.Get(), 0, nullptr, &emitter_setting, 0, 0);
+	device_context->UpdateSubresource(particle_emitter_cbuffer.Get(), 0, nullptr, &particle_emitter_constants, 0, 0);
 	device_context->CSSetConstantBuffers(SCast(UINT, EnumBufferGPUParticle::PARTICLE_EMITTER), 1, particle_emitter_cbuffer.GetAddressOf());
 
 	// UAVをセット
@@ -365,7 +322,7 @@ void ParticleSystem::Update(float elapsed_time, ID3D11ComputeShader* replaced_cs
 
 	device_context->CSSetShader(replaced_cs ? replaced_cs : compute_shader.Get(), NULL, 0);
 
-	UINT num_threads = Align(particle_emitter_constants.emit_amounts, 256);
+	UINT num_threads = Align(particle_emitter_constants.emit_amounts, 512);
 
 	// 計算シェーダー実行
 	device_context->Dispatch(num_threads / 512, 1, 1);
@@ -616,4 +573,6 @@ void ParticleSystem::SetEmitterConstantsFromJSON(std::string json_key)
 	emitter_setting.life_time = *(GET_PARAMETER_IN_PARAMPTR("LifeTime", float, particle_params));
 	emitter_setting.start_diff = *(GET_PARAMETER_IN_PARAMPTR("StartDiff", float, particle_params));
 	emitter_setting.emit_radius = *(GET_PARAMETER_IN_PARAMPTR("EmitRadius", float, particle_params));
+	
+	particle_emitter_constants = emitter_setting;
 }

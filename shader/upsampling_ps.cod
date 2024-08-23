@@ -54,7 +54,7 @@
 // SV_TARGET                0   xyzw        0   TARGET   float   xyzw
 //
 ps_5_0
-dcl_globalFlags refactoringAllowed | skipOptimization
+dcl_globalFlags refactoringAllowed
 dcl_constantbuffer CB8[2], immediateIndexed
 dcl_sampler s1, mode_default
 dcl_resource_texture2d (float,float,float,float) t0
@@ -71,220 +71,89 @@ dcl_resource_texture2d (float,float,float,float) t10
 dcl_resource_texture2d (float,float,float,float) t11
 dcl_input_ps linear v2.xy
 dcl_output o0.xyzw
-dcl_temps 3
-//
-// Initial variable locations:
-//   v0.x <- pin.position.x; v0.y <- pin.position.y; v0.z <- pin.position.z; v0.w <- pin.position.w; 
-//   v1.x <- pin.color.x; v1.y <- pin.color.y; v1.z <- pin.color.z; v1.w <- pin.color.w; 
-//   v2.x <- pin.texcoord.x; v2.y <- pin.texcoord.y; 
-//   o0.x <- <ShaderMain return value>.x; o0.y <- <ShaderMain return value>.y; o0.z <- <ShaderMain return value>.z; o0.w <- <ShaderMain return value>.w
-//
-#line 10 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\bloom\upsampling_ps.hlsl"
-itof r0.xyz, l(0, 0, 0, 0)  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z
-
-#line 13
-mov r0.w, l(0)  // r0.w <- downsampled_index
-ult r1.x, r0.w, cb8[0].x
-not r1.y, r1.x
+dcl_temps 2
 if_nz cb8[0].x
-
-#line 15
-  sample_indexable(texture2d)(float,float,float,float) r2.xyz, v2.xyxx, t0.xyzw, s1
-  add r0.xyz, r0.xyzx, r2.xyzx
-
-#line 16
-  iadd r0.w, r0.w, l(1)
+  sample_indexable(texture2d)(float,float,float,float) r0.xyz, v2.xyxx, t0.xyzw, s1
+  mov r0.w, l(1)
+else 
+  mov r0.xyzw, l(0,0,0,0)
 endif 
-
-#line 13
-not r1.y, r1.y
-and r1.x, r1.y, r1.x
+ult r1.x, r0.w, cb8[0].x
+if_nz r1.x
+  sample_indexable(texture2d)(float,float,float,float) r1.yzw, v2.xyxx, t1.wxyz, s1
+  add r0.xyz, r0.xyzx, r1.yzwy
+  mov r0.w, l(2)
+endif 
 ult r1.y, r0.w, cb8[0].x
 and r1.x, r1.y, r1.x
-not r1.y, r1.x
-ult r1.z, r0.w, cb8[0].x
-if_nz r1.z
-
-#line 15
-  sample_indexable(texture2d)(float,float,float,float) r2.xyz, v2.xyxx, t1.xyzw, s1
-  add r0.xyz, r0.xyzx, r2.xyzx
-
-#line 16
-  iadd r1.z, l(1), l(1)  // r1.z <- downsampled_index
-else   // Prior locations: r0.w <- downsampled_index
-  mov r1.z, r0.w  // r1.z <- downsampled_index
+if_nz r1.x
+  sample_indexable(texture2d)(float,float,float,float) r1.yzw, v2.xyxx, t2.wxyz, s1
+  add r0.xyz, r0.xyzx, r1.yzwy
+  mov r0.w, l(3)
 endif 
-
-#line 13
-not r1.y, r1.y
+ult r1.y, r0.w, cb8[0].x
 and r1.x, r1.y, r1.x
-ult r1.y, r1.z, cb8[0].x
-and r1.x, r1.y, r1.x
-not r1.y, r1.x
-ult r1.w, r0.w, cb8[0].x
-ult r2.x, r1.z, cb8[0].x
-and r1.w, r1.w, r2.x
-if_nz r1.w
-
-#line 15
-  sample_indexable(texture2d)(float,float,float,float) r2.xyz, v2.xyxx, t2.xyzw, s1
-  add r0.xyz, r0.xyzx, r2.xyzx
-
-#line 16
-  iadd r1.w, l(1), l(2)  // r1.w <- downsampled_index
-else   // Prior locations: r1.z <- downsampled_index
-  mov r1.w, r1.z  // r1.w <- downsampled_index
+if_nz r1.x
+  sample_indexable(texture2d)(float,float,float,float) r1.yzw, v2.xyxx, t3.wxyz, s1
+  add r0.xyz, r0.xyzx, r1.yzwy
+  mov r0.w, l(4)
 endif 
-
-#line 13
-not r1.y, r1.y
+ult r1.y, r0.w, cb8[0].x
 and r1.x, r1.y, r1.x
-ult r1.y, r1.w, cb8[0].x
+if_nz r1.x
+  sample_indexable(texture2d)(float,float,float,float) r1.yzw, v2.xyxx, t4.wxyz, s1
+  add r0.xyz, r0.xyzx, r1.yzwy
+  mov r0.w, l(5)
+endif 
+ult r1.y, r0.w, cb8[0].x
 and r1.x, r1.y, r1.x
-not r1.y, r1.x
+if_nz r1.x
+  sample_indexable(texture2d)(float,float,float,float) r1.yzw, v2.xyxx, t5.wxyz, s1
+  add r0.xyz, r0.xyzx, r1.yzwy
+  mov r0.w, l(6)
+endif 
+ult r1.y, r0.w, cb8[0].x
+and r1.x, r1.y, r1.x
+if_nz r1.x
+  sample_indexable(texture2d)(float,float,float,float) r1.yzw, v2.xyxx, t6.wxyz, s1
+  add r0.xyz, r0.xyzx, r1.yzwy
+  mov r0.w, l(7)
+endif 
+ult r1.y, r0.w, cb8[0].x
+and r1.x, r1.y, r1.x
+if_nz r1.x
+  sample_indexable(texture2d)(float,float,float,float) r1.yzw, v2.xyxx, t7.wxyz, s1
+  add r0.xyz, r0.xyzx, r1.yzwy
+  mov r0.w, l(8)
+endif 
+ult r1.y, r0.w, cb8[0].x
+and r1.x, r1.y, r1.x
+if_nz r1.x
+  sample_indexable(texture2d)(float,float,float,float) r1.yzw, v2.xyxx, t8.wxyz, s1
+  add r0.xyz, r0.xyzx, r1.yzwy
+  mov r0.w, l(9)
+endif 
+ult r1.y, r0.w, cb8[0].x
+and r1.x, r1.y, r1.x
+if_nz r1.x
+  sample_indexable(texture2d)(float,float,float,float) r1.yzw, v2.xyxx, t9.wxyz, s1
+  add r0.xyz, r0.xyzx, r1.yzwy
+  mov r0.w, l(10)
+endif 
+ult r1.y, r0.w, cb8[0].x
+and r1.x, r1.y, r1.x
+if_nz r1.x
+  sample_indexable(texture2d)(float,float,float,float) r1.yzw, v2.xyxx, t10.wxyz, s1
+  add r0.xyz, r0.xyzx, r1.yzwy
+  mov r0.w, l(11)
+endif 
 ult r0.w, r0.w, cb8[0].x
-ult r1.z, r1.z, cb8[0].x
-and r0.w, r0.w, r1.z
-ult r1.z, r1.w, cb8[0].x
-and r0.w, r0.w, r1.z
-if_nz r0.w
-
-#line 15
-  sample_indexable(texture2d)(float,float,float,float) r2.xyz, v2.xyxx, t3.xyzw, s1
-  add r0.xyz, r0.xyzx, r2.xyzx
-
-#line 16
-  iadd r1.w, l(1), l(3)
-endif 
-
-#line 13
-not r0.w, r1.y
-and r0.w, r0.w, r1.x
-ult r1.x, r1.w, cb8[0].x
-and r0.w, r0.w, r1.x
-not r1.x, r0.w
-if_nz r0.w
-
-#line 15
-  sample_indexable(texture2d)(float,float,float,float) r2.xyz, v2.xyxx, t4.xyzw, s1
-  add r0.xyz, r0.xyzx, r2.xyzx
-
-#line 16
-  iadd r1.w, l(1), l(4)
-endif 
-
-#line 13
-not r1.x, r1.x
-and r0.w, r0.w, r1.x
-ult r1.x, r1.w, cb8[0].x
-and r0.w, r0.w, r1.x
-not r1.x, r0.w
-if_nz r0.w
-
-#line 15
-  sample_indexable(texture2d)(float,float,float,float) r2.xyz, v2.xyxx, t5.xyzw, s1
-  add r0.xyz, r0.xyzx, r2.xyzx
-
-#line 16
-  iadd r1.w, l(1), l(5)
-endif 
-
-#line 13
-not r1.x, r1.x
-and r0.w, r0.w, r1.x
-ult r1.x, r1.w, cb8[0].x
-and r0.w, r0.w, r1.x
-not r1.x, r0.w
-if_nz r0.w
-
-#line 15
-  sample_indexable(texture2d)(float,float,float,float) r2.xyz, v2.xyxx, t6.xyzw, s1
-  add r0.xyz, r0.xyzx, r2.xyzx
-
-#line 16
-  iadd r1.w, l(1), l(6)
-endif 
-
-#line 13
-not r1.x, r1.x
-and r0.w, r0.w, r1.x
-ult r1.x, r1.w, cb8[0].x
-and r0.w, r0.w, r1.x
-not r1.x, r0.w
-if_nz r0.w
-
-#line 15
-  sample_indexable(texture2d)(float,float,float,float) r2.xyz, v2.xyxx, t7.xyzw, s1
-  add r0.xyz, r0.xyzx, r2.xyzx
-
-#line 16
-  iadd r1.w, l(1), l(7)
-endif 
-
-#line 13
-not r1.x, r1.x
-and r0.w, r0.w, r1.x
-ult r1.x, r1.w, cb8[0].x
-and r0.w, r0.w, r1.x
-not r1.x, r0.w
-if_nz r0.w
-
-#line 15
-  sample_indexable(texture2d)(float,float,float,float) r2.xyz, v2.xyxx, t8.xyzw, s1
-  add r0.xyz, r0.xyzx, r2.xyzx
-
-#line 16
-  iadd r1.w, l(1), l(8)
-endif 
-
-#line 13
-not r1.x, r1.x
-and r0.w, r0.w, r1.x
-ult r1.x, r1.w, cb8[0].x
-and r0.w, r0.w, r1.x
-not r1.x, r0.w
-if_nz r0.w
-
-#line 15
-  sample_indexable(texture2d)(float,float,float,float) r2.xyz, v2.xyxx, t9.xyzw, s1
-  add r0.xyz, r0.xyzx, r2.xyzx
-
-#line 16
-  iadd r1.w, l(1), l(9)
-endif 
-
-#line 13
-not r1.x, r1.x
-and r0.w, r0.w, r1.x
-ult r1.x, r1.w, cb8[0].x
-and r0.w, r0.w, r1.x
-not r1.x, r0.w
-if_nz r0.w
-
-#line 15
-  sample_indexable(texture2d)(float,float,float,float) r2.xyz, v2.xyxx, t10.xyzw, s1
-  add r0.xyz, r0.xyzx, r2.xyzx
-
-#line 16
-  iadd r1.w, l(1), l(10)
-endif 
-
-#line 13
-not r1.x, r1.x
-and r0.w, r0.w, r1.x
-ult r1.x, r1.w, cb8[0].x
 and r0.w, r0.w, r1.x
 if_nz r0.w
-
-#line 15
   sample_indexable(texture2d)(float,float,float,float) r1.xyz, v2.xyxx, t11.xyzw, s1
   add r0.xyz, r0.xyzx, r1.xyzx
-
-#line 16
 endif 
-
-#line 18
 mul o0.xyz, r0.xyzx, cb8[1].yyyy
 mov o0.w, l(1.000000)
 ret 
-// Approximately 133 instruction slots used
+// Approximately 84 instruction slots used

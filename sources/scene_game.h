@@ -13,6 +13,12 @@
 // class >> [SceneGame] 継承：Scene
 class SceneGame : public Scene
 {
+private:
+	static constexpr float MOVE_FACTOR		= 50.0f;
+	static constexpr float MENU_DISTANCE	= 100.0f;
+	
+	static const std::vector<EnumGameMode>	game_mode_list;
+
 public:
 	// public:コンストラクタ・デストラクタ
 	SceneGame() {};
@@ -26,16 +32,32 @@ public:
 
 private:
 	// private:変数
-	float								roll_angle			= 0.0f;
+	bool								playing_game				= false;
+	bool								pausing_game				= false;
+	int									selecting_mode_num			= 0;
+	int									selecting_pause_menu_num	= 0;
+	int									before_pause_menu_num		= 0;
+	float								sprite_move					= 0.0f;
+	float								sprite_move_time			= 0.0f;
+	float								move_easing_rate			= 0.0f;
 	std::unique_ptr<ParticleSystem>		background_particle;
+	std::unique_ptr<GameModel>			model;
+	std::unique_ptr<BloomEffect>		main_bloom;
+	std::unique_ptr<BloomEffect>		emissive_bloom;
+	std::unique_ptr<Sprite>				mode_select;
+	std::unique_ptr<Sprite>				pause_sprite;
+	std::unique_ptr<Sprite>				mode_arrow_u_sprite;
+	std::unique_ptr<Sprite>				mode_arrow_d_sprite;
 	std::unique_ptr<Sprite>				config_move_pad;
 	std::unique_ptr<Sprite>				config_rotate_pad;
 	std::unique_ptr<Sprite>				config_move_keyboard;
 	std::unique_ptr<Sprite>				config_rotate_keyboard;
-	std::unique_ptr<GameModel>			model;
-	std::unique_ptr<BloomEffect>		main_bloom;
-	std::unique_ptr<BloomEffect>		emissive_bloom;
+	std::unique_ptr<Sprite>				rule;
 
+
+	UPtrVector<Sprite>					game_mode_sprite;
+	UPtrVector<Sprite>					game_mode_detail;
+	UPtrVector<Sprite>					pause_menu;
 	UPtrVector<ObjectBoard>				game_board;
 };
 
