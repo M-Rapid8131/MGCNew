@@ -330,7 +330,6 @@ protected:
 	UINT								player_id				= 0;		// プレイヤー番号
 	EnumGameMode						game_mode				= EnumGameMode::UNDEFINE;
 	EnumGameMode						before_game_mode		= EnumGameMode::UNDEFINE;
-	EnumGameStyle						game_style				= EnumGameStyle::STANDARD;
 	BoardState							board_state;						// 盤面の状態
 	GameData							game_data;
 	StateUpdate							state_update;						// 状態ごとの処理を格納する関数ポインタ

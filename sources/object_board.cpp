@@ -1073,7 +1073,7 @@ void ObjectBoard::Update(float elapsed_time)
 
 	if (flag_system.GetFlag(EnumBoardFlags::PLAYING))
 	{
-		if(game_mode == EnumGameMode::BONUS || game_style == EnumGameStyle::SUDDEN_DEATH)
+		if(game_mode == EnumGameMode::BONUS)
 		{
 			object_time += elapsed_time;
 		}
@@ -1296,13 +1296,7 @@ void ObjectBoard::UIRender()
 	for (auto const& ui : value_ui)
 	{
 		if (ui->GetName() == L"TIME")
-		{
-			if(game_style == EnumGameStyle::SUDDEN_DEATH)
-				ui->Render(EnumNumberAlignment::LEFT_ALIGNMENT, ui_alpha, { 1.0f, 0.0f, 0.0f }, "NNCNNCNN");
-
-			else
-				ui->Render(EnumNumberAlignment::LEFT_ALIGNMENT, ui_alpha, { 1.0f, 1.0f, 1.0f }, "NNCNNCNN");
-		}
+			ui->Render(EnumNumberAlignment::LEFT_ALIGNMENT, ui_alpha, { 1.0f, 1.0f, 1.0f }, "NNCNNCNN");
 		else if (ui->GetName() == L"SPEED_LEVEL")
 			ui->Render(EnumNumberAlignment::LEFT_ALIGNMENT, ui_alpha, ui_color, "NNNSNNN");
 		else if (ui->GetName() == L"SCORE")
@@ -1865,9 +1859,6 @@ void ObjectBoard::GameStart(int game_mode_id)
 	if (game_mode == EnumGameMode::TEMPEST)
 		waiting_time_limit = TEMPEST_WAIT_TIME;
 
-	if (game_style == EnumGameStyle::SUDDEN_DEATH)
-		object_time = 60.0f;
-
 	current_speed = 0.0f;
 
 	value_ui.at(SCast(size_t, EnumValueUIIndex::SPEED_LEVEL))->SetIntValue(0, 1, 0.0f);
@@ -1938,15 +1929,6 @@ bool ObjectBoard::CheckGameOver()
 			break;
 		}
 	}
-
-	if (game_style == EnumGameStyle::SUDDEN_DEATH)
-	{
-		if (object_time < 0.0f)
-		{
-			object_time = 0.0f;
-			game_over = true;
-		}
-	}
 	return game_over;
 }
 
@@ -1989,10 +1971,6 @@ void ObjectBoard::LevelUp()
 			else if (game_data.speed_level % 10 == 0)
 			{
 				audio_manager->PlaySE(EnumSEBank::RANK_UP);
-				if (game_style == EnumGameStyle::SUDDEN_DEATH)
-				{
-					object_time = 60.0f;
-				}
 			}
 
 			if ((game_data.speed_level < 100) && (game_data.speed_level % 10 == 0))
