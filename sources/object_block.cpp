@@ -168,12 +168,16 @@ void ObjectBlock::UpdateStandState(float elapsed_time)
 // ブロックが落下中のとき
 void ObjectBlock::UpdateDropState(float elapsed_time)
 {
-	bool result = DropBlock(parent_board.GetCurrentSpeed());
+	bool result = parent_board.IsExistFromColorMatrix(UNDER_CELL);
 
 	if (result)
+	{
 		block_state.TransitionPutState();
+	}
 	else
-		drop_speed += elapsed_time;
+	{
+		DropBlock(parent_board.GetCurrentSpeed());
+	}
 }
 
 // ブロックが動いていないとき
@@ -730,12 +734,6 @@ void ObjectBlock::SetDropping()
 bool ObjectBlock::DropBlock(float speed)
 {
 	block_cell.shift_y += speed;
-
-	if (block_state.state == EnumBlockState::DROP)
-	{
-		if (parent_board.IsExistFromColorMatrix(BlockCell(UNDER_CELL)))
-			return true;
-	}
 
 	if (block_cell.shift_y < BLOCK_SIZE)
 	{
