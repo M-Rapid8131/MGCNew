@@ -152,6 +152,7 @@
     <ClInclude Include="sources\scene_game.h" />
     <ClInclude Include="sources\scene_main_manu.h" />
     <ClInclude Include="sources\scene_result.h" />
+    <ClInclude Include="sources\state_board.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\framework.cpp" />
@@ -161,6 +162,7 @@
     <ClCompile Include="sources\scene_game.cpp" />
     <ClCompile Include="sources\scene_main_manu.cpp" />
     <ClCompile Include="sources\scene_result.cpp" />
+    <ClCompile Include="sources\state_board.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MGCNew.rc" />

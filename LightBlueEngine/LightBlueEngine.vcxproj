@@ -110,6 +110,7 @@
     <ClInclude Include="sources\easing.h" />
     <ClInclude Include="sources\engine_utility.h" />
     <ClInclude Include="sources\game_object\game_object.h" />
+    <ClInclude Include="sources\game_object\game_state.h" />
     <ClInclude Include="sources\game_system\gamesystem_director.h" />
     <ClInclude Include="sources\game_system\gamesystem_input.h" />
     <ClInclude Include="sources\game_system\gamesystem_timer.h" />

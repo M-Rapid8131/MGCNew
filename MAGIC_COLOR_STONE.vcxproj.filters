@@ -34,6 +34,9 @@
     <ClInclude Include="sources\scene_result.h">
       <Filter>Sources</Filter>
     </ClInclude>
+    <ClInclude Include="sources\state_board.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\framework.cpp">
@@ -55,6 +58,9 @@
       <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="sources\scene_result.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\state_board.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
   </ItemGroup>

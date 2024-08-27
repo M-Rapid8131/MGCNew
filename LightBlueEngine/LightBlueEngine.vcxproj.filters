@@ -440,6 +440,9 @@
     <ClInclude Include="sources\component\component_presets.h">
       <Filter>SourceCodes\Component</Filter>
     </ClInclude>
+    <ClInclude Include="sources\game_object\game_state.h">
+      <Filter>SourceCodes\GameObject</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSL\2D\2d_header.hlsli">

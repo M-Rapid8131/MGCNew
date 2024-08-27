@@ -174,11 +174,6 @@ private:
 		ObjectBlock*	obj		= nullptr;
 	};
 
-	// private:using
-	
-	// ステート別Updateの関数ポインタ
-	using StateUpdate = void (ObjectBlock::*)(float);
-
 public:
 	// public:定数
 	static constexpr float BLOCK_SIZE = 2.0f;
@@ -275,7 +270,7 @@ private:
 	BlockCell							block_cell		= BlockCell(0, 0);	// 盤面におけるblockの場所
 	BlockCell							ghost_cell		= BlockCell(0, 0);	// ゴーストの位置
 	BlockState							block_state;
-	StateUpdate							state_update;
+	ClassFuncPtr<ObjectBlock, float>		state_update;
 };
 
 #endif // __OBJECT_BLOCK_H__

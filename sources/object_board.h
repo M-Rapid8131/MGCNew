@@ -10,6 +10,7 @@
 // ""インクルード
 // LightBlueEngine
 #include "game_object/game_object.h"
+#include "game_object/game_state.h"
 #include "UI/value_UI.h"
 #include "UI/sprite_UI.h"
 
@@ -59,7 +60,7 @@ enum class EnumCheckDirection
 enum class EnumGameStyle
 {
 	STANDARD,
-	FLEX,
+	SMOOTH,
 	SUDDEN_DEATH
 };
 
@@ -187,9 +188,6 @@ protected:
 		std::vector<bool>						erase_flag = { false,false,false,false,false,false };
 	};
 
-	// protected:using
-	using StateUpdate = void (ObjectBoard::*)(float);
-
 public:
 	// public:定数
 	static const DirectX::XMFLOAT3 INIT_POSITION;
@@ -219,7 +217,7 @@ public:
 	void	BonusStart(bool);
 	void	AccumulateBoardParticle();
 	void	LevelUp();
-	void	FlexLevelUp(UINT);
+	void	SmoothLevelUp(UINT = 0, UINT = 0);
 	void	UpdateStandCollisionHeight();
 
 	bool	MoveToDeletedBlockList();
@@ -261,6 +259,7 @@ public:
 	FlagSystem<Enum>&					GetFlagSystem()				{ return flag_system; }
 
 	// public:セッター関数
+	void								SetState(EnumBoardState new_state) { state = new_state; }
 	void								ChangeBoardColorFromGameMode(const EnumGameMode game_mode) { board_color = BOARD_COLOR_SET[SCast(size_t, game_mode)]; }
 	void								ChangedParticleType()		{ flag_system.SetFlag(EnumBoardFlags::CHANGE_PARTICLE_TYPE, false); }
 	void								IncreaseEraseBlockCount()	{ game_data.deleted_block_count++; }
@@ -289,7 +288,7 @@ protected:
 	float								current_speed			= 0.0f;		// 現在のブロック落下スピード
 	float								speed_increase_factor	= 0.0f;		// ブロック落下スピードの増加量
 	float								si_rank_bonus			= 0.0f;		// スピードランク上昇時の落下スピード増加量
-	UINT								current_rank			= -1;		// 現在のスピードランク
+	int									current_rank			= -1;		// 現在のスピードランク
 	std::vector<int>					speed_rank;							// 落下スピードを大きく変化させるレベルを格納。BGMもこれで変更
 
 	// 接地関係
@@ -330,10 +329,12 @@ protected:
 	UINT								player_id				= 0;		// プレイヤー番号
 	EnumGameMode						game_mode				= EnumGameMode::UNDEFINE;
 	EnumGameMode						before_game_mode		= EnumGameMode::UNDEFINE;
-	EnumGameStyle						game_style				= EnumGameStyle::STANDARD;
+	EnumGameStyle						game_style				= EnumGameStyle::SMOOTH;
 	BoardState							board_state;						// 盤面の状態
 	GameData							game_data;
-	StateUpdate							state_update;						// 状態ごとの処理を格納する関数ポインタ
+	ClassFuncPtr<ObjectBoard, float>	state_update;						// 状態ごとの処理を格納する関数ポインタ
+	EnumBoardState						state;
+	StateMachine<ObjectBoard>			state_machine;
 };
 
 #endif // __OBJECT_BOARD_H__

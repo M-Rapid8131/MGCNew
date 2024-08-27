@@ -31,6 +31,10 @@ static const float MARGIN_S = 50.0f;
 static const float MARGIN_M = 150.0f;
 static const float MARGIN_L = 300.0f;
 
+// protected:using
+template<class Cl, typename Ty>
+using ClassFuncPtr = void (Cl::*)(Ty);
+
 // \‘¢‘Ì
 // struct >> [FlagSystem]
 template<typename Enum>

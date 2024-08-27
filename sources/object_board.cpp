@@ -117,6 +117,9 @@ void ObjectBoard::NextBlock::Update(float elapsed_time)
 		{
 			obj->current_speed = obj->level_speed > ACCEL_SPEED ? obj->level_speed : ACCEL_SPEED;
 		}
+
+		if (input & BTN_UP)
+			SuperDrop();
 	}
 
 	MoveBlock(elapsed_time);
@@ -471,14 +474,6 @@ bool ObjectBoard::NextBlock::RotateBlock(bool flip)
 
 void ObjectBoard::BoardState::TransitionStandbyState()
 {
-	state = EnumBoardState::STANDBY;
-	obj->state_update = nullptr;
-
-	AudioManager* audio_manager = GamesystemDirector::GetInstance()->GetAudioManager();
-	audio_manager->StopBGM();
-	audio_manager->PlayBGM(EnumBGMBank::MODE_SELECT, true);
-
-	obj->ui_alpha = 0.0f;
 }
 
 // ゲーム開始
@@ -508,8 +503,18 @@ void ObjectBoard::BoardState::TransitionStartState(int game_mode_id)
 
 		audio_manager->StopBGM();
 
-		int level = SCast(int, obj->game_data.speed_level) * 1000;
-		int section = SCast(int, (obj->current_rank < 6 && obj->speed_rank[obj->current_rank + 1] != -1) ? obj->speed_rank[obj->current_rank + 1] : obj->game_data.max_level);
+		int level, section;
+
+		if(obj->game_style == EnumGameStyle::SMOOTH)
+		{
+			level = SCast(int, obj->game_data.speed_level) * 10000;
+			section = SCast(int, (obj->current_rank < 6 && obj->speed_rank[obj->current_rank + 1] != -1) ? obj->speed_rank[obj->current_rank + 1] : obj->game_data.max_level);
+		}
+		else
+		{
+			level = SCast(int, obj->game_data.speed_level) * 1000;
+			section = SCast(int, (obj->current_rank < 6 && obj->speed_rank[obj->current_rank + 1] != -1) ? obj->speed_rank[obj->current_rank + 1] : obj->game_data.max_level);
+		}
 		obj->value_ui.at(SCast(size_t, SPEED_LEVEL))->SetIntValue(0, level + section);
 
 		obj->game_data.speed_level = obj->game_data.init_level;
@@ -539,6 +544,10 @@ void ObjectBoard::BoardState::TransitionDropStartState()
 			TransitionGameOverState(true);
 			return;
 		}
+	}
+	else if(obj->game_style == EnumGameStyle::SMOOTH)
+	{
+		obj->SmoothLevelUp();
 	}
 	
 	obj->ClearDeleteBlockList();
@@ -945,6 +954,8 @@ ObjectBoard::ObjectBoard(UINT player_id)
 	board_model = std::make_unique<GameModel>("resources/model/board/board.gltf");
 	board_model->SetMaskTexture(L"resources/sprite/mask_texture.png");
 
+	state_machine.RegisterState(new StandbyState(this));
+
 	existing_matrix.resize(MAX_ROW);
 	for (int x = 0; x < MAX_ROW; x++)
 	{
@@ -1075,11 +1086,11 @@ void ObjectBoard::Update(float elapsed_time)
 	{
 		if(game_mode == EnumGameMode::BONUS || game_style == EnumGameStyle::SUDDEN_DEATH)
 		{
-			object_time += elapsed_time;
+			object_time -= elapsed_time;
 		}
 		else
 		{
-			object_time -= elapsed_time;
+			object_time += elapsed_time;
 		}
 	}
 
@@ -1304,7 +1315,12 @@ void ObjectBoard::UIRender()
 				ui->Render(EnumNumberAlignment::LEFT_ALIGNMENT, ui_alpha, { 1.0f, 1.0f, 1.0f }, "NNCNNCNN");
 		}
 		else if (ui->GetName() == L"SPEED_LEVEL")
-			ui->Render(EnumNumberAlignment::LEFT_ALIGNMENT, ui_alpha, ui_color, "NNNSNNN");
+		{
+			if(game_style == EnumGameStyle::SMOOTH)
+				ui->Render(EnumNumberAlignment::LEFT_ALIGNMENT, ui_alpha, ui_color, "NNNNSNNNN");
+			else
+				ui->Render(EnumNumberAlignment::LEFT_ALIGNMENT, ui_alpha, ui_color, "NNNSNNN");
+		}
 		else if (ui->GetName() == L"SCORE")
 			ui->Render(EnumNumberAlignment::LEFT_ALIGNMENT, ui_alpha);
 		else if (ui->GetName() == L"ERASED_BLOCKS")
@@ -1393,6 +1409,7 @@ bool ObjectBoard::MoveToDeletedBlockList()
 	if (board_state.state != EnumBoardState::GAME_OVER)
 	{
 		chain++;
+		SmoothLevelUp(pop_count, chain);
 		game_data.deleted_block_count += pop_count;
 		game_data.score += CalcScore(pop_count, chain);
 		value_ui.at(SCast(size_t, SCORE))->SetIntValue(0, game_data.score);
@@ -1410,7 +1427,10 @@ bool ObjectBoard::MoveToDeletedBlockList()
 		}
 		if ((game_mode != EnumGameMode::BONUS)
 			&& (game_data.deleted_block_count >= game_data.level_up_block))
-			LevelUp();
+		{
+			if (game_style != EnumGameStyle::SMOOTH)
+				LevelUp();
+		}
 	}
 	return true;
 }
@@ -1847,6 +1867,14 @@ void ObjectBoard::GameStart(int game_mode_id)
 	si_rank_bonus			= *(GET_PARAMETER_IN_PARAMPTR("SIRank", float, mode_setting_params));
 	stand_decrease_factor	= *(GET_PARAMETER_IN_PARAMPTR("StandDecrease", float, mode_setting_params));
 
+	if (game_style == EnumGameStyle::SMOOTH)
+	{
+		game_data.init_level	= 0;
+		game_data.max_level		*= 10;
+		speed_increase_factor	*= 0.1f;
+		stand_decrease_factor	*= 0.1f;
+	}
+
 	ParamPtr speed_rank_params = GET_PARAMETER_IN_PARAMPTR("SpeedRank", Parameters, mode_setting_params);
 
 	for (int i = 0; i < 6; i++)
@@ -1854,7 +1882,7 @@ void ObjectBoard::GameStart(int game_mode_id)
 		int rank = *(GET_PARAMETER_IN_PARAMPTR(std::to_string(i), int, speed_rank_params));
 		if ((rank != -1) && (current_rank == -1))
 			current_rank = i;
-		speed_rank.push_back(rank);
+		speed_rank.push_back((game_style == EnumGameStyle::SMOOTH) ? rank * 10 : rank);
 	}
 
 	game_data.deleted_block_count	= 0;
@@ -1980,6 +2008,10 @@ void ObjectBoard::LevelUp()
 			{
 				current_rank++;
 				level_speed += si_rank_bonus;
+				if (game_style == EnumGameStyle::SUDDEN_DEATH)
+				{
+					object_time = 60.0f;
+				}
 
 				audio_manager->PlaySE(EnumSEBank::RANK_UP);
 				audio_manager->StopBGM();
@@ -2011,19 +2043,59 @@ void ObjectBoard::LevelUp()
 	}
 }
 
-void ObjectBoard::FlexLevelUp(UINT chain)
+void ObjectBoard::SmoothLevelUp(UINT block, UINT chain)
 {
+	AudioManager* audio_manager = GamesystemDirector::GetInstance()->GetAudioManager();
+	float flash = 0.0f;
 	if (chain == 0)
 	{
 		if (game_data.speed_level % 100 < 99)
 		{
 			game_data.speed_level++;
+			level_speed += speed_increase_factor;
+			standing_time_limit -= stand_decrease_factor;
 		}
 	}
 	else
 	{
-		game_data.speed_level += chain;
+		for(UINT i = 0; i < chain * block; i++)
+		{
+			game_data.speed_level++;
+			level_speed += speed_increase_factor;
+			standing_time_limit -= stand_decrease_factor;
+
+			if ((game_data.speed_level >= game_data.max_level))
+			{
+				board_state.TransitionGameOverState(true);
+				ui_color = { 1.0f, 1.0f, 0.0f };
+				return;
+			}
+			if ((current_rank < 5) && (game_data.speed_level >= speed_rank[current_rank + 1]))	// スピードランクごとのレベル到達でBGM変化
+			{
+				current_rank++;
+				level_speed += si_rank_bonus;
+				if (game_style == EnumGameStyle::SUDDEN_DEATH)
+				{
+					object_time = 60.0f;
+				}
+
+				audio_manager->PlaySE(EnumSEBank::RANK_UP);
+				audio_manager->StopBGM();
+				audio_manager->PlayBGM(SCast(EnumBGMBank, current_rank), true);
+
+				flash = 1.0f;
+			}
+			else if (game_data.speed_level % 100 == 0)
+			{
+				audio_manager->PlaySE(EnumSEBank::RANK_UP);
+				flash = 1.0f;
+			}
+		}
 	}
+
+	int level = SCast(int, game_data.speed_level) * 10000;
+	int section = SCast(int, (current_rank < 5 && speed_rank[current_rank + 1] != -1) ? speed_rank[current_rank + 1] : game_data.max_level);
+	value_ui.at(SCast(size_t, SPEED_LEVEL))->SetIntValue(0, level + section, flash);
 }
 
 void ObjectBoard::UpdateStandCollisionHeight()
