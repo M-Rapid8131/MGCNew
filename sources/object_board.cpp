@@ -117,6 +117,9 @@ void ObjectBoard::NextBlock::Update(float elapsed_time)
 		{
 			obj->current_speed = obj->level_speed > ACCEL_SPEED ? obj->level_speed : ACCEL_SPEED;
 		}
+
+		if (input & BTN_UP)
+			SuperDrop();
 	}
 
 	MoveBlock(elapsed_time);
@@ -784,10 +787,16 @@ void ObjectBoard::UpdateMovingState(float elapsed_time)
 // ÉuÉçÉbÉNóéâ∫íÜÇÃèàóù
 void ObjectBoard::UpdateDroppingState(float elapsed_time)
 {
-	const float MAX_SPEED = (game_mode == EnumGameMode::TEMPEST) ? ACCEL_SPEED * 10.0f : ACCEL_SPEED;
+	const float MAX_SPEED = (game_mode == EnumGameMode::TEMPEST) ? ACCEL_SPEED * 10.0f 
+							: (game_mode == EnumGameMode::IMPACT) ? ACCEL_SPEED * 2.0f 
+							: ACCEL_SPEED;
+
+	const float SPEED_FACTOR = (game_mode == EnumGameMode::TEMPEST) ? elapsed_time * 10.0f 
+								: (game_mode == EnumGameMode::IMPACT) ? elapsed_time * 2.0f
+								: elapsed_time;
 
 	if (current_speed < MAX_SPEED)
-		current_speed += (game_mode == EnumGameMode::TEMPEST) ? elapsed_time * 10.0f : elapsed_time;
+		current_speed += SPEED_FACTOR;
 	else
 		current_speed = MAX_SPEED;
 
@@ -1073,13 +1082,13 @@ void ObjectBoard::Update(float elapsed_time)
 
 	if (flag_system.GetFlag(EnumBoardFlags::PLAYING))
 	{
-		if(game_mode == EnumGameMode::BONUS || game_style == EnumGameStyle::SUDDEN_DEATH)
+		if(game_mode == EnumGameMode::BONUS)
 		{
-			object_time += elapsed_time;
+			object_time -= elapsed_time;
 		}
 		else
 		{
-			object_time -= elapsed_time;
+			object_time += elapsed_time;
 		}
 	}
 
@@ -1297,11 +1306,7 @@ void ObjectBoard::UIRender()
 	{
 		if (ui->GetName() == L"TIME")
 		{
-			if(game_style == EnumGameStyle::SUDDEN_DEATH)
-				ui->Render(EnumNumberAlignment::LEFT_ALIGNMENT, ui_alpha, { 1.0f, 0.0f, 0.0f }, "NNCNNCNN");
-
-			else
-				ui->Render(EnumNumberAlignment::LEFT_ALIGNMENT, ui_alpha, { 1.0f, 1.0f, 1.0f }, "NNCNNCNN");
+			ui->Render(EnumNumberAlignment::LEFT_ALIGNMENT, ui_alpha, { 1.0f, 1.0f, 1.0f }, "NNCNNCNN");
 		}
 		else if (ui->GetName() == L"SPEED_LEVEL")
 			ui->Render(EnumNumberAlignment::LEFT_ALIGNMENT, ui_alpha, ui_color, "NNNSNNN");
@@ -1864,9 +1869,8 @@ void ObjectBoard::GameStart(int game_mode_id)
 
 	if (game_mode == EnumGameMode::TEMPEST)
 		waiting_time_limit = TEMPEST_WAIT_TIME;
-
-	if (game_style == EnumGameStyle::SUDDEN_DEATH)
-		object_time = 60.0f;
+	else if (game_mode == EnumGameMode::IMPACT)
+		waiting_time_limit = IMPACT_WAIT_TIME;
 
 	current_speed = 0.0f;
 
@@ -1939,14 +1943,6 @@ bool ObjectBoard::CheckGameOver()
 		}
 	}
 
-	if (game_style == EnumGameStyle::SUDDEN_DEATH)
-	{
-		if (object_time < 0.0f)
-		{
-			object_time = 0.0f;
-			game_over = true;
-		}
-	}
 	return game_over;
 }
 
@@ -1989,10 +1985,6 @@ void ObjectBoard::LevelUp()
 			else if (game_data.speed_level % 10 == 0)
 			{
 				audio_manager->PlaySE(EnumSEBank::RANK_UP);
-				if (game_style == EnumGameStyle::SUDDEN_DEATH)
-				{
-					object_time = 60.0f;
-				}
 			}
 
 			if ((game_data.speed_level < 100) && (game_data.speed_level % 10 == 0))

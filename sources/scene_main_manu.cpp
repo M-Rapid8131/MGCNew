@@ -162,10 +162,25 @@ void SceneMainManu::Initialize()
 	emissive_bloom	= std::make_unique<BloomEffect>(DEFAULT_EMISSIVE_BLOOM, SCast(UINT, graphics->GetScreenWidth()), SCast(UINT, graphics->GetScreenHeight()));
 
 	logo				= std::make_unique<Sprite>(L"resources/sprite/logo.png");
-	menu_key_pad		= std::make_unique<Sprite>(L"resources/sprite/config/start_pad.png");
-	menu_key_keyboard	= std::make_unique<Sprite>(L"resources/sprite/config/start_keyboard.png");
+
+	menu_key.push_back(std::make_unique<Sprite>(L"resources/sprite/config/start_pad.png"));
+	menu_key.push_back(std::make_unique<Sprite>(L"resources/sprite/config/start_pspad.png"));
+	menu_key.push_back(std::make_unique<Sprite>(L"resources/sprite/config/start_keyboard.png"));
+
+	rule_key.push_back(std::make_unique<Sprite>(L"resources/sprite/config/rule_pad.png"));
+	rule_key.push_back(std::make_unique<Sprite>(L"resources/sprite/config/rule_pspad.png"));
+	rule_key.push_back(std::make_unique<Sprite>(L"resources/sprite/config/rule_keyboard.png"));
+
+	rule_close_key.push_back(std::make_unique<Sprite>(L"resources/sprite/config/rule_close_pad.png"));
+	rule_close_key.push_back(std::make_unique<Sprite>(L"resources/sprite/config/rule_close_pspad.png"));
+	rule_close_key.push_back(std::make_unique<Sprite>(L"resources/sprite/config/rule_close_keyboard.png"));
 
 	background_particle = std::make_unique<ParticleSystem>("Title");
+
+	auto& rule1 = rule.emplace_back();
+	rule1 = std::make_unique<Sprite>(L"resources/sprite/rule_1.png");
+	auto& rule2 = rule.emplace_back();
+	rule2 = std::make_unique<Sprite>(L"resources/sprite/rule_2.png");
 }
 
 // 更新処理
@@ -281,10 +296,55 @@ void SceneMainManu::Update(float elapsed_time)
 	emitter.emit_color.z = rgb_color.z;
 	background_particle->Update(elapsed_time);
 
-	if (game_pad->GetButtonDown() & BTN_START)
+	if(!viewing_rule)
 	{
-		director->GetAudioManager()->PlaySE(EnumSEBank::ENTER_GAME);
-		scene_state = EnumSceneState::TRANSITION_OUT_SETTING;
+		if (game_pad->GetButtonDown() & BTN_START)
+		{
+			switch (selecting_menu)
+			{
+			case 0:
+				director->GetAudioManager()->PlaySE(EnumSEBank::ENTER_GAME);
+				scene_state = EnumSceneState::TRANSITION_OUT_SETTING;
+				break;
+			case 1:
+				viewing_rule = true;
+				rule_page = 0;
+				break;
+			default:
+				break;
+			}
+		}
+		else if (game_pad->GetButtonDown() & BTN_A)
+		{
+			viewing_rule = true;
+			director->GetAudioManager()->PlaySE(EnumSEBank::STAND);
+		}
+	}
+	else
+	{
+		if (game_pad->GetButtonDown() & BTN_START)
+		{
+			viewing_rule = false;
+			director->GetAudioManager()->PlaySE(EnumSEBank::STAND);
+		}
+
+		else if (game_pad->GetButtonDown() & BTN_LEFT)
+		{
+			if (rule_page == 1)
+			{
+				rule_page = 0;
+				director->GetAudioManager()->PlaySE(EnumSEBank::LEVEL_UP);
+			}
+		}
+		
+		else if (game_pad->GetButtonDown() & BTN_RIGHT)
+		{
+			if (rule_page == 0)
+			{
+				rule_page = 1;
+				director->GetAudioManager()->PlaySE(EnumSEBank::LEVEL_UP);
+			}
+		}
 	}
 
 	scene_time += elapsed_time;
@@ -315,7 +375,10 @@ void SceneMainManu::Render()
 {
 	Graphics*			graphics			= Graphics::GetInstance();
 	FramebufferManager* framebuffer_manager = GamesystemDirector::GetInstance()->GetFramebufferManager();
-	
+
+	GamePad* game_pad = GamesystemInput::GetInstance()->GetGamePad();
+	const int INPUT_DEVICE_ID = SCast(int, game_pad->GetInputDevice());
+
 	DirectX::XMFLOAT3 rgb_color = HSV2RGB(hsv_color);
 
 	ParticleSystem::CbParticleEmitter& emitter = background_particle->GetCbParticleEmitter();
@@ -384,26 +447,25 @@ void SceneMainManu::Render()
 		float height	= SCast(float, Graphics::GetInstance()->GetScreenHeight());
 
 		// ロゴ
-		DirectX::XMFLOAT2 size = logo->GetSpriteSizeWithScaling({ 0.5f, 0.5f });
-		logo->Render({ MARGIN_S, MARGIN_S }, size);
-
-		// ゲームに進むボタンの表示
-		EnumInputDevice input_device = GamesystemInput::GetInstance()->GetInputDevice();
-
-		size = menu_key_pad->GetSpriteSizeWithScaling({ 0.5f, 0.5f });
-
-		switch (input_device)
+		if (viewing_rule)
 		{
-		case EnumInputDevice::XBOX:
-			menu_key_pad->Render({ width - size.x - MARGIN_S, height - size.y - MARGIN_S }, size);
-			break;
-		case EnumInputDevice::PS:
-			break;
-		case EnumInputDevice::KEYBOARD:
-			menu_key_keyboard->Render({ width - size.x - MARGIN_S, height - size.y - MARGIN_S }, size);
-			break;
-		default:
-			break;
+			rule[rule_page]->Render({ 0.0f, 0.0f }, rule[0]->GetSpriteSizeWithScaling({ 1.0f, 1.0f }));
+			DirectX::XMFLOAT2 size = rule_close_key[INPUT_DEVICE_ID]->GetSpriteSizeWithScaling({0.5f, 0.5f});
+			rule_close_key[INPUT_DEVICE_ID]->Render({ MARGIN_S, height - size.y}, size);
+		}
+		else
+		{
+			DirectX::XMFLOAT2 size = logo->GetSpriteSizeWithScaling({ 0.5f, 0.5f });
+			logo->Render({ MARGIN_S, MARGIN_S }, size);
+
+			// ゲームに進むボタンの表示
+			EnumInputDevice input_device = GamesystemInput::GetInstance()->GetInputDevice();
+
+			size = rule_key[INPUT_DEVICE_ID]->GetSpriteSizeWithScaling({ 0.5f, 0.5f });
+			DirectX::XMFLOAT2 menu_size = menu_key[INPUT_DEVICE_ID]->GetSpriteSizeWithScaling({ 0.5f, 0.5f });
+
+			rule_key[INPUT_DEVICE_ID]->Render({ MARGIN_S, height - size.y - MARGIN_S }, size);
+			menu_key[INPUT_DEVICE_ID]->Render({ MARGIN_S, height - menu_size.y - size.y - MARGIN_S }, menu_size);
 		}
 	}
 	framebuffer_manager->Deactivate("main");

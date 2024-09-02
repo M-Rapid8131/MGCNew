@@ -361,7 +361,7 @@
 // -------------------- ----- ------ -------- -------- ------- ------
 // no Output
 ps_5_0
-dcl_globalFlags refactoringAllowed | skipOptimization
+dcl_globalFlags refactoringAllowed
 dcl_constantbuffer CB0[5], immediateIndexed
 dcl_constantbuffer CB2[1], immediateIndexed
 dcl_constantbuffer CB5[6], immediateIndexed
@@ -372,248 +372,38 @@ dcl_uav_structured u1, 80
 dcl_input_ps linear v1.xyz
 dcl_input_ps linear v2.xyz
 dcl_input_ps linear v4.xy
-dcl_temps 7
-//
-// Initial variable locations:
-//   v0.x <- model_pin.position.x; v0.y <- model_pin.position.y; v0.z <- model_pin.position.z; v0.w <- model_pin.position.w; 
-//   v1.x <- model_pin.w_position.x; v1.y <- model_pin.w_position.y; v1.z <- model_pin.w_position.z; v1.w <- model_pin.w_position.w; 
-//   v2.x <- model_pin.w_normal.x; v2.y <- model_pin.w_normal.y; v2.z <- model_pin.w_normal.z; v2.w <- model_pin.w_normal.w; 
-//   v3.x <- model_pin.w_tangent.x; v3.y <- model_pin.w_tangent.y; v3.z <- model_pin.w_tangent.z; v3.w <- model_pin.w_tangent.w; 
-//   v4.x <- model_pin.texcoord.x; v4.y <- model_pin.texcoord.y; 
-//   v5.x <- model_pin.shadow_texcoord.x; v5.y <- model_pin.shadow_texcoord.y; v5.z <- model_pin.shadow_texcoord.z
-//
-#line 14 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\accumulate_particle_ps.hlsl"
-mov r0.x, cb0[4].y
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r0.y, r0.x, l(36), t0.xxxx  // r0.y <- MATERIAL.pbr_metallic_roughness.basecolor_factor.w
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r0.z, r0.x, l(40), t0.xxxx  // r0.z <- MATERIAL.pbr_metallic_roughness.basecolor_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r1.x, r0.x, l(52), t0.xxxx  // r1.x <- MATERIAL.pbr_metallic_roughness.basecolor_texture.khr_texture_transform.rotation
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r1.y, r0.x, l(64), t0.xxxx  // r1.y <- MATERIAL.pbr_metallic_roughness.basecolor_texture.khr_texture_transform.scale.x
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r1.z, r0.x, l(68), t0.xxxx  // r1.z <- MATERIAL.pbr_metallic_roughness.basecolor_texture.khr_texture_transform.scale.y
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r2.x, r0.x, l(80), t0.xxxx  // r2.x <- MATERIAL.pbr_metallic_roughness.metallic_roughness_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r2.y, r0.x, l(148), t0.xxxx  // r2.y <- MATERIAL.occulusion_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r2.z, r0.x, l(184), t0.xxxx  // r2.z <- MATERIAL.emissive_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r2.w, r0.x, l(220), t0.xxxx  // r2.w <- MATERIAL.clearcoat.clearcoat_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r3.x, r0.x, l(256), t0.xxxx  // r3.x <- MATERIAL.clearcoat.clearcoat_roughness_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r3.y, r0.x, l(328), t0.xxxx  // r3.y <- MATERIAL.transmission.transmission_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r3.z, r0.x, l(368), t0.xxxx  // r3.z <- MATERIAL.specular.specular_texture.index
-ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r3.w, r0.x, l(412), t0.xxxx  // r3.w <- MATERIAL.specular.specular_color_texture.index
-
-#line 16
-nop 
-mov r2.xyzw, r2.xyzw
-mov r3.xyzw, r3.xyzw
-mov r1.xyz, r1.xyzx
-mov r0.yz, r0.yyzy
-mov r4.xy, v4.xyxx
-
-#line 83 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\3D\3D_utility\material_data.hlsli"
-mov r0.y, r0.y  // r0.y <- basecolor.w
-
-#line 85
-ilt r0.x, l(-1), r0.z
-if_nz r0.x
-
-#line 87
-  nop 
-  mov r4.xy, r4.xyxx
-  mov r1.xyz, r1.xyzx
-
-#line 18 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\3D\Extension\transform.hlsli"
-  mov r1.x, r1.x  // r1.x <- ROTATION
-
-#line 19
-  mov r1.yz, r1.yyzy  // r1.y <- SCALE.x; r1.z <- SCALE.y
-
-#line 21
-  sincos null, r0.x, r1.x  // r0.x <- COSINE
-
-#line 22
-  sincos r0.z, null, r1.x  // r0.z <- SINE
-
-#line 24
-  mul r5.x, r0.x, r1.y  // r5.x <- mat._m00
-  mov r0.w, -r1.z
-  mul r6.x, r0.z, r0.w  // r6.x <- mat._m01
-  mul r5.y, r0.z, r1.y  // r5.y <- mat._m10
-  mul r6.y, r0.x, r1.z  // r6.y <- mat._m11
-  itof r0.xz, l(0, 0, 0, 0)  // r0.x <- mat._m20; r0.z <- mat._m21
-  mov r5.z, r0.x  // r5.z <- mat._m20
-  mov r6.z, r0.z  // r6.z <- mat._m21
-
-#line 31
-  itof r4.z, l(1)
-  dp3 r1.x, r4.xyzx, r5.xyzx  // r1.x <- transformed_texcoord.x
-  dp3 r1.y, r4.xyzx, r6.xyzx  // r1.y <- transformed_texcoord.y
-
-#line 33
-  mov r1.xy, r1.xyxx  // r1.x <- <TransformTexcoord return value>.x; r1.y <- <TransformTexcoord return value>.y
-
-#line 87 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\3D\3D_utility\material_data.hlsli"
-  mov r1.xy, r1.xyxx  // r1.x <- transformed_texcoord.x; r1.y <- transformed_texcoord.y
-
-#line 89
-  sample_indexable(texture2d)(float,float,float,float) r0.x, r1.xyxx, t16.wxyz, s2  // r0.x <- sampled.w
-
-#line 91
-  mul r0.y, r0.x, r0.y
-
-#line 92
+dcl_temps 4
+ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r0.xy, cb0[4].y, l(36), t0.xyxx
+ilt r1.x, l(-1), r0.y
+if_nz r1.x
+  ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r1.x, cb0[4].y, l(52), t0.xxxx
+  ld_structured_indexable(structured_buffer, stride=448)(mixed,mixed,mixed,mixed) r1.yz, cb0[4].y, l(64), t0.xxyx
+  sincos r1.x, r2.x, r1.x
+  mul r3.x, r1.x, -r1.z
+  mul r3.w, r1.x, r1.y
+  mul r3.yz, r1.yyzy, r2.xxxx
+  dp2 r1.x, v4.xyxx, r3.ywyy
+  dp2 r1.y, v4.xyxx, r3.xzxx
+  sample_indexable(texture2d)(float,float,float,float) r1.x, r1.xyxx, t16.wxyz, s2
+  mul r0.x, r0.x, r1.x
 endif 
-
-#line 94
-mov r0.y, r0.y  // r0.y <- material_data.basecolor_factor.w
-
-#line 101
-ilt r0.x, l(-1), r2.x
-if_nz r0.x
-
-#line 103
-  nop 
-
-#line 108
-endif 
-
-#line 122
-ilt r0.x, l(-1), r2.z
-if_nz r0.x
-
-#line 124
-  nop 
-
-#line 130
-endif 
-
-#line 138
-ilt r0.x, l(-1), r2.y
-if_nz r0.x
-
-#line 140
-  nop 
-
-#line 144
-endif 
-
-#line 152
-ilt r0.x, l(-1), r2.w
-if_nz r0.x
-
-#line 154
-  nop 
-
-#line 158
-endif 
-
-#line 165
-ilt r0.x, l(-1), r3.x
-if_nz r0.x
-
-#line 167
-  nop 
-
-#line 171
-endif 
-
-#line 181
-ilt r0.x, l(-1), r3.y
-if_nz r0.x
-
-#line 183
-  nop 
-
-#line 187
-endif 
-
-#line 196
-ilt r0.x, l(-1), r3.z
-if_nz r0.x
-
-#line 198
-  nop 
-
-#line 202
-endif 
-
-#line 204
-ilt r0.x, l(-1), r3.w
-if_nz r0.x
-
-#line 206
-  nop 
-
-#line 210
-endif 
-
-#line 219
-mov r0.y, r0.y  // r0.y <- <GetMaterialData return value>.basecolor_factor.w
-
-#line 16 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\accumulate_particle_ps.hlsl"
-mov r0.y, r0.y  // r0.y <- material_data.basecolor_factor.w
-
-#line 17
-mov r0.y, r0.y  // r0.y <- color.w
-
-#line 18
-lt r0.x, r0.y, l(0.010000)
-if_nz r0.x
-
-#line 19
-  discard_nz l(-1)
-endif 
-
-#line 25
-mov r0.xzw, v2.xxyz  // r0.x <- norm_vec.x; r0.z <- norm_vec.y; r0.w <- norm_vec.z
-
-#line 37
-mov r1.x, l(0)  // r1.x <- particle.particle_index
-
-#line 38
-mov r1.yzw, v1.xxyz  // r1.y <- particle.position.x; r1.z <- particle.position.y; r1.w <- particle.position.z
-
-#line 39
-mov r2.x, cb5[5].x  // r2.x <- particle.size
-
-#line 40
-mov r2.yzw, cb2[0].xxyz  // r2.y <- particle.color.x; r2.z <- particle.color.y; r2.w <- particle.color.z
-mov r0.y, r0.y  // r0.y <- particle.color.w
-
-#line 41
-mul r3.xyz, r0.xzwx, cb5[1].wwww  // r3.x <- particle.velocity.x; r3.y <- particle.velocity.y; r3.z <- particle.velocity.z
-
-#line 42
-mov r4.xyz, l(0,0,0,0)  // r4.x <- particle.acceleration.x; r4.y <- particle.acceleration.y; r4.z <- particle.acceleration.z
-
-#line 43
-mov r0.xzw, r0.xxzw  // r0.x <- particle.normal.x; r0.z <- particle.normal.y; r0.w <- particle.normal.z
-
-#line 44
-mov r3.w, cb5[5].y  // r3.w <- particle.life
-
-#line 45
-mov r4.w, l(0)  // r4.w <- particle.start_time
-
-#line 47
-imm_atomic_alloc r5.x, u1
-store_structured u1.x, r5.x, l(0), r1.x
-store_structured u1.x, r5.x, l(4), r1.y
-store_structured u1.x, r5.x, l(8), r1.z
-store_structured u1.x, r5.x, l(12), r1.w
-store_structured u1.x, r5.x, l(16), r2.x
-store_structured u1.x, r5.x, l(20), r2.y
-store_structured u1.x, r5.x, l(24), r2.z
-store_structured u1.x, r5.x, l(28), r2.w
-store_structured u1.x, r5.x, l(32), r0.y
-store_structured u1.x, r5.x, l(36), r3.x
-store_structured u1.x, r5.x, l(40), r3.y
-store_structured u1.x, r5.x, l(44), r3.z
-store_structured u1.x, r5.x, l(48), r4.x
-store_structured u1.x, r5.x, l(52), r4.y
-store_structured u1.x, r5.x, l(56), r4.z
-store_structured u1.x, r5.x, l(60), r0.x
-store_structured u1.x, r5.x, l(64), r0.z
-store_structured u1.x, r5.x, l(68), r0.w
-store_structured u1.x, r5.x, l(72), r3.w
-store_structured u1.x, r5.x, l(76), r4.w
-
-#line 48
+lt r1.x, r0.x, l(0.010000)
+discard_nz r1.x
+mul r0.yzw, v2.xxyz, cb5[1].wwww
+imm_atomic_alloc r1.x, u1
+mov r2.x, l(0)
+mov r2.yzw, v1.xxyz
+store_structured u1.xyzw, r1.x, l(0), r2.xyzw
+mov r2.x, cb5[5].x
+mov r2.yzw, cb2[0].xxyz
+store_structured u1.xyzw, r1.x, l(16), r2.xyzw
+store_structured u1.xyzw, r1.x, l(32), r0.xyzw
+mov r0.x, l(0)
+mov r0.w, v2.x
+store_structured u1.xyzw, r1.x, l(48), r0.xxxw
+mov r0.xy, v2.yzyy
+mov r0.z, cb5[5].y
+mov r0.w, l(0)
+store_structured u1.xyzw, r1.x, l(64), r0.xyzw
 ret 
-// Approximately 119 instruction slots used
+// Approximately 33 instruction slots used

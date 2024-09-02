@@ -133,11 +133,9 @@ void SceneGame::Initialize()
 	background_particle = std::make_unique<ParticleSystem>("Game1");
 
 	// 操作説明の画像を読み込み
-	config_move_pad			= std::make_unique<Sprite>(L"./resources/sprite/config/config_move_pad.png");
-	config_rotate_pad		= std::make_unique<Sprite>(L"./resources/sprite/config/config_rotate_pad.png");
-	config_move_keyboard	= std::make_unique<Sprite>(L"./resources/sprite/config/config_move_keyboard.png");
-	config_rotate_keyboard	= std::make_unique<Sprite>(L"./resources/sprite/config/config_rotate_keyboard.png");
-	rule					= std::make_unique<Sprite>(L"./resources/sprite/rule.png");
+	start_key.push_back(std::make_unique<Sprite>(L"resources/sprite/config/start_pad.png"));
+	start_key.push_back(std::make_unique<Sprite>(L"resources/sprite/config/start_pspad.png"));
+	start_key.push_back(std::make_unique<Sprite>(L"resources/sprite/config/start_keyboard.png"));
 
 	const wchar_t* w_game_mode_filename[] = {
 		L"resources/sprite/mode/easy.png",
@@ -419,6 +417,9 @@ void SceneGame::Render()
 	FramebufferManager* framebuffer_manager	= GamesystemDirector::GetInstance()->GetFramebufferManager();
 	GamesystemInput*	input				= GamesystemInput::GetInstance();
 
+	GamePad*	game_pad		= input->GetGamePad();
+	const int	INPUT_DEVICE_ID = SCast(int, game_pad->GetInputDevice());
+
 	ParticleSystem::CbParticleEmitter& emitter = background_particle->GetCbParticleEmitter();
 
 	// フレームバッファに描画(適用範囲を見やすくするため中かっこを使用)
@@ -477,31 +478,8 @@ void SceneGame::Render()
 		graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
 		game_board.at(SCast(size_t, EnumPlayerID::PLAYER_1))->UIRender();
 
-		if(playing_game)
-		{
-			// 操作説明描画
-			switch (input->GetInputDevice())
-			{
-				using enum EnumInputDevice;
-			case XBOX:
-				config_move_pad->Render(CONFIG_MOVE_POS, config_move_pad->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
-				config_rotate_pad->Render(CONFIG_ROTATE_POS, config_rotate_pad->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
-				break;
-
-			case KEYBOARD:
-				config_move_keyboard->Render(CONFIG_MOVE_POS, config_move_keyboard->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
-				config_rotate_keyboard->Render(CONFIG_ROTATE_POS, config_rotate_keyboard->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
-				break;
-
-			default:
-				break;
-			}
-
-			rule->Render(RULE_POS, rule->GetSpriteSizeWithScaling({0.3f,0.3f}));
-		}
-
 		// モード選択画面
-		else
+		if (!playing_game)
 		{
 			float width		= SCast(float, graphics->GetScreenWidth());
 			float height	= SCast(float, graphics->GetScreenHeight());
@@ -596,6 +574,14 @@ void SceneGame::Render()
 					{ spr_wdt_small, spr_hgt_small }
 				);
 			}
+
+			float spr_wdt_start = start_key[INPUT_DEVICE_ID]->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).x;
+			float spr_hgt_start = start_key[INPUT_DEVICE_ID]->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).y;
+
+			start_key[INPUT_DEVICE_ID]->Render(
+				{ MARGIN_S, height - spr_hgt_start - MARGIN_S },
+				{ spr_wdt_start, spr_hgt_start }
+			);
 		}
 
 		if (game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->IsPausing())

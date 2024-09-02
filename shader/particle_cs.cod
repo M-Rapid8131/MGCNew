@@ -97,466 +97,110 @@
 // -------------------- ----- ------ -------- -------- ------- ------
 // no Output
 cs_5_0
-dcl_globalFlags refactoringAllowed | skipOptimization
+dcl_globalFlags refactoringAllowed
 dcl_constantbuffer CB9[10], immediateIndexed
 dcl_constantbuffer CB4[2], immediateIndexed
 dcl_constantbuffer CB5[6], immediateIndexed
 dcl_resource_texture2d (float,float,float,float) t41
 dcl_uav_structured u0, 80
 dcl_input vThreadID.x
-dcl_temps 15
+dcl_temps 11
 dcl_thread_group 512, 1, 1
-//
-// Initial variable locations:
-//   vThreadID.x <- dtid.x; vThreadID.y <- dtid.y; vThreadID.z <- dtid.z
-//
-#line 12 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_header.hlsli"
-mov r0.x, l(10.000000)  // r0.x <- MAX_SPEED
-
-#line 12 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_cs.hlsl"
-mov r0.y, vThreadID.x  // r0.y <- index
-
-#line 15
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r0.z, r0.y, l(0), u0.xxxx
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r1.x, r0.y, l(4), u0.xxxx  // r1.x <- particle.position.x
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r1.y, r0.y, l(8), u0.xxxx  // r1.y <- particle.position.y
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r1.z, r0.y, l(12), u0.xxxx  // r1.z <- particle.position.z
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r0.w, r0.y, l(16), u0.xxxx  // r0.w <- particle.size
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r2.w, r0.y, l(20), u0.xxxx  // r2.w <- particle.color.x
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r2.y, r0.y, l(24), u0.xxxx  // r2.y <- particle.color.y
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r2.z, r0.y, l(28), u0.xxxx  // r2.z <- particle.color.z
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r3.w, r0.y, l(32), u0.xxxx  // r3.w <- particle.color.w
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r4.x, r0.y, l(36), u0.xxxx  // r4.x <- particle.velocity.x
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r4.y, r0.y, l(40), u0.xxxx  // r4.y <- particle.velocity.y
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r4.z, r0.y, l(44), u0.xxxx  // r4.z <- particle.velocity.z
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r1.w, r0.y, l(48), u0.xxxx  // r1.w <- particle.acceleration.x
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r4.w, r0.y, l(52), u0.xxxx  // r4.w <- particle.acceleration.y
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r5.x, r0.y, l(56), u0.xxxx  // r5.x <- particle.acceleration.z
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r5.y, r0.y, l(60), u0.xxxx  // r5.y <- particle.normal.x
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r5.z, r0.y, l(64), u0.xxxx  // r5.z <- particle.normal.y
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r5.w, r0.y, l(68), u0.xxxx  // r5.w <- particle.normal.z
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r6.x, r0.y, l(72), u0.xxxx  // r6.x <- particle.life
-ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r6.y, r0.y, l(76), u0.xxxx  // r6.y <- particle.start_time
-mov r0.z, r0.z  // r0.z <- particle.particle_index
-
-#line 18
-nop 
-iadd r6.z, r0.y, cb4[0].y
-
-#line 101 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
-mov r6.w, l(1)  // r6.w <- mip_level
-
-#line 103
-resinfo_indexable(texture2d)(float,float,float,float)_uint r7.xy, r6.w, t41.xyzw  // r7.x <- width; r7.y <- height
-
-#line 107
-udiv null, r8.x, r6.z, r7.x  // r8.x <- texture_location.x
-
-#line 108
-udiv r6.z, null, r6.z, r7.x
-udiv null, r8.y, r6.z, r7.y  // r8.y <- texture_location.y
-
-#line 109
-mov r8.zw, l(0,0,0,0)  // r8.w <- texture_location.z
-
-#line 111
-ld_indexable(texture2d)(float,float,float,float) r7.xyz, r8.xyzw, t41.xyzw  // r7.x <- <GetNoiseFactor return value>.x; r7.y <- <GetNoiseFactor return value>.y; r7.z <- <GetNoiseFactor return value>.z
-
-#line 18 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_cs.hlsl"
-mov r7.xyz, r7.xyzx  // r7.x <- random_f3.x; r7.y <- random_f3.y; r7.z <- random_f3.z
-
-#line 21
-ult r6.z, r0.y, cb5[0].x
-if_nz r6.z
-
-#line 24
-  lt r6.z, l(0.000000), r6.y
-  if_nz r6.z
-
-#line 26
-    mul r8.xyz, r7.xyzx, l(2.000000, 2.000000, 2.000000, 0.000000)
-    mov r9.xyz, l(-1.000000,-1.000000,-1.000000,-0.000000)
-    add r8.xyz, r8.xyzx, r9.xyzx
-    mul r8.xyz, r8.xyzx, cb5[5].wwww
-    add r8.xyz, r8.xyzx, cb5[1].xyzx  // r8.x <- particle.position.x; r8.y <- particle.position.y; r8.z <- particle.position.z
-
-#line 28
-    ine r6.z, l(0, 0, 0, 0), cb5[0].z
-    if_z r6.z
-
-#line 29
-      mov r6.z, -cb4[1].x
-      add r6.y, r6.z, r6.y
-    endif 
-
-#line 31
-    ine r6.z, l(0, 0, 0, 0), cb5[0].y
-    if_z r6.z
-
-#line 32
-      mov r3.xyzw, cb5[4].xyzw  // r3.x <- particle.color.x; r3.y <- particle.color.y; r3.z <- particle.color.z
-    else   // Prior locations: r2.w <- particle.color.x; r2.y <- particle.color.y; r2.z <- particle.color.z
-      mov r3.xyz, r2.wyzw  // r3.x <- particle.color.x; r3.y <- particle.color.y; r3.z <- particle.color.z
-    endif 
-
-#line 33
-    store_structured u0.x, r0.y, l(0), r0.z
-    store_structured u0.x, r0.y, l(4), r8.x
-    store_structured u0.x, r0.y, l(8), r8.y
-    store_structured u0.x, r0.y, l(12), r8.z
-    store_structured u0.x, r0.y, l(16), r0.w
-    store_structured u0.x, r0.y, l(20), r3.x
-    store_structured u0.x, r0.y, l(24), r3.y
-    store_structured u0.x, r0.y, l(28), r3.z
-    store_structured u0.x, r0.y, l(32), r3.w
-    store_structured u0.x, r0.y, l(36), r4.x
-    store_structured u0.x, r0.y, l(40), r4.y
-    store_structured u0.x, r0.y, l(44), r4.z
-    store_structured u0.x, r0.y, l(48), r1.w
-    store_structured u0.x, r0.y, l(52), r4.w
-    store_structured u0.x, r0.y, l(56), r5.x
-    store_structured u0.x, r0.y, l(60), r5.y
-    store_structured u0.x, r0.y, l(64), r5.z
-    store_structured u0.x, r0.y, l(68), r5.w
-    store_structured u0.x, r0.y, l(72), r6.x
-    store_structured u0.x, r0.y, l(76), r6.y
-
-#line 34
+ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r0.xyz, vThreadID.x, l(4), u0.xyzx
+ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r1.xyzw, vThreadID.x, l(20), u0.xyzw
+ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r2.xyz, vThreadID.x, l(36), u0.xyzx
+ld_structured_indexable(structured_buffer, stride=80)(mixed,mixed,mixed,mixed) r3.xy, vThreadID.x, l(72), u0.xyxx
+ult r0.w, vThreadID.x, cb5[0].x
+if_nz r0.w
+  iadd r0.w, vThreadID.x, cb4[0].y
+  resinfo_indexable(texture2d)(float,float,float,float)_uint r3.zw, l(1), t41.zwxy
+  udiv r4.x, r5.x, r0.w, r3.z
+  udiv null, r5.y, r4.x, r3.w
+  mov r5.zw, l(0,0,0,0)
+  ld_indexable(texture2d)(float,float,float,float) r4.xyz, r5.xyzw, t41.xyzw
+  lt r0.w, l(0.000000), r3.y
+  if_nz r0.w
+    mad r5.xyz, r4.xyzx, l(2.000000, 2.000000, 2.000000, 0.000000), l(-1.000000, -1.000000, -1.000000, 0.000000)
+    mad r5.xyz, r5.xyzx, cb5[5].wwww, cb5[1].xyzx
+    add r0.w, r3.y, -cb4[1].x
+    movc r0.w, cb5[0].z, r3.y, r0.w
+    movc r6.xyzw, cb5[0].yyyy, r1.xyzw, cb5[4].xyzw
+    store_structured u0.xyz, vThreadID.x, l(4), r5.xyzx
+    store_structured u0.xyzw, vThreadID.x, l(20), r6.xyzw
+    store_structured u0.x, vThreadID.x, l(76), r0.w
     ret 
-
-#line 35
-  else   // Prior locations: r1.x <- particle.position.x; r1.y <- particle.position.y; r1.z <- particle.position.z; r2.w <- particle.color.x; r2.y <- particle.color.y; r2.z <- particle.color.z
-    mov r3.xy, r2.yzyy
   endif 
-
-#line 38
-  mov r8.xyz, -r1.xyzx
-  add r8.xyz, r8.xyzx, cb9[9].xyzx
-  dp3 r6.z, r8.xyzx, r8.xyzx
-  rsq r6.z, r6.z
-  mul r8.xyz, r6.zzzz, r8.xyzx  // r8.x <- particle.normal.x; r8.y <- particle.normal.y; r8.z <- particle.normal.z
-
-#line 41
-  nop 
-  mov r6.x, r6.x
-
-#line 100 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_header.hlsli"
-  mov r6.z, l(0)  // r6.z <- life_rate
-
-#line 102
-  lt r6.w, l(0.000000), r6.x
-  if_nz r6.w
-
-#line 104
-    max r6.w, r6.x, l(0.000000)
-    min r6.z, r6.w, l(1.000000)
-
-#line 106
-    lt r6.w, cb5[5].y, l(1.000000)
-    lt r7.w, l(0.000000), cb5[5].y
-    and r6.w, r6.w, r7.w
-    if_nz r6.w
-
-#line 107
-      div r6.w, l(1.000000), cb5[5].y
-      mul r6.z, r6.w, r6.z
+  add r5.xyz, -r0.xyzx, cb9[9].xyzx
+  dp3 r0.w, r5.xyzx, r5.xyzx
+  rsq r0.w, r0.w
+  mul r5.xyz, r0.wwww, r5.xyzx
+  lt r0.w, l(0.000000), r3.x
+  mov_sat r2.w, r3.x
+  lt r3.y, cb5[5].y, l(1.000000)
+  lt r4.w, l(0.000000), cb5[5].y
+  and r3.y, r3.y, r4.w
+  div r4.w, l(1.000000, 1.000000, 1.000000, 1.000000), cb5[5].y
+  mul r4.w, r2.w, r4.w
+  movc r2.w, r3.y, r4.w, r2.w
+  and r0.w, r0.w, r2.w
+  mul r6.w, r0.w, cb5[5].x
+  add r5.w, r3.x, -cb4[1].x
+  udiv r3.x, r7.x, vThreadID.x, r3.z
+  udiv null, r7.y, r3.x, r3.w
+  mov r7.zw, l(0,0,0,0)
+  ld_indexable(texture2d)(float,float,float,float) r3.xyz, r7.xyzw, t41.xyzw
+  mad r3.xyz, r3.xyzx, l(2.000000, 2.000000, 2.000000, 0.000000), l(-1.000000, -1.000000, -1.000000, 0.000000)
+  dp3 r0.w, r3.xyzx, r3.xyzx
+  rsq r0.w, r0.w
+  mad r3.xyz, r3.xyzx, r0.wwww, -cb5[3].xyzx
+  mad r3.xyz, cb5[3].wwww, r3.xyzx, cb5[3].xyzx
+  mul r7.xyz, r3.xyzx, cb5[2].wwww
+  mul r8.xyz, r7.xyzx, cb4[1].xxxx
+  mad r9.xyz, r7.xyzx, cb4[1].xxxx, cb5[2].xyzx
+  mad r2.xyz, r9.xyzx, cb4[1].xxxx, r2.xyzx
+  mul r2.xyz, r2.xyzx, cb4[1].yyyy
+  mad r6.xyz, r2.xyzx, cb4[1].xxxx, r0.xyzx
+  dp3 r0.x, r2.xyzx, r2.xyzx
+  sqrt r0.y, r0.x
+  lt r0.y, l(10.000000), r0.y
+  rsq r0.x, r0.x
+  mul r0.xzw, r0.xxxx, r2.xxyz
+  mul r9.xyz, r0.xzwx, l(10.000000, 10.000000, 10.000000, 0.000000)
+  mov r9.w, l(0)
+  mov r10.xy, r2.yzyy
+  mov r10.zw, r8.xxxy
+  movc r10.xyzw, r0.yyyy, r9.yzww, r10.xyzw
+  mov r2.w, r8.z
+  movc r0.xy, r0.yyyy, r9.xwxx, r2.xwxx
+  lt r2.x, r5.w, l(0.000000)
+  if_nz r2.x
+    if_z cb5[0].z
+      mul r2.xyz, r3.xyzx, cb5[1].wwww
+      mad r3.xyz, r4.xyzx, l(2.000000, 2.000000, 2.000000, 0.000000), l(-1.000000, -1.000000, -1.000000, 0.000000)
+      mad r6.xyz, r3.xyzx, cb5[5].wwww, cb5[1].xyzx
+      movc r1.xyz, cb5[0].yyyy, r4.xyzx, cb5[4].xyzx
+      mov r1.w, cb5[4].w
+      mov r2.w, r7.x
+      mov r0.xy, r7.yzyy
+      mov r5.w, cb5[5].y
+    else 
+      mov r2.x, r0.x
+      mov r2.yzw, r10.xxyz
+      mov r0.x, r10.w
     endif 
-
-#line 108
+  else 
+    mov r2.x, r0.x
+    mov r2.yzw, r10.xxyz
+    mov r0.x, r10.w
   endif 
-
-#line 110
-  mov r6.z, r6.z  // r6.z <- <GetLifeRate return value>
-
-#line 41 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_cs.hlsl"
-  mov r6.w, l(-0.000000)
-  add r6.w, r6.w, cb5[5].x
-  mul r6.z, r6.w, r6.z
-  add r6.z, r6.z, l(0.000000)  // r6.z <- particle.size
-
-#line 42
-  mov r6.w, -cb4[1].x
-  add r9.y, r6.w, r6.x  // r9.y <- particle.life
-
-#line 45
-  nop 
-  mov r6.w, r0.y
-
-#line 91 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_header.hlsli"
-  nop 
-  mov r6.w, r6.w
-
-#line 101 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
-  mov r7.w, l(1)  // r7.w <- mip_level
-
-#line 103
-  resinfo_indexable(texture2d)(float,float,float,float)_uint r10.xy, r7.w, t41.xyzw  // r10.x <- width; r10.y <- height
-
-#line 107
-  udiv null, r11.x, r6.w, r10.x  // r11.x <- texture_location.x
-
-#line 108
-  udiv r6.w, null, r6.w, r10.x
-  udiv null, r11.y, r6.w, r10.y  // r11.y <- texture_location.y
-
-#line 109
-  mov r11.zw, l(0,0,0,0)  // r11.w <- texture_location.z
-
-#line 111
-  ld_indexable(texture2d)(float,float,float,float) r10.xyz, r11.xyzw, t41.xyzw  // r10.x <- <GetNoiseFactor return value>.x; r10.y <- <GetNoiseFactor return value>.y; r10.z <- <GetNoiseFactor return value>.z
-
-#line 91 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_header.hlsli"
-  mov r10.xyz, r10.xyzx  // r10.x <- rnd_f3.x; r10.y <- rnd_f3.y; r10.z <- rnd_f3.z
-
-#line 93
-  mul r10.xyz, r10.xyzx, l(2.000000, 2.000000, 2.000000, 0.000000)
-  mov r11.xyz, l(-1.000000,-1.000000,-1.000000,-0.000000)
-  add r10.xyz, r10.xyzx, r11.xyzx
-  dp3 r6.w, r10.xyzx, r10.xyzx
-  rsq r6.w, r6.w
-  mul r10.xyz, r6.wwww, r10.xyzx  // r10.x <- rnd_dir.x; r10.y <- rnd_dir.y; r10.z <- rnd_dir.z
-
-#line 95
-  mov r11.xyz, -cb5[3].xyzx
-  add r10.xyz, r10.xyzx, r11.xyzx
-  mul r10.xyz, r10.xyzx, cb5[3].wwww
-  add r10.xyz, r10.xyzx, cb5[3].xyzx  // r10.x <- <CalcEmitDirection return value>.x; r10.y <- <CalcEmitDirection return value>.y; r10.z <- <CalcEmitDirection return value>.z
-
-#line 45 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_cs.hlsl"
-  mul r10.xyz, r10.xyzx, cb5[2].wwww
-  mul r10.xyz, r10.xyzx, cb4[1].xxxx  // r10.x <- particle.acceleration.x; r10.y <- particle.acceleration.y; r10.z <- particle.acceleration.z
-
-#line 46
-  add r11.xyz, r10.xyzx, cb5[2].xyzx
-  mul r11.xyz, r11.xyzx, cb4[1].xxxx
-  add r11.xyz, r4.xyzx, r11.xyzx  // r11.x <- particle.velocity.x; r11.y <- particle.velocity.y; r11.z <- particle.velocity.z
-
-#line 47
-  mul r11.xyz, r11.xyzx, cb4[1].yyyy
-
-#line 48
-  mul r12.xyz, r11.xyzx, cb4[1].xxxx
-  add r2.xyz, r1.xyzx, r12.xyzx  // r2.x <- particle.position.x; r2.y <- particle.position.y; r2.z <- particle.position.z
-
-#line 51
-  dp3 r6.w, r11.xyzx, r11.xyzx
-  sqrt r6.w, r6.w
-  lt r6.w, r0.x, r6.w
-  if_nz r6.w
-
-#line 53
-    mov r12.xyz, l(0,0,0,0)  // r12.x <- particle.acceleration.x; r12.y <- particle.acceleration.y; r12.z <- particle.acceleration.z
-
-#line 54
-    dp3 r6.w, r11.xyzx, r11.xyzx
-    rsq r6.w, r6.w
-    mul r13.xyz, r6.wwww, r11.xyzx
-    mul r13.xyz, r0.xxxx, r13.xyzx  // r13.x <- particle.velocity.x; r13.y <- particle.velocity.y; r13.z <- particle.velocity.z
-
-#line 55
-    mov r14.xy, r13.yzyy  // r14.x <- particle.velocity.y; r14.y <- particle.velocity.z
-    mov r14.zw, r12.xxxy  // r14.z <- particle.acceleration.x; r14.w <- particle.acceleration.y
-    mov r3.z, r13.x  // r3.z <- particle.velocity.x
-    mov r9.x, r12.z  // r9.x <- particle.acceleration.z
-  else   // Prior locations: r10.x <- particle.acceleration.x; r10.y <- particle.acceleration.y; r10.z <- particle.acceleration.z; r11.x <- particle.velocity.x; r11.y <- particle.velocity.y; r11.z <- particle.velocity.z
-    mov r14.xy, r11.yzyy  // r14.x <- particle.velocity.y; r14.y <- particle.velocity.z
-    mov r14.zw, r10.xxxy  // r14.z <- particle.acceleration.x; r14.w <- particle.acceleration.y
-    mov r3.z, r11.x  // r3.z <- particle.velocity.x
-    mov r9.x, r10.z  // r9.x <- particle.acceleration.z
-  endif 
-
-#line 58
-  lt r0.x, r9.y, l(0.000000)
-  if_nz r0.x
-
-#line 60
-    ine r0.x, l(0, 0, 0, 0), cb5[0].z
-    if_z r0.x
-
-#line 62
-      nop 
-      mov r0.x, r0.y
-
-#line 91 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_header.hlsli"
-      nop 
-      mov r0.x, r0.x
-
-#line 101 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
-      mov r6.w, l(1)  // r6.w <- mip_level
-
-#line 103
-      resinfo_indexable(texture2d)(float,float,float,float)_uint r10.xy, r6.w, t41.xyzw
-      mov r10.x, r10.x  // r10.x <- width
-      mov r10.y, r10.y  // r10.y <- height
-
-#line 107
-      udiv null, r11.x, r0.x, r10.x  // r11.x <- texture_location.x
-
-#line 108
-      udiv r0.x, null, r0.x, r10.x
-      udiv null, r11.y, r0.x, r10.y  // r11.y <- texture_location.y
-
-#line 109
-      mov r11.zw, l(0,0,0,0)  // r11.w <- texture_location.z
-
-#line 111
-      ld_indexable(texture2d)(float,float,float,float) r10.xyz, r11.xyzw, t41.xyzw
-      mov r10.xyz, r10.xyzx  // r10.x <- <GetNoiseFactor return value>.x; r10.y <- <GetNoiseFactor return value>.y; r10.z <- <GetNoiseFactor return value>.z
-
-#line 91 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_header.hlsli"
-      mov r10.xyz, r10.xyzx  // r10.x <- rnd_f3.x; r10.y <- rnd_f3.y; r10.z <- rnd_f3.z
-
-#line 93
-      mul r10.xyz, r10.xyzx, l(2.000000, 2.000000, 2.000000, 0.000000)
-      mov r11.xyz, l(-1.000000,-1.000000,-1.000000,-0.000000)
-      add r10.xyz, r10.xyzx, r11.xyzx
-      dp3 r0.x, r10.xyzx, r10.xyzx
-      rsq r0.x, r0.x
-      mul r10.xyz, r0.xxxx, r10.xyzx  // r10.x <- rnd_dir.x; r10.y <- rnd_dir.y; r10.z <- rnd_dir.z
-
-#line 95
-      mov r11.xyz, -cb5[3].xyzx
-      add r10.xyz, r10.xyzx, r11.xyzx
-      mul r10.xyz, r10.xyzx, cb5[3].wwww
-      add r10.xyz, r10.xyzx, cb5[3].xyzx  // r10.x <- <CalcEmitDirection return value>.x; r10.y <- <CalcEmitDirection return value>.y; r10.z <- <CalcEmitDirection return value>.z
-
-#line 62 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_cs.hlsl"
-      mul r9.xzw, r10.zzxy, cb5[2].wwww  // r9.z <- particle.acceleration.x; r9.w <- particle.acceleration.y
-
-#line 63
-      nop 
-      mov r0.x, r0.y
-
-#line 91 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_header.hlsli"
-      nop 
-      mov r0.x, r0.x
-
-#line 101 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
-      mov r6.w, l(1)
-
-#line 103
-      resinfo_indexable(texture2d)(float,float,float,float)_uint r10.xy, r6.w, t41.xyzw  // r10.x <- width; r10.y <- height
-
-#line 107
-      udiv null, r11.x, r0.x, r10.x  // r11.x <- texture_location.x
-
-#line 108
-      udiv r0.x, null, r0.x, r10.x
-      udiv null, r11.y, r0.x, r10.y  // r11.y <- texture_location.y
-
-#line 109
-      mov r11.zw, l(0,0,0,0)
-
-#line 111
-      ld_indexable(texture2d)(float,float,float,float) r10.xyz, r11.xyzw, t41.xyzw  // r10.x <- <GetNoiseFactor return value>.x; r10.y <- <GetNoiseFactor return value>.y; r10.z <- <GetNoiseFactor return value>.z
-
-#line 91 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_header.hlsli"
-      mov r10.xyz, r10.xyzx  // r10.x <- rnd_f3.x; r10.y <- rnd_f3.y; r10.z <- rnd_f3.z
-
-#line 93
-      mul r10.xyz, r10.xyzx, l(2.000000, 2.000000, 2.000000, 0.000000)
-      mov r11.xyz, l(-1.000000,-1.000000,-1.000000,-0.000000)
-      add r10.xyz, r10.xyzx, r11.xyzx
-      dp3 r0.x, r10.xyzx, r10.xyzx
-      rsq r0.x, r0.x
-      mul r10.xyz, r0.xxxx, r10.xyzx  // r10.x <- rnd_dir.x; r10.y <- rnd_dir.y; r10.z <- rnd_dir.z
-
-#line 95
-      mov r11.xyz, -cb5[3].xyzx
-      add r10.xyz, r10.xyzx, r11.xyzx
-      mul r10.xyz, r10.xyzx, cb5[3].wwww
-      add r10.xyz, r10.xyzx, cb5[3].xyzx  // r10.x <- <CalcEmitDirection return value>.x; r10.y <- <CalcEmitDirection return value>.y; r10.z <- <CalcEmitDirection return value>.z
-
-#line 63 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_cs.hlsl"
-      mul r14.xyz, r10.yzxy, cb5[1].wwww  // r14.z <- particle.velocity.x
-
-#line 64
-      mul r10.xyz, r7.xyzx, l(2.000000, 2.000000, 2.000000, 0.000000)
-      mov r11.xyz, l(-1.000000,-1.000000,-1.000000,-0.000000)
-      add r10.xyz, r10.xyzx, r11.xyzx
-      mul r10.xyz, r10.xyzx, cb5[5].wwww
-      add r2.xyz, r10.xyzx, cb5[1].xyzx
-
-#line 65
-      mov r9.y, cb5[5].y
-
-#line 66
-      ine r0.x, l(0, 0, 0, 0), cb5[0].y
-      if_z r0.x
-
-#line 67
-        mov r3.xyw, cb5[4].yzyx  // r3.x <- particle.color.y; r3.y <- particle.color.z; r3.w <- particle.color.x
-        mov r2.w, r3.w  // r2.w <- particle.color.x
-      else   // Prior locations: r3.w <- particle.color.w
-
-#line 69
-        mov r3.xyw, r7.yzyx  // r3.w <- particle.color.x
-        mov r2.w, r3.w  // r2.w <- particle.color.x
-      endif 
-      mov r3.w, cb5[4].w  // r3.w <- particle.color.w
-
-#line 70
-      mov r3.z, r14.z
-      mov r3.xyzw, r3.xyzw  // r3.z <- particle.velocity.x
-      mov r14.zw, r9.zzzw  // r14.z <- particle.acceleration.x; r14.w <- particle.acceleration.y
-    endif 
-
-#line 71
-  endif 
-
-#line 73
-  store_structured u0.x, r0.y, l(0), r0.z
-  store_structured u0.x, r0.y, l(4), r2.x
-  store_structured u0.x, r0.y, l(8), r2.y
-  store_structured u0.x, r0.y, l(12), r2.z
-  store_structured u0.x, r0.y, l(16), r6.z
-  store_structured u0.x, r0.y, l(20), r2.w
-  store_structured u0.x, r0.y, l(24), r3.x
-  store_structured u0.x, r0.y, l(28), r3.y
-  store_structured u0.x, r0.y, l(32), r3.w
-  store_structured u0.x, r0.y, l(36), r3.z
-  store_structured u0.x, r0.y, l(40), r14.x
-  store_structured u0.x, r0.y, l(44), r14.y
-  store_structured u0.x, r0.y, l(48), r14.z
-  store_structured u0.x, r0.y, l(52), r14.w
-  store_structured u0.x, r0.y, l(56), r9.x
-  store_structured u0.x, r0.y, l(60), r8.x
-  store_structured u0.x, r0.y, l(64), r8.y
-  store_structured u0.x, r0.y, l(68), r8.z
-  store_structured u0.x, r0.y, l(72), r9.y
-  store_structured u0.x, r0.y, l(76), r6.y
-
-#line 74
-else   // Prior locations: r1.x <- particle.position.x; r1.y <- particle.position.y; r1.z <- particle.position.z; r0.w <- particle.size; r2.y <- particle.color.y; r2.z <- particle.color.z; r4.x <- particle.velocity.x; r4.y <- particle.velocity.y; r4.z <- particle.velocity.z; r1.w <- particle.acceleration.x; r4.w <- particle.acceleration.y; r5.x <- particle.acceleration.z; r5.y <- particle.normal.x; r5.z <- particle.normal.y; r5.w <- particle.normal.z; r6.x <- particle.life; r0.x <- MAX_SPEED
-
-#line 77
-  mov r0.x, l(0)  // r0.x <- particle.color.w
-
-#line 78
-  store_structured u0.x, r0.y, l(0), r0.z
-  store_structured u0.x, r0.y, l(4), r1.x
-  store_structured u0.x, r0.y, l(8), r1.y
-  store_structured u0.x, r0.y, l(12), r1.z
-  store_structured u0.x, r0.y, l(16), r0.w
-  store_structured u0.x, r0.y, l(20), r2.w
-  store_structured u0.x, r0.y, l(24), r2.y
-  store_structured u0.x, r0.y, l(28), r2.z
-  store_structured u0.x, r0.y, l(32), r0.x
-  store_structured u0.x, r0.y, l(36), r4.x
-  store_structured u0.x, r0.y, l(40), r4.y
-  store_structured u0.x, r0.y, l(44), r4.z
-  store_structured u0.x, r0.y, l(48), r1.w
-  store_structured u0.x, r0.y, l(52), r4.w
-  store_structured u0.x, r0.y, l(56), r5.x
-  store_structured u0.x, r0.y, l(60), r5.y
-  store_structured u0.x, r0.y, l(64), r5.z
-  store_structured u0.x, r0.y, l(68), r5.w
-  store_structured u0.x, r0.y, l(72), r6.x
-  store_structured u0.x, r0.y, l(76), r6.y
-
-#line 79
+  store_structured u0.xyzw, vThreadID.x, l(4), r6.xyzw
+  store_structured u0.xyzw, vThreadID.x, l(20), r1.xyzw
+  store_structured u0.xyzw, vThreadID.x, l(36), r2.xyzw
+  mov r0.zw, r5.xxxy
+  store_structured u0.xyzw, vThreadID.x, l(52), r0.xyzw
+  store_structured u0.xy, vThreadID.x, l(68), r5.zwzz
+else 
+  store_structured u0.x, vThreadID.x, l(32), l(0)
 endif 
-
-#line 80
 ret 
-// Approximately 270 instruction slots used
+// Approximately 97 instruction slots used
