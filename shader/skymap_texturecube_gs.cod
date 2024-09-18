@@ -23,12 +23,12 @@
 // SV_RENDERTARGETARRAYINDEX     0   x           3  RTINDEX    uint   x   
 //
 gs_5_0
-dcl_globalFlags refactoringAllowed
+dcl_globalFlags refactoringAllowed | skipOptimization
 dcl_input_siv v[3][0].xyzw, position
 dcl_input v[3][1].xy
 dcl_input v[3][2].xyz
 dcl_input v[3][3].x
-dcl_temps 1
+dcl_temps 4
 dcl_inputprimitive triangle 
 dcl_stream m0
 dcl_outputtopology trianglestrip 
@@ -37,17 +37,58 @@ dcl_output o1.xy
 dcl_output o2.xyz
 dcl_output_siv o3.x, rendertarget_array_index
 dcl_maxout 3
-mov r0.x, l(0)
+//
+// Initial variable locations:
+//   m0 <- output; 
+//   v[0][0].x <- input[0].position.x; v[0][0].y <- input[0].position.y; v[0][0].z <- input[0].position.z; v[0][0].w <- input[0].position.w; 
+//   v[0][1].x <- input[0].texcoord.x; v[0][1].y <- input[0].texcoord.y; 
+//   v[0][2].x <- input[0].bearing.x; v[0][2].y <- input[0].bearing.y; v[0][2].z <- input[0].bearing.z; 
+//   v[0][3].x <- input[0].instance_id; 
+//   v[1][0].x <- input[1].position.x; v[1][0].y <- input[1].position.y; v[1][0].z <- input[1].position.z; v[1][0].w <- input[1].position.w; 
+//   v[1][1].x <- input[1].texcoord.x; v[1][1].y <- input[1].texcoord.y; 
+//   v[1][2].x <- input[1].bearing.x; v[1][2].y <- input[1].bearing.y; v[1][2].z <- input[1].bearing.z; 
+//   v[1][3].x <- input[1].instance_id; 
+//   v[2][0].x <- input[2].position.x; v[2][0].y <- input[2].position.y; v[2][0].z <- input[2].position.z; v[2][0].w <- input[2].position.w; 
+//   v[2][1].x <- input[2].texcoord.x; v[2][1].y <- input[2].texcoord.y; 
+//   v[2][2].x <- input[2].bearing.x; v[2][2].y <- input[2].bearing.y; v[2][2].z <- input[2].bearing.z; 
+//   v[2][3].x <- input[2].instance_id
+//
+#line 5 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Skymap\skymap_texturecube_gs.hlsl"
+mov r0.x, l(3)  // r0.x <- VERTEX_COUNT
+
+#line 14
+mov r0.y, l(0)  // r0.y <- i
+mov r0.z, r0.y  // r0.z <- i
 loop 
-  uge r0.y, r0.x, l(3)
-  breakc_nz r0.y
-  mov o0.xyzw, v[r0.x + 0][0].xyzw
-  mov o1.xy, v[r0.x + 0][1].xyxx
-  mov o2.xyz, v[r0.x + 0][2].xyzx
-  mov o3.x, v[r0.x + 0][3].x
+  ult r0.w, r0.z, r0.x
+  breakc_z r0.w
+
+#line 17
+  mov r1.xyzw, v[r0.z + 0][0].xyzw  // r1.x <- element.position.x; r1.y <- element.position.y; r1.z <- element.position.z; r1.w <- element.position.w
+
+#line 18
+  mov r2.xy, v[r0.z + 0][1].xyxx  // r2.x <- element.texcoord.x; r2.y <- element.texcoord.y
+
+#line 19
+  mov r3.xyz, v[r0.z + 0][2].xyzx  // r3.x <- element.bearing.x; r3.y <- element.bearing.y; r3.z <- element.bearing.z
+
+#line 20
+  mov r0.w, v[r0.z + 0][3].x  // r0.w <- element.sv_render_target_array_index
+
+#line 21
+  mov o0.xyzw, r1.xyzw
+  mov o1.xy, r2.xyxx
+  mov o2.xyz, r3.xyzx
+  mov o3.x, r0.w
   emit_stream m0
-  iadd r0.x, r0.x, l(1)
+
+#line 22
+  iadd r0.z, r0.z, l(1)
 endloop 
+
+#line 24
 cut_stream m0
+
+#line 25
 ret 
-// Approximately 13 instruction slots used
+// Approximately 19 instruction slots used

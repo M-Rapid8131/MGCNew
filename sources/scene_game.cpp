@@ -452,7 +452,7 @@ void SceneGame::Render()
 			graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
 			game_board.at(SCast(size_t, EnumPlayerID::PLAYER_1))->EmissiveRender();
 
-			//// パーティクル描画
+			// パーティクル描画
 			graphics->SetDepthStencilState(EnumDepthState::ZT_ON_ZW_OFF);
 			graphics->SetRasterizerState(EnumRasterizerState::PARTICLE);
 			background_particle->Render();

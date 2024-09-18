@@ -17,9 +17,19 @@
 // SV_INSTANCEID            0   x           0     NONE    uint   x   
 //
 vs_5_0
-dcl_globalFlags refactoringAllowed
+dcl_globalFlags refactoringAllowed | skipOptimization
 dcl_input_sgv v0.x, instance_id
 dcl_output o0.x
-mov o0.x, v0.x
+dcl_temps 1
+//
+// Initial variable locations:
+//   v0.x <- instance_id; 
+//   o0.x <- <ShaderMain return value>
+//
+#line 8 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\Particle\particle_vs.hlsl"
+mov r0.x, v0.x  // r0.x <- vout
+
+#line 9
+mov o0.x, r0.x
 ret 
-// Approximately 2 instruction slots used
+// Approximately 3 instruction slots used

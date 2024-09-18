@@ -256,13 +256,13 @@ public:
 	UPtrVector<ObjectBlock>::iterator	GetBlockFromCell(const BlockCell);
 	BoardState&							GetBoardState()								{ return board_state; }
 	GameData&							GetGameData()								{ return game_data; }
-	const EnumBlockColor&				GetBlockColorFromMatrix(const BlockCell);
+	const EnumBlockColor				GetBlockColorFromMatrix(const BlockCell);
 
 	template<typename Enum>
 	FlagSystem<Enum>&					GetFlagSystem()				{ return flag_system; }
 
 	// public:セッター関数
-	void								ChangeBoardColorFromGameMode(const EnumGameMode game_mode) { board_color = BOARD_COLOR_SET[SCast(size_t, game_mode)]; }
+	void								ChangeBoardColorFromGameMode(const EnumGameMode new_game_mode) { board_color = BOARD_COLOR_SET[SCast(size_t, new_game_mode)]; }
 	void								ChangedParticleType()		{ flag_system.SetFlag(EnumBoardFlags::CHANGE_PARTICLE_TYPE, false); }
 	void								IncreaseEraseBlockCount()	{ game_data.deleted_block_count++; }
 
@@ -290,7 +290,7 @@ protected:
 	float								current_speed			= 0.0f;		// 現在のブロック落下スピード
 	float								speed_increase_factor	= 0.0f;		// ブロック落下スピードの増加量
 	float								si_rank_bonus			= 0.0f;		// スピードランク上昇時の落下スピード増加量
-	UINT								current_rank			= -1;		// 現在のスピードランク
+	int									current_rank			= -1;		// 現在のスピードランク
 	std::vector<int>					speed_rank;							// 落下スピードを大きく変化させるレベルを格納。BGMもこれで変更
 
 	// 接地関係

@@ -107,7 +107,7 @@ void GamesystemDirector::DebugGUI()
 				float x_data[1001];
 				float y_data[1001];
 
-				for (int i = 0.; i <= 1000; i++)
+				for (int i = 0; i <= 1000; i++)
 				{
 					x_data[i] = (float)i * 0.001f;
 					y_data[i] = Easing::In(EnumEasingType::BOUNCE, x_data[i]);

@@ -498,7 +498,6 @@ void ObjectBoard::BoardState::TransitionStartState(int game_mode_id)
 	std::string mode_name(magic_enum::enum_name(SCast(EnumGameMode, game_mode_id)).data());
 
 	Parameters	mode_params;
-	ParamPtr	mode_setting_params;
 
 	obj->game_mode		= SCast(EnumGameMode, game_mode_id);
 	obj->board_color	= BOARD_COLOR_SET[game_mode_id];
@@ -1180,7 +1179,7 @@ void ObjectBoard::DebugGUI()
 
 		ImGui::Separator();
 
-		int e_size = erase_block_particle.size();
+		int e_size = SCast(int, erase_block_particle.size());
 		ImGui::InputInt("Erase_particle Size", &e_size);
 		ImGui::InputFloat("Object Time", &object_time);
 		ImGui::InputFloat("Current Speed", &current_speed);
@@ -1972,7 +1971,7 @@ void ObjectBoard::LevelUp()
 			level_speed += speed_increase_factor;
 			standing_time_limit -= stand_decrease_factor;
 
-			if ((current_rank < 5) && (game_data.speed_level >= speed_rank[current_rank + 1]))	// スピードランクごとのレベル到達でBGM変化
+			if ((current_rank < 5) && (SCast(int, game_data.speed_level) >= speed_rank[current_rank + 1]))	// スピードランクごとのレベル到達でBGM変化
 			{
 				current_rank++;
 				level_speed += si_rank_bonus;
@@ -2078,7 +2077,7 @@ UPtrVector<ObjectBlock>::iterator ObjectBoard::GetBlockFromCell(const BlockCell 
 	return end;
 }
 
-const EnumBlockColor& ObjectBoard::GetBlockColorFromMatrix(const BlockCell cell)
+const EnumBlockColor ObjectBoard::GetBlockColorFromMatrix(const BlockCell cell)
 {
 	if (cell.row < 1 || cell.row > MAX_ROW)					return EnumBlockColor::UNDEFINE;
 	else if (cell.column < 1 || cell.column > MAX_COLUMN)	return EnumBlockColor::UNDEFINE;

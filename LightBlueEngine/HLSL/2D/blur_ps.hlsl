@@ -24,7 +24,7 @@ float4 ShaderMain(VS_OUT_2D pin) : SV_TARGET
 	float4	bloom_color		= color_maps_2d[1].Sample(sampler_states[SS_POINT], pin.texcoord);
 	float4	emissive_color	= color_maps_2d[2].Sample(sampler_states[SS_POINT], pin.texcoord);
 	
-	float3	fragment_color	= main_color.rgb + bloom_color.rgb + emissive_color.rgb;
+    float3 fragment_color	= main_color.rgb + bloom_color.rgb + emissive_color.rgb;
 	float	alpha			= main_color.a;
 	
 	// トーンマップ

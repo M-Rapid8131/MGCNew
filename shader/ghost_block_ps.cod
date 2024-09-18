@@ -42,10 +42,28 @@
 // SV_TARGET                0   xyzw        0   TARGET   float   xyzw
 //
 ps_5_0
-dcl_globalFlags refactoringAllowed
+dcl_globalFlags refactoringAllowed | skipOptimization
 dcl_constantbuffer CB2[1], immediateIndexed
 dcl_output o0.xyzw
-mov o0.xyz, cb2[0].xyzx
-mov o0.w, l(0.100000)
+dcl_temps 1
+//
+// Initial variable locations:
+//   v0.x <- pin.position.x; v0.y <- pin.position.y; v0.z <- pin.position.z; v0.w <- pin.position.w; 
+//   v1.x <- pin.w_position.x; v1.y <- pin.w_position.y; v1.z <- pin.w_position.z; v1.w <- pin.w_position.w; 
+//   v2.x <- pin.w_normal.x; v2.y <- pin.w_normal.y; v2.z <- pin.w_normal.z; v2.w <- pin.w_normal.w; 
+//   v3.x <- pin.w_tangent.x; v3.y <- pin.w_tangent.y; v3.z <- pin.w_tangent.z; v3.w <- pin.w_tangent.w; 
+//   v4.x <- pin.texcoord.x; v4.y <- pin.texcoord.y; 
+//   v5.x <- pin.shadow_texcoord.x; v5.y <- pin.shadow_texcoord.y; v5.z <- pin.shadow_texcoord.z; 
+//   o0.x <- <ShaderMain return value>.x; o0.y <- <ShaderMain return value>.y; o0.z <- <ShaderMain return value>.z; o0.w <- <ShaderMain return value>.w
+//
+#line 7 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\3D\ghost_block_ps.hlsl"
+mov r0.w, l(0.100000)  // r0.w <- alpha
+
+#line 8
+mov r0.xyz, cb2[0].xyzx  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z
+mov r0.w, r0.w  // r0.w <- color.w
+
+#line 10
+mov o0.xyzw, r0.xyzw
 ret 
-// Approximately 3 instruction slots used
+// Approximately 5 instruction slots used

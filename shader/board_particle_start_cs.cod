@@ -97,109 +97,343 @@
 // -------------------- ----- ------ -------- -------- ------- ------
 // no Output
 cs_4_0
-dcl_globalFlags refactoringAllowed
+dcl_globalFlags refactoringAllowed | skipOptimization
 dcl_constantbuffer CB9[10], immediateIndexed
 dcl_constantbuffer CB4[2], immediateIndexed
 dcl_constantbuffer CB5[6], immediateIndexed
 dcl_resource_texture2d (float,float,float,float) t41
 dcl_uav_structured u0, 80
 dcl_input vThreadID.x
-dcl_temps 11
+dcl_temps 18
 dcl_thread_group 512, 1, 1
-ld_structured r0.xyz, vThreadID.x, l(4), u0.xyzx
-ld_structured r1.xyzw, vThreadID.x, l(20), u0.yzwx
-ld_structured r2.xyz, vThreadID.x, l(36), u0.xyzx
-ld_structured r3.xy, vThreadID.x, l(72), u0.xyxx
-ult r0.w, vThreadID.x, cb5[0].x
-if_nz r0.w
-  iadd r0.w, vThreadID.x, cb4[0].y
-  resinfo_uint r4.xyzw, l(1), t41.xyzw
-  udiv r4.x, r5.x, r0.w, r4.x
-  udiv null, r5.y, r4.x, r4.y
-  mov r5.zw, l(0,0,0,0)
-  ld r4.xyzw, r5.xyzw, t41.xyzw
-  add r5.xyz, -r0.xyzx, cb5[1].xyzx
-  lt r0.w, l(0.000000), r3.y
-  if_nz r0.w
-    mad r6.xyz, r4.xyzx, l(2.000000, 2.000000, 2.000000, 0.000000), l(-1.000000, -1.000000, -1.000000, 0.000000)
-    mad r6.xyz, r6.xyzx, cb5[5].wwww, cb5[1].xyzx
-    dp3 r0.w, r5.xyzx, r5.xyzx
-    rsq r0.w, r0.w
-    mul r7.xyz, r0.wwww, r5.xyzx
-    add r0.w, r3.y, -cb4[1].x
-    movc r0.w, cb5[0].z, r3.y, r0.w
-    movc r8.xyzw, cb5[0].yyyy, r1.wxyz, cb5[4].xyzw
-    store_structured u0.xyz, vThreadID.x, l(4), r6.xyzx
-    store_structured u0.xyzw, vThreadID.x, l(20), r8.xyzw
-    store_structured u0.xyz, vThreadID.x, l(36), r7.xyzx
-    store_structured u0.x, vThreadID.x, l(76), r0.w
+//
+// Initial variable locations:
+//   vThreadID.x <- dtid.x; vThreadID.y <- dtid.y; vThreadID.z <- dtid.z
+//
+#line 12 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\particle\particle_header.hlsli"
+mov r0.x, l(10.000000)  // r0.x <- MAX_SPEED
+
+#line 12 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\particle\board_particle_start_cs.hlsl"
+mov r0.y, vThreadID.x  // r0.y <- index
+
+#line 15
+ld_structured r1.x, r0.y, l(0), u0.xxxx
+ld_structured r2.x, r0.y, l(4), u0.xxxx  // r2.x <- particle.position.x
+ld_structured r2.y, r0.y, l(8), u0.xxxx  // r2.y <- particle.position.y
+ld_structured r2.z, r0.y, l(12), u0.xxxx  // r2.z <- particle.position.z
+ld_structured r3.x, r0.y, l(16), u0.xxxx  // r3.x <- particle.size
+ld_structured r4.w, r0.y, l(20), u0.xxxx  // r4.w <- particle.color.x
+ld_structured r4.y, r0.y, l(24), u0.xxxx  // r4.y <- particle.color.y
+ld_structured r4.z, r0.y, l(28), u0.xxxx  // r4.z <- particle.color.z
+ld_structured r5.w, r0.y, l(32), u0.xxxx  // r5.w <- particle.color.w
+ld_structured r6.x, r0.y, l(36), u0.xxxx  // r6.x <- particle.velocity.x
+ld_structured r6.y, r0.y, l(40), u0.xxxx  // r6.y <- particle.velocity.y
+ld_structured r6.z, r0.y, l(44), u0.xxxx  // r6.z <- particle.velocity.z
+ld_structured r7.x, r0.y, l(48), u0.xxxx  // r7.x <- particle.acceleration.x
+ld_structured r8.x, r0.y, l(52), u0.xxxx  // r8.x <- particle.acceleration.y
+ld_structured r9.x, r0.y, l(56), u0.xxxx  // r9.x <- particle.acceleration.z
+ld_structured r10.x, r0.y, l(60), u0.xxxx  // r10.x <- particle.normal.x
+ld_structured r11.x, r0.y, l(64), u0.xxxx  // r11.x <- particle.normal.y
+ld_structured r12.x, r0.y, l(68), u0.xxxx  // r12.x <- particle.normal.z
+ld_structured r13.x, r0.y, l(72), u0.xxxx  // r13.x <- particle.life
+ld_structured r14.x, r0.y, l(76), u0.xxxx  // r14.x <- particle.start_time
+mov r1.x, r1.x  // r1.x <- particle.particle_index
+
+#line 18
+nop 
+iadd r0.z, r0.y, cb4[0].y
+
+#line 101 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
+mov r0.w, l(1)  // r0.w <- mip_level
+
+#line 103
+resinfo_uint r15.xyzw, r0.w, t41.xyzw
+mov r15.x, r15.x  // r15.x <- width
+mov r15.y, r15.y  // r15.y <- height
+
+#line 107
+udiv null, r16.x, r0.z, r15.x  // r16.x <- texture_location.x
+
+#line 108
+udiv r0.z, null, r0.z, r15.x
+udiv null, r16.y, r0.z, r15.y  // r16.y <- texture_location.y
+
+#line 109
+mov r16.zw, l(0,0,0,0)  // r16.w <- texture_location.z
+
+#line 111
+ld r15.xyzw, r16.xyzw, t41.xyzw  // r15.x <- <GetNoiseFactor return value>.x; r15.y <- <GetNoiseFactor return value>.y; r15.z <- <GetNoiseFactor return value>.z
+
+#line 18 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\particle\board_particle_start_cs.hlsl"
+mov r15.xyz, r15.xyzx  // r15.x <- random_f3.x; r15.y <- random_f3.y; r15.z <- random_f3.z
+
+#line 21
+ult r0.z, r0.y, cb5[0].x
+if_nz r0.z
+
+#line 23
+  mov r1.yzw, -r2.xxyz
+  add r1.yzw, r1.yyzw, cb5[1].xxyz  // r1.y <- direction.x; r1.z <- direction.y; r1.w <- direction.z
+
+#line 26
+  lt r0.z, l(0.000000), r14.x
+  if_nz r0.z
+
+#line 28
+    mul r3.yzw, r15.xxyz, l(0.000000, 2.000000, 2.000000, 2.000000)
+    mov r7.yzw, l(-0.000000,-1.000000,-1.000000,-1.000000)
+    add r3.yzw, r3.yyzw, r7.yyzw
+    mul r3.yzw, r3.yyzw, cb5[5].wwww
+    add r3.yzw, r3.yyzw, cb5[1].xxyz  // r3.y <- particle.position.x; r3.z <- particle.position.y; r3.w <- particle.position.z
+
+#line 29
+    dp3 r0.z, r1.yzwy, r1.yzwy
+    rsq r0.z, r0.z
+    mul r7.yzw, r0.zzzz, r1.yyzw  // r7.y <- particle.velocity.x; r7.z <- particle.velocity.y; r7.w <- particle.velocity.z
+
+#line 31
+    ine r0.z, l(0, 0, 0, 0), cb5[0].z
+    if_z r0.z
+
+#line 32
+      mov r0.z, -cb4[1].x
+      add r14.x, r0.z, r14.x
+    endif 
+
+#line 34
+    ine r0.z, l(0, 0, 0, 0), cb5[0].y
+    if_z r0.z
+
+#line 35
+      mov r5.xyzw, cb5[4].xyzw  // r5.x <- particle.color.x; r5.y <- particle.color.y; r5.z <- particle.color.z
+    else   // Prior locations: r4.w <- particle.color.x; r4.y <- particle.color.y; r4.z <- particle.color.z
+      mov r5.xyz, r4.wyzw  // r5.x <- particle.color.x; r5.y <- particle.color.y; r5.z <- particle.color.z
+    endif 
+
+#line 36
+    store_structured u0.x, r0.y, l(0), r1.x
+    store_structured u0.x, r0.y, l(4), r3.y
+    store_structured u0.x, r0.y, l(8), r3.z
+    store_structured u0.x, r0.y, l(12), r3.w
+    store_structured u0.x, r0.y, l(16), r3.x
+    store_structured u0.x, r0.y, l(20), r5.x
+    store_structured u0.x, r0.y, l(24), r5.y
+    store_structured u0.x, r0.y, l(28), r5.z
+    store_structured u0.x, r0.y, l(32), r5.w
+    store_structured u0.x, r0.y, l(36), r7.y
+    store_structured u0.x, r0.y, l(40), r7.z
+    store_structured u0.x, r0.y, l(44), r7.w
+    store_structured u0.x, r0.y, l(48), r7.x
+    store_structured u0.x, r0.y, l(52), r8.x
+    store_structured u0.x, r0.y, l(56), r9.x
+    store_structured u0.x, r0.y, l(60), r10.x
+    store_structured u0.x, r0.y, l(64), r11.x
+    store_structured u0.x, r0.y, l(68), r12.x
+    store_structured u0.x, r0.y, l(72), r13.x
+    store_structured u0.x, r0.y, l(76), r14.x
+
+#line 37
     ret 
+
+#line 38
+  else   // Prior locations: r2.x <- particle.position.x; r2.y <- particle.position.y; r2.z <- particle.position.z; r4.w <- particle.color.x; r4.y <- particle.color.y; r4.z <- particle.color.z; r6.x <- particle.velocity.x; r6.y <- particle.velocity.y; r6.z <- particle.velocity.z
+    mov r5.xy, r4.yzyy
   endif 
-  add r3.yzw, -r0.xxyz, cb9[9].xxyz
-  dp3 r0.w, r3.yzwy, r3.yzwy
+
+#line 41
+  mov r3.yzw, -r2.xxyz
+  add r3.yzw, r3.yyzw, cb9[9].xxyz
+  dp3 r0.z, r3.yzwy, r3.yzwy
+  rsq r0.z, r0.z
+  mul r3.yzw, r0.zzzz, r3.yyzw  // r3.y <- particle.normal.x; r3.z <- particle.normal.y; r3.w <- particle.normal.z
+
+#line 44
+  nop 
+  mov r13.x, r13.x
+
+#line 100 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\particle\particle_header.hlsli"
+  mov r0.z, l(0)  // r0.z <- life_rate
+
+#line 102
+  lt r0.w, l(0.000000), r13.x
+  if_nz r0.w
+
+#line 104
+    max r0.w, r13.x, l(0.000000)
+    min r0.z, r0.w, l(1.000000)
+
+#line 106
+    lt r0.w, cb5[5].y, l(1.000000)
+    lt r2.w, l(0.000000), cb5[5].y
+    and r0.w, r0.w, r2.w
+    if_nz r0.w
+
+#line 107
+      div r0.w, l(1.000000), cb5[5].y
+      mul r0.z, r0.w, r0.z
+    endif 
+
+#line 108
+  endif 
+
+#line 110
+  mov r0.z, r0.z  // r0.z <- <GetLifeRate return value>
+
+#line 44 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\particle\board_particle_start_cs.hlsl"
+  mov r0.w, l(-0.000000)
+  add r0.w, r0.w, cb5[5].x
+  mul r0.z, r0.w, r0.z
+  add r0.z, r0.z, l(0.000000)  // r0.z <- particle.size
+
+#line 45
+  mov r0.w, -cb4[1].x
+  add r16.y, r0.w, r13.x  // r16.y <- particle.life
+
+#line 48
+  dp3 r0.w, r1.yzwy, r1.yzwy
   rsq r0.w, r0.w
-  mul r6.xyz, r0.wwww, r3.yzwy
-  lt r0.w, l(0.000000), r3.x
-  mov_sat r2.w, r3.x
-  lt r3.y, cb5[5].y, l(1.000000)
-  lt r3.z, l(0.000000), cb5[5].y
-  and r3.y, r3.z, r3.y
-  div r3.z, l(1.000000, 1.000000, 1.000000, 1.000000), cb5[5].y
-  mul r3.z, r2.w, r3.z
-  movc r2.w, r3.y, r3.z, r2.w
-  and r0.w, r0.w, r2.w
-  mul r7.w, r0.w, cb5[5].x
-  add r3.z, r3.x, -cb4[1].x
-  dp3 r0.w, r5.xyzx, r5.xyzx
-  rsq r0.w, r0.w
-  mul r5.xyz, r0.wwww, r5.xyzx
-  mul r5.xyz, r5.xyzx, cb5[2].wwww
-  mad r2.yzw, r5.xxyz, cb4[1].xxxx, r2.xxyz
-  mad r0.xyz, r2.yzwy, cb4[1].xxxx, r0.xyzx
-  dp3 r3.w, r2.yzwy, r2.yzwy
-  sqrt r4.w, r3.w
-  lt r4.w, l(10.000000), r4.w
-  rsq r3.w, r3.w
-  mul r8.xyz, r2.yzwy, r3.wwww
-  mul r8.xyz, r8.xyzx, l(10.000000, 10.000000, 10.000000, 0.000000)
-  mov r8.w, l(0)
-  mov r9.xy, r2.zwzz
-  mov r9.zw, r5.xxxy
-  movc r10.xyzw, r4.wwww, r8.yzww, r9.xyzw
-  mov r2.x, r5.z
-  movc r3.xy, r4.wwww, r8.xwxx, r2.yxyy
-  lt r2.z, r3.z, l(0.000000)
-  mad r5.xyz, r4.xyzx, l(2.000000, 2.000000, 2.000000, 0.000000), l(-1.000000, -1.000000, -1.000000, 0.000000)
-  mad r5.xyz, r5.xyzx, cb5[5].wwww, cb5[1].xyzx
-  movc r4.xyz, cb5[0].yyyy, r4.yzxy, cb5[4].yzxy
-  mov r0.w, r1.w
-  mov r5.w, r4.z
-  movc r5.xyzw, cb5[0].zzzz, r0.xyzw, r5.xyzw
-  mov r1.w, r3.x
-  mov r4.z, cb5[4].w
-  mov r4.w, l(0)
-  movc r4.xyzw, cb5[0].zzzz, r1.xyzw, r4.xyzw
-  mov r9.x, l(0)
-  movc r8.xyzw, cb5[0].zzzz, r10.xyzw, r9.xxzw
-  mov r2.y, cb5[5].y
-  movc r2.xy, cb5[0].zzzz, r3.yzyy, r2.xyxx
-  movc r0.xyzw, r2.zzzz, r5.wxyz, r0.wxyz
-  movc r1.xyzw, r2.zzzz, r4.wxyz, r1.wxyz
-  movc r4.xyzw, r2.zzzz, r8.wxyz, r10.wxyz
-  movc r2.xy, r2.zzzz, r2.xyxx, r3.yzyy
-  mov r7.xyz, r0.yzwy
-  store_structured u0.xyzw, vThreadID.x, l(4), r7.xyzw
-  mov r0.yzw, r1.yyzw
-  store_structured u0.xyzw, vThreadID.x, l(20), r0.xyzw
-  mov r1.yzw, r4.yyzw
-  store_structured u0.xyzw, vThreadID.x, l(36), r1.xyzw
-  mov r4.y, r2.x
-  mov r4.zw, r6.xxxy
-  store_structured u0.xyzw, vThreadID.x, l(52), r4.xyzw
-  mov r6.w, r2.y
-  store_structured u0.xy, vThreadID.x, l(68), r6.zwzz
-else 
-  store_structured u0.x, vThreadID.x, l(32), l(0)
+  mul r7.yzw, r0.wwww, r1.yyzw
+  mul r7.yzw, r7.yyzw, cb5[2].wwww  // r7.y <- particle.acceleration.x; r7.z <- particle.acceleration.y; r7.w <- particle.acceleration.z
+
+#line 49
+  mul r8.yzw, r7.yyzw, cb4[1].xxxx
+  add r8.yzw, r6.xxyz, r8.yyzw  // r8.y <- particle.velocity.x; r8.z <- particle.velocity.y; r8.w <- particle.velocity.z
+
+#line 50
+  mul r9.yzw, r8.yyzw, cb4[1].xxxx
+  add r4.xyz, r2.xyzx, r9.yzwy  // r4.x <- particle.position.x; r4.y <- particle.position.y; r4.z <- particle.position.z
+
+#line 53
+  dp3 r0.w, r8.yzwy, r8.yzwy
+  sqrt r0.w, r0.w
+  lt r0.w, r0.x, r0.w
+  if_nz r0.w
+
+#line 55
+    mov r9.yzw, l(0,0,0,0)  // r9.y <- particle.acceleration.x; r9.z <- particle.acceleration.y; r9.w <- particle.acceleration.z
+
+#line 56
+    dp3 r0.w, r8.yzwy, r8.yzwy
+    rsq r0.w, r0.w
+    mul r10.yzw, r0.wwww, r8.yyzw
+    mul r10.yzw, r0.xxxx, r10.yyzw  // r10.y <- particle.velocity.x; r10.z <- particle.velocity.y; r10.w <- particle.velocity.z
+
+#line 57
+    mov r17.xy, r10.zwzz  // r17.x <- particle.velocity.y; r17.y <- particle.velocity.z
+    mov r17.zw, r9.yyyz  // r17.z <- particle.acceleration.x; r17.w <- particle.acceleration.y
+    mov r5.z, r10.y  // r5.z <- particle.velocity.x
+    mov r16.x, r9.w  // r16.x <- particle.acceleration.z
+  else   // Prior locations: r7.y <- particle.acceleration.x; r7.z <- particle.acceleration.y; r7.w <- particle.acceleration.z; r8.y <- particle.velocity.x; r8.z <- particle.velocity.y; r8.w <- particle.velocity.z
+    mov r17.xy, r8.zwzz  // r17.x <- particle.velocity.y; r17.y <- particle.velocity.z
+    mov r17.zw, r7.yyyz  // r17.z <- particle.acceleration.x; r17.w <- particle.acceleration.y
+    mov r5.z, r8.y  // r5.z <- particle.velocity.x
+    mov r16.x, r7.w  // r16.x <- particle.acceleration.z
+  endif 
+
+#line 60
+  lt r0.x, r16.y, l(0.000000)
+  if_nz r0.x
+
+#line 62
+    ine r0.x, l(0, 0, 0, 0), cb5[0].z
+    if_z r0.x
+
+#line 64
+      dp3 r0.x, r1.yzwy, r1.yzwy
+      rsq r0.x, r0.x
+      mul r1.yzw, r0.xxxx, r1.yyzw
+      mul r16.xzw, r1.wwyz, cb5[2].wwww  // r16.z <- particle.acceleration.x; r16.w <- particle.acceleration.y
+
+#line 65
+      mov r17.xyz, l(0,0,0,0)  // r17.z <- particle.velocity.x
+
+#line 66
+      mul r1.yzw, r15.xxyz, l(0.000000, 2.000000, 2.000000, 2.000000)
+      mov r7.yzw, l(-0.000000,-1.000000,-1.000000,-1.000000)
+      add r1.yzw, r1.yyzw, r7.yyzw
+      mul r1.yzw, r1.yyzw, cb5[5].wwww
+      add r4.xyz, r1.yzwy, cb5[1].xyzx
+
+#line 67
+      mov r16.y, cb5[5].y
+
+#line 68
+      ine r0.x, l(0, 0, 0, 0), cb5[0].y
+      if_z r0.x
+
+#line 69
+        mov r5.xyw, cb5[4].yzyx  // r5.x <- particle.color.y; r5.y <- particle.color.z; r5.w <- particle.color.x
+        mov r4.w, r5.w  // r4.w <- particle.color.x
+      else   // Prior locations: r5.w <- particle.color.w
+
+#line 71
+        mov r5.xyw, r15.yzyx  // r5.w <- particle.color.x
+        mov r4.w, r5.w  // r4.w <- particle.color.x
+      endif 
+      mov r5.w, cb5[4].w  // r5.w <- particle.color.w
+
+#line 72
+      mov r5.z, r17.z
+      mov r5.xyzw, r5.xyzw  // r5.z <- particle.velocity.x
+      mov r17.zw, r16.zzzw  // r17.z <- particle.acceleration.x; r17.w <- particle.acceleration.y
+    endif 
+
+#line 73
+  endif 
+
+#line 75
+  store_structured u0.x, r0.y, l(0), r1.x
+  store_structured u0.x, r0.y, l(4), r4.x
+  store_structured u0.x, r0.y, l(8), r4.y
+  store_structured u0.x, r0.y, l(12), r4.z
+  store_structured u0.x, r0.y, l(16), r0.z
+  store_structured u0.x, r0.y, l(20), r4.w
+  store_structured u0.x, r0.y, l(24), r5.x
+  store_structured u0.x, r0.y, l(28), r5.y
+  store_structured u0.x, r0.y, l(32), r5.w
+  store_structured u0.x, r0.y, l(36), r5.z
+  store_structured u0.x, r0.y, l(40), r17.x
+  store_structured u0.x, r0.y, l(44), r17.y
+  store_structured u0.x, r0.y, l(48), r17.z
+  store_structured u0.x, r0.y, l(52), r17.w
+  store_structured u0.x, r0.y, l(56), r16.x
+  store_structured u0.x, r0.y, l(60), r3.y
+  store_structured u0.x, r0.y, l(64), r3.z
+  store_structured u0.x, r0.y, l(68), r3.w
+  store_structured u0.x, r0.y, l(72), r16.y
+  store_structured u0.x, r0.y, l(76), r14.x
+
+#line 76
+else   // Prior locations: r2.x <- particle.position.x; r2.y <- particle.position.y; r2.z <- particle.position.z; r3.x <- particle.size; r4.y <- particle.color.y; r4.z <- particle.color.z; r6.x <- particle.velocity.x; r6.y <- particle.velocity.y; r6.z <- particle.velocity.z; r7.x <- particle.acceleration.x; r8.x <- particle.acceleration.y; r9.x <- particle.acceleration.z; r10.x <- particle.normal.x; r11.x <- particle.normal.y; r12.x <- particle.normal.z; r13.x <- particle.life; r0.x <- MAX_SPEED
+
+#line 79
+  mov r0.x, l(0)  // r0.x <- particle.color.w
+
+#line 80
+  store_structured u0.x, r0.y, l(0), r1.x
+  store_structured u0.x, r0.y, l(4), r2.x
+  store_structured u0.x, r0.y, l(8), r2.y
+  store_structured u0.x, r0.y, l(12), r2.z
+  store_structured u0.x, r0.y, l(16), r3.x
+  store_structured u0.x, r0.y, l(20), r4.w
+  store_structured u0.x, r0.y, l(24), r4.y
+  store_structured u0.x, r0.y, l(28), r4.z
+  store_structured u0.x, r0.y, l(32), r0.x
+  store_structured u0.x, r0.y, l(36), r6.x
+  store_structured u0.x, r0.y, l(40), r6.y
+  store_structured u0.x, r0.y, l(44), r6.z
+  store_structured u0.x, r0.y, l(48), r7.x
+  store_structured u0.x, r0.y, l(52), r8.x
+  store_structured u0.x, r0.y, l(56), r9.x
+  store_structured u0.x, r0.y, l(60), r10.x
+  store_structured u0.x, r0.y, l(64), r11.x
+  store_structured u0.x, r0.y, l(68), r12.x
+  store_structured u0.x, r0.y, l(72), r13.x
+  store_structured u0.x, r0.y, l(76), r14.x
+
+#line 81
 endif 
+
+#line 82
 ret 
-// Approximately 96 instruction slots used
+// Approximately 211 instruction slots used

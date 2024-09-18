@@ -65,7 +65,7 @@
 // SV_TARGET                0   xyzw        0   TARGET   float   xyzw
 //
 ps_5_0
-dcl_globalFlags refactoringAllowed
+dcl_globalFlags refactoringAllowed | skipOptimization
 dcl_constantbuffer CB7[2], immediateIndexed
 dcl_constantbuffer CB9[11], immediateIndexed
 dcl_sampler s1, mode_default
@@ -75,77 +75,359 @@ dcl_resource_texture2d (float,float,float,float) t40
 dcl_input_ps linear v2.xy
 dcl_output o0.xyzw
 dcl_temps 6
-sample_indexable(texture2d)(float,float,float,float) r0.xyzw, v2.xyxx, t0.xyzw, s1
-add r1.xy, -v2.xyxx, l(0.500000, 0.500000, 0.000000, 0.000000)
-dp2 r1.z, r1.xyxx, r1.xyxx
-sqrt r1.w, r1.z
-rsq r1.z, r1.z
-mul r1.xy, r1.zzzz, r1.xyxx
-mul r1.xy, r1.xyxx, l(0.000260, 0.000463, 0.000000, 0.000000)
-mul r1.z, r1.w, cb9[9].w
-mul r1.xy, r1.zzzz, r1.xyxx
-itof r1.z, cb9[0].x
-div r1.w, l(2.000000), r1.z
-mul r2.xy, r1.wwww, l(0.900000, -0.800000, 0.000000, 0.000000)
-mov r3.xyzw, l(0,0,0,0)
-mov r1.w, l(0)
+//
+// Initial variable locations:
+//   v0.x <- pin.position.x; v0.y <- pin.position.y; v0.z <- pin.position.z; v0.w <- pin.position.w; 
+//   v1.x <- pin.color.x; v1.y <- pin.color.y; v1.z <- pin.color.z; v1.w <- pin.color.w; 
+//   v2.x <- pin.texcoord.x; v2.y <- pin.texcoord.y; 
+//   o0.x <- <ShaderMain return value>.x; o0.y <- <ShaderMain return value>.y; o0.z <- <ShaderMain return value>.z; o0.w <- <ShaderMain return value>.w
+//
+#line 5 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\screen_effect_ps.hlsl"
+mov r0.x, l(0.002000)  // r0.x <- COLOR_GAP_FACTOR
+
+#line 6
+mov r0.yz, l(0,0.000260,0.000463,0)  // r0.y <- VIEWPORT_OFFSET.x; r0.z <- VIEWPORT_OFFSET.y
+
+#line 16
+sample_indexable(texture2d)(float,float,float,float) r1.xyzw, v2.xyxx, t0.xyzw, s1  // r1.x <- base_color.x; r1.y <- base_color.y; r1.z <- base_color.z; r1.w <- base_color.w
+
+#line 19
+mov r2.xy, l(0.500000,0.500000,0,0)  // r2.x <- center.x; r2.y <- center.y
+
+#line 20
+mov r2.zw, -v2.xxxy
+add r2.xy, r2.zwzz, r2.xyxx  // r2.x <- direction.x; r2.y <- direction.y
+
+#line 21
+dp2 r0.w, r2.xyxx, r2.xyxx
+sqrt r0.w, r0.w  // r0.w <- len
+
+#line 22
+dp2 r2.z, r2.xyxx, r2.xyxx
+rsq r2.z, r2.z
+mul r2.xy, r2.zzzz, r2.xyxx
+mul r0.yz, r0.yyzy, r2.xxyx  // r0.y <- offset.x; r0.z <- offset.y
+
+#line 24
+mul r0.w, r0.w, cb9[9].w
+mul r0.yz, r0.wwww, r0.yyzy
+
+#line 26
+mov r2.xyzw, l(0,0,0,0)  // r2.x <- blur_color.x; r2.y <- blur_color.y; r2.z <- blur_color.z; r2.w <- blur_color.w
+
+#line 32
+itof r0.w, cb9[0].x
+div r0.w, l(2.000000), r0.w
+mul r0.w, r0.w, l(0.900000)  // r0.w <- start
+
+#line 33
+itof r3.x, cb9[0].x
+div r3.x, l(2.000000), r3.x
+mul r3.x, r3.x, l(0.100000)  // r3.x <- end
+
+#line 36
+mov r3.y, l(0)  // r3.y <- i
+mov r4.xyzw, r2.xyzw  // r4.x <- blur_color.x; r4.y <- blur_color.y; r4.z <- blur_color.z; r4.w <- blur_color.w
+mov r3.z, r3.y  // r3.z <- i
 loop 
-  ige r2.z, r1.w, cb9[0].x
-  breakc_nz r2.z
-  itof r2.z, r1.w
-  div r2.z, r2.z, r1.z
-  mul r2.w, r2.z, cb9[10].x
-  mad r4.xy, r1.xyxx, r2.wwww, v2.xyxx
-  mad r2.z, r2.z, r2.y, r2.x
-  sample_indexable(texture2d)(float,float,float,float) r4.xyzw, r4.xyxx, t0.xyzw, s1
-  mad r3.xyzw, r4.xyzw, r2.zzzz, r3.xyzw
-  iadd r1.w, r1.w, l(1)
+  ilt r3.w, r3.z, cb9[0].x
+  breakc_z r3.w
+
+#line 38
+  itof r3.w, r3.z
+  itof r5.x, cb9[0].x
+  div r3.w, r3.w, r5.x  // r3.w <- rate
+
+#line 39
+  mov r5.x, l(-0.000000)
+  add r5.x, r5.x, cb9[10].x
+  mul r5.x, r3.w, r5.x
+  add r5.x, r5.x, l(0.000000)
+  mul r5.xy, r0.yzyy, r5.xxxx
+  add r5.xy, r5.xyxx, v2.xyxx  // r5.x <- blur_texcoord.x; r5.y <- blur_texcoord.y
+
+#line 40
+  mov r5.z, -r0.w
+  add r5.z, r3.x, r5.z
+  mul r3.w, r3.w, r5.z
+  add r3.w, r0.w, r3.w  // r3.w <- weight
+
+#line 42
+  sample_indexable(texture2d)(float,float,float,float) r5.xyzw, r5.xyxx, t0.xyzw, s1
+  mul r5.xyzw, r3.wwww, r5.xyzw
+  add r4.xyzw, r4.xyzw, r5.xyzw
+
+#line 43
+  iadd r3.z, r3.z, l(1)
 endloop 
-add r1.xyzw, v2.xyxy, l(-0.500000, -0.500000, -0.500000, -0.500000)
-mad r1.xyzw, r1.xyzw, l(1.002000, 1.002000, 0.998000, 0.998000), l(0.500000, 0.500000, 0.500000, 0.500000)
-sample_indexable(texture2d)(float,float,float,float) r1.x, r1.xyxx, t0.xyzw, s1
-sample_indexable(texture2d)(float,float,float,float) r1.y, r1.zwzz, t0.xyzw, s1
-dp3 r1.z, r0.xyzx, l(0.210000, 0.720000, 0.070000, 0.000000)
-lt r2.xyz, r0.xyzx, l(0.500000, 0.500000, 0.500000, 0.000000)
-mul r4.xyz, r0.xyzx, r1.zzzz
-add r4.xyz, r4.xyzx, r4.xyzx
-add r5.xyz, r0.xyzx, r1.zzzz
-mad r5.xyz, -r0.xyzx, r1.zzzz, r5.xyzx
-mad r5.xyz, r5.xyzx, l(2.000000, 2.000000, 2.000000, 0.000000), l(-1.000000, -1.000000, -1.000000, 0.000000)
-movc r2.xyz, r2.xyzx, r4.xyzx, r5.xyzx
-mov r0.xy, r1.xyxx
-add r1.xyz, -r2.xyzx, r0.xyzx
-mad r0.xyz, r1.xyzx, l(0.750000, 0.750000, 0.750000, 0.000000), r2.xyzx
-mad r0.xyzw, r0.xyzw, cb9[10].yyyy, -r3.xyzw
-mad r0.xyzw, r0.xyzw, l(0.500000, 0.500000, 0.500000, 0.500000), r3.xyzw
-sample_indexable(texture2d)(float,float,float,float) r1.xyzw, v2.xyxx, t39.xyzw, s1
-if_nz cb7[0].x
-  sample_indexable(texture2d)(float,float,float,float) r2.x, v2.xyxx, t40.xyzw, s1
-  add r2.y, r2.x, -cb7[1].y
-  add r2.z, -r2.y, r2.x
-  add r2.y, -r2.y, cb7[1].x
-  div r2.z, l(1.000000, 1.000000, 1.000000, 1.000000), r2.z
-  mul_sat r2.y, r2.z, r2.y
-  mad r2.z, r2.y, l(-2.000000), l(3.000000)
-  mul r2.y, r2.y, r2.y
-  mul r2.y, r2.y, r2.z
-  add r2.z, -cb7[1].y, cb7[1].x
-  add r2.w, -r2.z, cb7[1].x
-  add r2.x, -r2.z, r2.x
-  div r2.z, l(1.000000, 1.000000, 1.000000, 1.000000), r2.w
-  mul_sat r2.x, r2.z, r2.x
-  mad r2.z, r2.x, l(-2.000000), l(3.000000)
-  mul r2.x, r2.x, r2.x
-  mul r2.x, r2.x, r2.z
-  movc r2.x, cb7[0].z, r2.y, r2.x
-  mul r3.xyzw, r0.xyzw, r2.xxxx
-  add r2.x, -r2.x, l(1.000000)
-  mul r2.xyzw, r1.xyzw, r2.xxxx
-else 
-  mul r3.xyzw, r0.xyzw, cb7[1].xxxx
-  add r0.x, -cb7[1].x, l(1.000000)
-  mul r2.xyzw, r0.xxxx, r1.xyzw
+
+#line 46
+nop 
+nop 
+mov r0.yz, v2.xxyx
+mov r0.x, r0.x
+
+#line 54 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\2d_header.hlsli"
+mov r2.xy, l(-0.500000,-0.500000,-0.000000,-0.000000)
+add r2.xy, r0.yzyy, r2.xyxx
+add r0.w, r0.x, l(1.000000)
+mul r2.xy, r0.wwww, r2.xyxx
+add r2.xy, r2.xyxx, l(0.500000, 0.500000, 0.000000, 0.000000)  // r2.x <- r_texcoord.x; r2.y <- r_texcoord.y
+
+#line 55
+mov r2.zw, l(-0.000000,-0.000000,-0.500000,-0.500000)
+add r0.yz, r0.yyzy, r2.zzwz
+mov r0.x, -r0.x
+add r0.x, r0.x, l(1.000000)
+mul r0.xy, r0.xxxx, r0.yzyy
+add r0.xy, r0.xyxx, l(0.500000, 0.500000, 0.000000, 0.000000)  // r0.x <- g_texcoord.x; r0.y <- g_texcoord.y
+
+#line 57
+sample_indexable(texture2d)(float,float,float,float) r2.x, r2.xyxx, t0.xyzw, s1
+mov r2.x, r2.x  // r2.x <- col_r
+
+#line 58
+sample_indexable(texture2d)(float,float,float,float) r2.y, r0.xyxx, t0.xyzw, s1
+mov r2.y, r2.y  // r2.y <- col_g
+
+#line 59
+sample_indexable(texture2d)(float,float,float,float) r2.z, v2.xyxx, t0.xyzw, s1
+mov r2.z, r2.z  // r2.z <- col_b
+
+#line 61
+mov r2.x, r2.x  // r2.x <- color.x
+mov r2.y, r2.y  // r2.y <- color.y
+mov r2.z, r2.z  // r2.z <- color.z
+
+#line 62
+mov r2.xyz, r2.xyzx  // r2.x <- <ApplyChromaticAberrationRG return value>.x; r2.y <- <ApplyChromaticAberrationRG return value>.y; r2.z <- <ApplyChromaticAberrationRG return value>.z
+
+#line 46 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\screen_effect_ps.hlsl"
+mov r2.xyz, r2.xyzx  // r2.x <- chromatic_color.x; r2.y <- chromatic_color.y; r2.z <- chromatic_color.z
+
+#line 47
+nop 
+mov r1.xyz, r1.xyzx
+
+#line 69 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\2d_header.hlsli"
+nop 
+mov r1.xyz, r1.xyzx
+
+#line 33
+mul r0.x, r1.x, l(0.210000)
+mul r0.y, r1.y, l(0.720000)
+add r0.x, r0.y, r0.x
+mul r0.y, r1.z, l(0.070000)
+add r0.x, r0.y, r0.x  // r0.x <- <GrayScale return value>
+
+#line 69
+mov r0.x, r0.x  // r0.x <- gray_scale_factor
+
+#line 72
+nop 
+mov r1.x, r1.x
+mov r0.x, r0.x
+
+#line 40
+lt r0.y, r1.x, l(0.500000)
+if_nz r0.y
+
+#line 42
+  mul r0.y, r0.x, r1.x
+  mul r3.x, r0.y, l(2.000000)  // r3.x <- new_factor
+
+#line 43
+else   // Prior locations: r3.x <- end
+
+#line 46
+  add r0.y, r0.x, r1.x
+  mul r0.z, r0.x, r1.x
+  mov r0.z, -r0.z
+  add r0.y, r0.z, r0.y
+  mul r0.y, r0.y, l(2.000000)
+  mov r0.z, l(-1.000000)
+  add r3.x, r0.z, r0.y  // r3.x <- new_factor
+
+#line 47
 endif 
-add o0.xyzw, r2.xyzw, r3.xyzw
+
+#line 48
+mov r3.x, r3.x  // r3.x <- <Overlay return value>
+
+#line 72
+mov r3.x, r3.x  // r3.x <- new_color.x
+
+#line 73
+nop 
+mov r1.y, r1.y
+
+#line 40
+lt r0.y, r1.y, l(0.500000)
+if_nz r0.y
+
+#line 42
+  mul r0.y, r0.x, r1.y
+  mul r3.y, r0.y, l(2.000000)  // r3.y <- new_factor
+
+#line 43
+else 
+
+#line 46
+  add r0.y, r0.x, r1.y
+  mul r0.z, r0.x, r1.y
+  mov r0.z, -r0.z
+  add r0.y, r0.z, r0.y
+  mul r0.y, r0.y, l(2.000000)
+  mov r0.z, l(-1.000000)
+  add r3.y, r0.z, r0.y  // r3.y <- new_factor
+
+#line 47
+endif 
+
+#line 48
+mov r3.y, r3.y  // r3.y <- <Overlay return value>
+
+#line 73
+mov r3.y, r3.y  // r3.y <- new_color.y
+
+#line 74
+nop 
+mov r1.z, r1.z
+
+#line 40
+lt r0.y, r1.z, l(0.500000)
+if_nz r0.y
+
+#line 42
+  mul r0.y, r0.x, r1.z
+  mul r3.z, r0.y, l(2.000000)  // r3.z <- new_factor
+
+#line 43
+else   // Prior locations: r3.z <- i
+
+#line 46
+  add r0.y, r0.x, r1.z
+  mul r0.x, r0.x, r1.z
+  mov r0.x, -r0.x
+  add r0.x, r0.x, r0.y
+  mul r0.x, r0.x, l(2.000000)
+  mov r0.y, l(-1.000000)
+  add r3.z, r0.y, r0.x  // r3.z <- new_factor
+
+#line 47
+endif 
+
+#line 48
+mov r3.z, r3.z  // r3.z <- <Overlay return value>
+
+#line 74
+mov r3.z, r3.z  // r3.z <- new_color.z
+
+#line 76
+mov r3.x, r3.x  // r3.x <- <ApplyBleachBypass return value>.x
+mov r3.y, r3.y  // r3.y <- <ApplyBleachBypass return value>.y
+mov r3.z, r3.z  // r3.z <- <ApplyBleachBypass return value>.z
+
+#line 47 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\screen_effect_ps.hlsl"
+mov r3.xyz, r3.xyzx  // r3.x <- bleach_bypass_color.x; r3.y <- bleach_bypass_color.y; r3.z <- bleach_bypass_color.z
+
+#line 50
+mov r0.xyz, -r3.xyzx
+add r0.xyz, r0.xyzx, r2.xyzx
+mul r0.xyz, r0.xyzx, l(0.750000, 0.750000, 0.750000, 0.000000)
+add r1.xyz, r0.xyzx, r3.xyzx  // r1.x <- color.x; r1.y <- color.y; r1.z <- color.z
+mov r1.w, r1.w  // r1.w <- color.w
+
+#line 52
+mul r0.xyzw, r1.xyzw, cb9[10].yyyy
+mov r1.xyzw, -r4.xyzw
+add r0.xyzw, r0.xyzw, r1.xyzw
+mul r0.xyzw, r0.xyzw, l(0.500000, 0.500000, 0.500000, 0.500000)
+add r0.xyzw, r0.xyzw, r4.xyzw  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z; r0.w <- color.w
+
+#line 54
+nop 
+mov r0.xyzw, r0.xyzw
+
+#line 132 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
+mov r0.xyzw, r0.xyzw  // r0.x <- new_color.x; r0.y <- new_color.y; r0.z <- new_color.z; r0.w <- new_color.w
+
+#line 133
+sample_indexable(texture2d)(float,float,float,float) r1.xyzw, v2.xyxx, t39.xyzw, s1  // r1.x <- sub_color.x; r1.y <- sub_color.y; r1.z <- sub_color.z; r1.w <- sub_color.w
+
+#line 135
+ine r2.x, l(0, 0, 0, 0), cb7[0].x
+if_nz r2.x
+
+#line 137
+  sample_indexable(texture2d)(float,float,float,float) r2.x, v2.xyxx, t40.xyzw, s1  // r2.x <- mask_value
+
+#line 140
+  ine r2.y, l(0, 0, 0, 0), cb7[0].z
+  if_nz r2.y
+
+#line 142
+    mov r2.y, -cb7[1].y
+    add r2.y, r2.y, r2.x
+    mov r2.y, -r2.y
+    add r2.z, r2.y, r2.x
+    add r2.y, r2.y, cb7[1].x
+    div r2.z, l(1.000000, 1.000000, 1.000000, 1.000000), r2.z
+    mul r2.y, r2.z, r2.y
+    max r2.y, r2.y, l(0.000000)
+    min r2.y, r2.y, l(1.000000)
+    mul r2.z, r2.y, l(-2.000000)
+    add r2.z, r2.z, l(3.000000)
+    mul r2.y, r2.y, r2.y
+    mul r2.y, r2.y, r2.z  // r2.y <- ratio
+
+#line 143
+  else 
+
+#line 146
+    mov r2.z, -cb7[1].y
+    add r2.z, r2.z, cb7[1].x
+    mov r2.z, -r2.z
+    add r2.w, r2.z, cb7[1].x
+    add r2.x, r2.z, r2.x
+    div r2.z, l(1.000000, 1.000000, 1.000000, 1.000000), r2.w
+    mul r2.x, r2.z, r2.x
+    max r2.x, r2.x, l(0.000000)
+    min r2.x, r2.x, l(1.000000)
+    mul r2.z, r2.x, l(-2.000000)
+    add r2.z, r2.z, l(3.000000)
+    mul r2.x, r2.x, r2.x
+    mul r2.y, r2.x, r2.z  // r2.y <- ratio
+
+#line 147
+  endif 
+
+#line 148
+  mul r3.xyzw, r0.xyzw, r2.yyyy  // r3.x <- new_color.x; r3.y <- new_color.y; r3.z <- new_color.z; r3.w <- new_color.w
+
+#line 149
+  mov r2.x, -r2.y
+  add r2.x, r2.x, l(1.000000)
+  mul r2.xyzw, r1.xyzw, r2.xxxx  // r2.x <- sub_color.x; r2.y <- sub_color.y; r2.z <- sub_color.z; r2.w <- sub_color.w
+
+#line 150
+else   // Prior locations: r2.y <- chromatic_color.y; r2.z <- chromatic_color.z; r3.x <- bleach_bypass_color.x; r3.y <- bleach_bypass_color.y; r3.z <- bleach_bypass_color.z; r0.x <- new_color.x; r0.y <- new_color.y; r0.z <- new_color.z; r0.w <- new_color.w; r1.x <- sub_color.x; r1.y <- sub_color.y; r1.z <- sub_color.z; r1.w <- sub_color.w
+
+#line 153
+  mul r3.xyzw, r0.xyzw, cb7[1].xxxx  // r3.x <- new_color.x; r3.y <- new_color.y; r3.z <- new_color.z; r3.w <- new_color.w
+
+#line 154
+  mov r0.x, -cb7[1].x
+  add r0.x, r0.x, l(1.000000)
+  mul r2.xyzw, r0.xxxx, r1.xyzw  // r2.x <- sub_color.x; r2.y <- sub_color.y; r2.z <- sub_color.z; r2.w <- sub_color.w
+
+#line 155
+endif 
+
+#line 157
+add r0.xyzw, r2.xyzw, r3.xyzw  // r0.x <- <ApplyTransition return value>.x; r0.y <- <ApplyTransition return value>.y; r0.z <- <ApplyTransition return value>.z; r0.w <- <ApplyTransition return value>.w
+
+#line 54 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\screen_effect_ps.hlsl"
+mov o0.xyzw, r0.xyzw
 ret 
-// Approximately 73 instruction slots used
+// Approximately 197 instruction slots used

@@ -115,10 +115,6 @@ namespace Easing
 		const float C3 = C1 + 1.0f;
 		const float C4 = (2.0f * DirectX::XM_PI) / 3.0f;
 
-		const float N1 = 7.5625f;
-
-		const float D1 = 2.75f;
-
 		switch (easing_type)
 		{
 		case EnumEasingType::SINE:
