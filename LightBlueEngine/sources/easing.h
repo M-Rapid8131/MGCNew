@@ -82,6 +82,8 @@ namespace Easing
 			else
 				return N1 * powf(value - 2.625f / D1, 2.0f) + 0.984375f;
 		}
+
+		return 0.0f;
 	}
 
 	static float Out(const EnumEasingType easing_type, const EnumEasingMode easing_mode, const float from, const float to, const float value)
@@ -112,10 +114,6 @@ namespace Easing
 		const float C1 = 1.70158f;
 		const float C3 = C1 + 1.0f;
 		const float C4 = (2.0f * DirectX::XM_PI) / 3.0f;
-
-		const float N1 = 7.5625f;
-
-		const float D1 = 2.75f;
 
 		switch (easing_type)
 		{
@@ -151,6 +149,8 @@ namespace Easing
 		case EnumEasingType::BOUNCE:
 			return 1.0f - Out(EnumEasingType::BOUNCE, 1.0f - value);
 		}
+
+		return 0.0f;
 	}
 
 	static float In(const EnumEasingType easing_type, const EnumEasingMode easing_mode, const float from, const float to, const float value)

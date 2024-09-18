@@ -23,6 +23,7 @@ const size_t TEXT_SIZE = 256;
 void ObjectBlock::BlockState::TransitionNextState()
 {
 	state = EnumBlockState::NEXT;
+	obj->block_particle->GetCbParticleEmitter().emit_amounts = 500;
 
 	obj->state_update = nullptr;
 }
@@ -33,21 +34,21 @@ void ObjectBlock::BlockState::TransitionMoveState(EnumBlockPlace place)
 	if (place == EnumBlockPlace::LEFT)
 	{
 		obj->block_cell = LEFT_START;
-		if (obj->parent_board.IsExistingBlockFromCell(LEFT_START))
+		if (obj->parent_board.IsExistFromColorMatrix(LEFT_START))
 		{
 			return;
 		}
-		obj->parent_board.SetExistingBlockFromCell(LEFT_START, true);
+		obj->parent_board.SetBlockColorFromCell(LEFT_START, obj->block_color);
 		obj->flag_system.SetFlag(EnumBlockFlags::BLINK, true);
 	}
 	else if (place == EnumBlockPlace::RIGHT)
 	{
 		obj->block_cell = RIGHT_START;
-		if (obj->parent_board.IsExistingBlockFromCell(RIGHT_START))
+		if (obj->parent_board.IsExistFromColorMatrix(RIGHT_START))
 		{
 			return;
 		}
-		obj->parent_board.SetExistingBlockFromCell(RIGHT_START, true);
+		obj->parent_board.SetBlockColorFromCell(RIGHT_START, obj->block_color);
 	}
 
 	obj->ghost_cell.row		= obj->block_cell.row;
@@ -71,7 +72,6 @@ void ObjectBlock::BlockState::TransitionStandState()
 
 	obj->ResetShiftY();
 
-	audio_manager->PlaySE(EnumSEBank::STAND);
 	obj->flag_system.SetFlag(EnumBlockFlags::STANDING, true);
 	obj->flag_system.SetFlag(EnumBlockFlags::FIRING_PARTICLE, false);
 
@@ -106,8 +106,9 @@ void ObjectBlock::BlockState::TransitionPutState()
 
 	state = EnumBlockState::PUT;
 
-	obj->ResetShiftY();
+	obj->drop_speed = 0.0f;
 
+	obj->ResetShiftY();
 
 	obj->flag_system.SetFlag(EnumBlockFlags::FIRING_PARTICLE, false);
 
@@ -118,12 +119,14 @@ void ObjectBlock::BlockState::TransitionPutState()
 void ObjectBlock::BlockState::TransitionEraseState()
 {
 	state = EnumBlockState::ERASE;
-	obj->parent_board.SetExistingBlockFromCell(obj->block_cell, false);
-
-	obj->block_particle->GetCbParticleEmitter().emit_color.w = 0.0f;
 
 	GamesystemDirector::GetInstance()->SetRadialBlur();
 	GamesystemDirector::GetInstance()->GetAudioManager()->PlaySE(EnumSEBank::ERASE);
+
+	obj->SetColorUndefine();
+	obj->EraseConfirm();
+
+	obj->parent_board.SetBlockColorFromCell(obj->block_cell, obj->block_color);
 
 	obj->state_update = nullptr;
 }
@@ -150,14 +153,9 @@ void ObjectBlock::UpdateMoveState(float elapsed_time)
 		flag_system.GetFlag(EnumBlockFlags::BLINK)
 		? EnumBlockRotation::UNDER : EnumBlockRotation::TOP;
 
-	if(rotation == top_rotation)
-		DropBlock(parent_board.GetCurrentSpeed());
-
-	else if (parent_board.IsExistingBlockFromCell(BlockCell(block_cell.row, block_cell.column + 1)))
+	if (rotation == top_rotation)	return;
+	if (parent_board.IsExistFromColorMatrix(BlockCell(block_cell.row, block_cell.column + 1)))
 		block_state.TransitionStandState();
-	else
-		DropBlock(parent_board.GetCurrentSpeed());
-
 }
 
 // ブロックが接地していて、まだ操作可能なとき
@@ -170,31 +168,16 @@ void ObjectBlock::UpdateStandState(float elapsed_time)
 // ブロックが落下中のとき
 void ObjectBlock::UpdateDropState(float elapsed_time)
 {
-	bool lowest = false;
-	if (block_cell.column >= MAX_COLUMN) lowest = true;
-	flag_system.SetFlag(EnumBlockFlags::BLINK, false);
+	bool result = parent_board.IsExistFromColorMatrix(UNDER_CELL);
 
-	bool fall = JudgeFallBlock();
-	if (!lowest && fall)
+	if (result)
 	{
-		auto under_block_itr = parent_board.GetBlockFromCell(UNDER_CELL);
-		bool moving = true;
-		if (!parent_board.IsInvalidBlockFromIterator(under_block_itr))
-			moving = (*under_block_itr)->flag_system.GetFlag(EnumBlockFlags::MOVING);
-		if (moving)
-		{
-			DropBlock(parent_board.GetCurrentSpeed());
-		}
-		else
-		{
-			block_state.TransitionPutState();
-		}
-	}
-	else if (lowest)
 		block_state.TransitionPutState();
+	}
 	else
+	{
 		DropBlock(parent_board.GetCurrentSpeed());
-
+	}
 }
 
 // ブロックが動いていないとき
@@ -202,7 +185,7 @@ void ObjectBlock::UpdatePutState(float elapsed_time)
 {
 	bool lowest = false;
 	if (block_cell.column >= MAX_COLUMN) lowest = true;
-	bool exist = parent_board.IsExistingBlockFromCell(UNDER_CELL);
+	bool exist = parent_board.IsExistFromColorMatrix(UNDER_CELL);
 	if (!lowest && exist)
 	{
 		// 下のブロックのイテレータを取得、これにより下のブロックが動いているかどうかを確認できる
@@ -221,16 +204,6 @@ void ObjectBlock::UpdatePutState(float elapsed_time)
 	}
 }
 
-// パーティクルの行列を取得
-DirectX::XMFLOAT4X4 ObjectBlock::GetParticleTransform() const
-{
-	DirectX::XMFLOAT4X4 particle_transform;
-	DirectX::XMStoreFloat4x4(&particle_transform,
-		DirectX::XMLoadFloat4x4(&transform) * DirectX::XMMatrixTranslation(+1, 0, 0));
-
-	return particle_transform;
-}
-
 // コンストラクタ
 ObjectBlock::ObjectBlock(bool obstacle, ObjectBoard* parent_board)
 	: parent_board(*parent_board)
@@ -243,7 +216,7 @@ ObjectBlock::ObjectBlock(bool obstacle, ObjectBoard* parent_board)
 	DirectX::XMFLOAT3 local_position;
 	DirectX::XMStoreFloat3(&local_position, v_local_position);
 
-	model			= std::make_unique<GameModel>("resources/model/block/block.gltf");
+	model = std::make_unique<GameModel>("resources/model/block/block.gltf");
 	model->SetMaskTexture(L"resources/sprite/mask_texture.png");
 
 	if (obstacle)
@@ -264,7 +237,7 @@ ObjectBlock::ObjectBlock(bool obstacle, ObjectBoard* parent_board)
 	primitive_renderer	= std::make_unique<PrimitiveRenderer>();
 
 	ParticleSystem::CbParticleEmitter emitter = {};
-	emitter.emit_amounts		= 300;
+	emitter.emit_amounts		= 500;
 	emitter.disable				= true;
 	emitter.emit_position.x		= translation.x;
 	emitter.emit_position.y		= translation.y - BLOCK_SIZE * 0.5f;
@@ -275,7 +248,7 @@ ObjectBlock::ObjectBlock(bool obstacle, ObjectBoard* parent_board)
 
 	emitter.emit_size	= 0.2f;
 	emitter.spread_rate = 0.0f;
-	emitter.emit_speed	= parent_board->GetCurrentSpeed();
+	emitter.emit_speed	= 0.0f;
 	emitter.emit_accel	= -3.0f;
 	emitter.life_time	= PARTICLE_LIFE;
 	emitter.start_diff	= 0.01f;
@@ -283,6 +256,10 @@ ObjectBlock::ObjectBlock(bool obstacle, ObjectBoard* parent_board)
 	block_particle		= std::make_unique<ParticleSystem>(emitter , true, "accumulate_particle_ps.cso");
 
 	flag_system.SetFlag(EnumBlockFlags::OBSTACLE_BLOCK, obstacle);
+	if (parent_board->GetCurrentRank() == 5)
+	{
+		flag_system.SetFlag(EnumBlockFlags::BLACK_OUT, true);
+	}
 
 	Shader::CreatePSFromCso("shader/ghost_block_ps.cso", ghost_pixel_shader.ReleaseAndGetAddressOf());
 
@@ -332,7 +309,8 @@ void ObjectBlock::ErasingUpdate(float elapsed_time)
 	disolve_factor -= elapsed_time;
 	
 	block_particle->Update(elapsed_time);
-	if (disolve_factor < 0.0f)
+	block_particle->GetCbParticleEmitter().emit_color.w = disolve_factor;
+	if (disolve_factor <= 0.0f)
 		block_state.TransitionDisappearedState();
 }
 
@@ -362,7 +340,8 @@ void ObjectBlock::Render()
 		model->Render(false, ghost_transform, block_color_factor, graphics->GetPixelShader(EnumPixelShader::EXTRACT_EMISSIVE).Get());
 	}
 
-	model->Render(false, transform, block_color_factor);
+	if(!flag_system.GetFlag(EnumBlockFlags::BLACK_OUT))
+		model->Render(false, transform, block_color_factor);
 
 	graphics->SetDepthStencilState(EnumDepthState::ZT_ON_ZW_OFF);
 	graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
@@ -432,17 +411,18 @@ void ObjectBlock::ResetShiftY()
 // ブロックのパーティクルをモデルに沿わせる処理
 void ObjectBlock::AccumulateBlockParticle(ID3D11PixelShader* accumlate_ps)
 {
+	if (flag_system.GetFlag(EnumBlockFlags::SPLASHED_PARTICLE))
+		return;
+
 	Graphics* graphics = Graphics::GetInstance();
 
 	graphics->SetDepthStencilState(EnumDepthState::ZT_ON_ZW_ON);
-	graphics->SetRasterizerState(EnumRasterizerState::SOLID);
+	graphics->SetRasterizerState(EnumRasterizerState::CULL_NONE);
 	graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
 
-	DirectX::XMFLOAT4X4 particle_transform;
-	DirectX::XMStoreFloat4x4(&particle_transform,
-		DirectX::XMLoadFloat4x4(&transform) * DirectX::XMMatrixTranslation(+1, 0, 0));
+	model->Render(false, transform, block_color_factor, accumlate_ps);
 
-	model->Render(false, particle_transform, block_color_factor, accumlate_ps);
+	flag_system.SetFlag(EnumBlockFlags::SPLASHED_PARTICLE, true);
 }
 
 void ObjectBlock::FollowPartnerBlock(EnumBlockRotation rotation)
@@ -471,7 +451,7 @@ void ObjectBlock::FollowPartnerBlock(EnumBlockRotation rotation)
 void ObjectBlock::MoveBlock(GamePadButton input)
 {
 	UINT old_row = block_cell.row;
-	parent_board.SetExistingBlockFromCell(block_cell, false);
+	parent_board.SetBlockColorFromCell(block_cell, EnumBlockColor::UNDEFINE);
 
 	if (input & BTN_LEFT)
 		block_cell.row--;
@@ -508,7 +488,7 @@ void ObjectBlock::MoveBlock(GamePadButton input)
 	}
 
 	AdjustFromBlockCell();
-	parent_board.SetExistingBlockFromCell(block_cell, true);
+	parent_board.SetBlockColorFromCell(block_cell, block_color);
 
 	if (old_row != block_cell.row)
 	{
@@ -522,7 +502,7 @@ void ObjectBlock::MoveBlock(GamePadButton input)
 // 回転のときにブロックを上に上げる処理
 void ObjectBlock::LiftBlock(EnumBlockRotation rotation)
 {
-	parent_board.SetExistingBlockFromCell(block_cell, false);
+	parent_board.SetBlockColorFromCell(block_cell, EnumBlockColor::UNDEFINE);
 	switch (rotation)
 	{
 	using enum EnumBlockRotation;
@@ -545,7 +525,7 @@ void ObjectBlock::LiftBlock(EnumBlockRotation rotation)
 	ghost_cell.row		= block_cell.row;
 	ghost_cell.column	= parent_board.GetStandCollisionHeight(block_cell.row - 1) + 1;
 	AdjustFromBlockCell();
-	parent_board.SetExistingBlockFromCell(block_cell, false);
+	parent_board.SetBlockColorFromCell(block_cell, EnumBlockColor::UNDEFINE);
 }
 
 // ブロックを回転させる処理
@@ -568,22 +548,22 @@ bool ObjectBlock::RotateBlock(ObjectBlock* root_block, EnumBlockRotation rotatio
 	switch (rotation)
 	{
 	case RIGHT:
-		if (block_cell.row == 1 || parent_board.IsExistingBlockFromCell(CELL_R))
+		if (block_cell.row == 1 || parent_board.IsExistFromColorMatrix(CELL_R))
 		{
-			if (!parent_board.IsExistingBlockFromCell(CELL_L))
+			if (!parent_board.IsExistFromColorMatrix(CELL_L))
 			{
 				root_block->LiftBlock(rotation);
 				block_cell.shift_y = 0.0f;
 				
 				const BlockCell moved_root_cell = root_block->block_cell;
-				if(parent_board.IsExistingBlockFromCell(
+				if(parent_board.IsExistFromColorMatrix(
 					BlockCell(moved_root_cell.row, moved_root_cell.column + 1)))
 					root_block->GetBlockState().TransitionStandState();
 			}
 			else
 				return false;
 		}
-		else if (parent_board.IsExistingBlockFromCell(CELL_UR))
+		else if (parent_board.IsExistFromColorMatrix(CELL_UR))
 		{
 			root_cell.shift_y = 0.0f;
 			block_cell.shift_y = 0.0f;
@@ -595,7 +575,7 @@ bool ObjectBlock::RotateBlock(ObjectBlock* root_block, EnumBlockRotation rotatio
 	case UNDER:
 		if (block_state.state == EnumBlockState::STAND)
 			root_block->LiftBlock(rotation);
-		else if (parent_board.IsExistingBlockFromCell(CELL_DU))
+		else if (parent_board.IsExistFromColorMatrix(CELL_DU))
 		{
 			if(!flip)
 			{
@@ -608,22 +588,22 @@ bool ObjectBlock::RotateBlock(ObjectBlock* root_block, EnumBlockRotation rotatio
 		break;
 
 	case LEFT:
-		if (block_cell.row == 1 || parent_board.IsExistingBlockFromCell(CELL_L))
+		if (block_cell.row == 1 || parent_board.IsExistFromColorMatrix(CELL_L))
 		{
-			if (!parent_board.IsExistingBlockFromCell(CELL_R))
+			if (!parent_board.IsExistFromColorMatrix(CELL_R))
 			{
 				root_block->LiftBlock(rotation);
 				block_cell.shift_y = 0.0f;
 
 				const BlockCell moved_root_cell = root_block->block_cell;
-				if (parent_board.IsExistingBlockFromCell(
+				if (parent_board.IsExistFromColorMatrix(
 					BlockCell(moved_root_cell.row, moved_root_cell.column + 1)))
 					root_block->GetBlockState().TransitionStandState();
 			}
 			else
 				return false;
 		}
-		else if (parent_board.IsExistingBlockFromCell(CELL_UL))
+		else if (parent_board.IsExistFromColorMatrix(CELL_UL))
 		{
 			root_cell.shift_y = 0.0f;
 			block_cell.shift_y = 0.0f;
@@ -644,9 +624,9 @@ bool ObjectBlock::RotateBlock(ObjectBlock* root_block, EnumBlockRotation rotatio
 	if(!flip)
 	{
 		BlockCell rotated_cell = root_block->block_cell + ROTATION_CELL[rotation_index];
-		parent_board.SetExistingBlockFromCell(block_cell, false);
+		parent_board.SetBlockColorFromCell(block_cell, EnumBlockColor::UNDEFINE);
 		block_cell = rotated_cell;
-		parent_board.SetExistingBlockFromCell(block_cell, true);
+		parent_board.SetBlockColorFromCell(block_cell, block_color);
 	}
 	else
 	{
@@ -673,7 +653,7 @@ bool ObjectBlock::RotateBlock(ObjectBlock* root_block, EnumBlockRotation rotatio
 bool ObjectBlock::JudgeFallBlock()
 {
 	if (block_cell.shift_y <= BLOCK_SIZE)		return true;
-	parent_board.SetExistingBlockFromCell(block_cell, false);
+	parent_board.SetBlockColorFromCell(block_cell, EnumBlockColor::UNDEFINE);
 
 	EnumBlockRotation rotation		= GamesystemInput::GetInstance()->GetBlockRotation(parent_board.GetPlayerID());
 	EnumBlockRotation top_rotation	= 
@@ -701,7 +681,7 @@ bool ObjectBlock::JudgeFallBlock()
 	}
 
 	AdjustFromBlockCell();
-	parent_board.SetExistingBlockFromCell(block_cell, true);
+	parent_board.SetBlockColorFromCell(block_cell, block_color);
 
 	auto under_block = parent_board.GetBlockFromCell(UNDER_CELL);
 	bool invalid = 
@@ -751,18 +731,23 @@ void ObjectBlock::SetDropping()
 		(*upper_itr)->SetDropping();
 }
 
-void ObjectBlock::DropBlock(float speed)
+bool ObjectBlock::DropBlock(float speed)
 {
 	block_cell.shift_y += speed;
 
-	if (block_cell.shift_y < BLOCK_SIZE)	return;
+	if (block_cell.shift_y < BLOCK_SIZE)
+	{
+		AdjustFromBlockCell();
+		return false;
+	}
 
-	parent_board.SetExistingBlockFromCell(block_cell, false);
+	parent_board.SetBlockColorFromCell(block_cell, EnumBlockColor::UNDEFINE);
 
+	bool landed_flg = false;
 	UINT stand_height;
 	for (int i = MAX_COLUMN; i > 0; i--)
 	{
-		bool exist = parent_board.IsExistingBlockFromCell(BlockCell(block_cell.row, SCast(UINT, i)));
+		bool exist = parent_board.IsExistFromColorMatrix(BlockCell(block_cell.row, SCast(UINT, i)));
 		if (!exist)
 		{
 			stand_height = SCast(UINT, i);
@@ -778,9 +763,11 @@ void ObjectBlock::DropBlock(float speed)
 		{
 			block_cell.shift_y = 0.0f;
 			block_cell.column = stand_height;
+			landed_flg = true;
 		}
 	}
 
 	AdjustFromBlockCell();
-	parent_board.SetExistingBlockFromCell(block_cell, true);
+	parent_board.SetBlockColorFromCell(block_cell, block_color);
+	return landed_flg;
 }

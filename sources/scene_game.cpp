@@ -11,10 +11,16 @@
 #include "easing.h"
 
 // ゲームソースファイル
+#include "scene_main_manu.h"
 #include "scene_game.h"
 #include "scene_result.h"
 
 // 定数
+const DirectX::XMFLOAT2 RULE_POS		= {
+	Graphics::GetInstance()->GetScreenWidth() * 0.03f,
+	Graphics::GetInstance()->GetScreenHeight() * 0.25f
+};
+
 const DirectX::XMFLOAT2 CONFIG_MOVE_POS		= {
 	Graphics::GetInstance()->GetScreenWidth() * 0.7f,
 	Graphics::GetInstance()->GetScreenHeight() * 0.05f
@@ -71,6 +77,14 @@ const BloomEffect::CbBloom DEFAULT_EMISSIVE_BLOOM = {
 // SceneGame メンバ関数
 //-------------------------------------------
 
+const std::vector<EnumGameMode>	SceneGame::game_mode_list = {
+	EnumGameMode::EASY,
+	EnumGameMode::NORMAL,
+	EnumGameMode::IMPACT,
+	EnumGameMode::ENDLESS,
+	EnumGameMode::TEMPEST,
+};
+
 // デストラクタ
 SceneGame::~SceneGame()
 {
@@ -119,20 +133,68 @@ void SceneGame::Initialize()
 	background_particle = std::make_unique<ParticleSystem>("Game1");
 
 	// 操作説明の画像を読み込み
-	config_move_pad			= std::make_unique<Sprite>(L"./resources/sprite/config/config_move_pad.png");
-	config_rotate_pad		= std::make_unique<Sprite>(L"./resources/sprite/config/config_rotate_pad.png");
-	config_move_keyboard	= std::make_unique<Sprite>(L"./resources/sprite/config/config_move_keyboard.png");
-	config_rotate_keyboard	= std::make_unique<Sprite>(L"./resources/sprite/config/config_rotate_keyboard.png");
+	start_key.push_back(std::make_unique<Sprite>(L"resources/sprite/config/start_pad.png"));
+	start_key.push_back(std::make_unique<Sprite>(L"resources/sprite/config/start_pspad.png"));
+	start_key.push_back(std::make_unique<Sprite>(L"resources/sprite/config/start_keyboard.png"));
+
+	const wchar_t* w_game_mode_filename[] = {
+		L"resources/sprite/mode/easy.png",
+		L"resources/sprite/mode/normal.png",
+		L"resources/sprite/mode/impact.png",
+		L"resources/sprite/mode/endless.png",
+		L"resources/sprite/mode/tempest.png",
+	};
+
+	const wchar_t* w_game_mode_detail_filename[] = {
+		L"resources/sprite/mode_detail/easy.png",
+		L"resources/sprite/mode_detail/normal.png",
+		L"resources/sprite/mode_detail/impact.png",
+		L"resources/sprite/mode_detail/endless.png",
+		L"resources/sprite/mode_detail/tempest.png",
+	};
+
+	mode_select = std::make_unique<Sprite>(L"resources/sprite/mode_select.png");
+
+	for (int i = 0; i < game_mode_list.size(); i++)
+	{
+		auto& mode_spr = game_mode_sprite.emplace_back();
+		mode_spr = std::make_unique<Sprite>(w_game_mode_filename[i]);
+
+		auto& detail_spr = game_mode_detail.emplace_back();
+		detail_spr = std::make_unique<Sprite>(w_game_mode_detail_filename[i]);
+	}
+
+	mode_arrow_u_sprite = std::make_unique<Sprite>(L"resources/sprite/mode_select_up.png");
+	mode_arrow_d_sprite = std::make_unique<Sprite>(L"resources/sprite/mode_select_down.png");
+
+	game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->ChangeBoardColorFromGameMode(game_mode_list[selecting_mode_num]);
+
+	const wchar_t* w_pause_menu_filename[] = {
+		L"resources/sprite/resume.png",
+		L"resources/sprite/retry.png",
+		L"resources/sprite/give_up.png"
+	};
+
+	pause_sprite = std::make_unique<Sprite>(L"resources/sprite/pause.png");
+
+	for (int i = 0; i < 3; i++)
+	{
+		auto& pause_menu_spr = pause_menu.emplace_back();
+		pause_menu_spr = std::make_unique<Sprite>(w_pause_menu_filename[i]);
+	}
 }
 
 // 更新処理
 void SceneGame::Update(float elapsed_time)
 {
-	GamesystemDirector* director	= GamesystemDirector::GetInstance();
-	FramebufferManager* fb_manager	= director->GetFramebufferManager();
-	Graphics*			graphics	= Graphics::GetInstance();
+	GamesystemDirector* director		= GamesystemDirector::GetInstance();
+	FramebufferManager* fb_manager		= director->GetFramebufferManager();
+	AudioManager*		audio_manager	= director->GetAudioManager();
+	Graphics*			graphics		= Graphics::GetInstance();
 
 	std::unique_ptr<SceneResult>	next_scene;
+	std::unique_ptr<SceneGame>		retry_scene;
+	std::unique_ptr<SceneMainManu>	give_up_scene;
 	std::unique_ptr<SceneLoading>	scene_loading;
 
 	Graphics::CbTransition& transition_constants = graphics->GetCbTransition();
@@ -166,6 +228,54 @@ void SceneGame::Update(float elapsed_time)
 		break;
 
 	case SCENE_MAIN:
+		if (game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->IsPausing())
+		{
+			pausing_game = true;
+			GamesystemInput* input = GamesystemInput::GetInstance();
+			const GamePad* PAD = input->GetGamePad();
+
+			if ((PAD->GetButtonDown() & BTN_UP) && selecting_pause_menu_num > 0)
+			{
+				before_pause_menu_num = selecting_mode_num;
+				selecting_pause_menu_num--;
+				sprite_move_time = 1.0f;
+				audio_manager->PlaySE(EnumSEBank::LEVEL_UP);
+			}
+
+			if ((PAD->GetButtonDown() & BTN_DOWN) && selecting_pause_menu_num < 2)
+			{
+				before_pause_menu_num = selecting_mode_num;
+				selecting_pause_menu_num++;
+				sprite_move_time = 1.0f;
+				audio_manager->PlaySE(EnumSEBank::LEVEL_UP);
+			}
+
+			if ((PAD->GetButtonDown() & BTN_START))
+			{
+				audio_manager->PlaySE(EnumSEBank::STAND);
+
+				switch (selecting_pause_menu_num)
+				{
+				case 0:
+					pausing_game = false;
+					break;
+				case 1:
+				case 2:
+					scene_state = EnumSceneState::TRANSITION_OUT_SETTING;
+					break;
+				default:
+					break;
+				}
+			}
+		}
+
+		if (game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->GetBoardState().state == EnumBoardState::RESULT
+			&& scene_state == EnumSceneState::SCENE_MAIN)
+		{
+			scene_state = EnumSceneState::TRANSITION_OUT_SETTING;
+			director->SaveGameData(game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->GetGameData());
+			next_scene = std::make_unique<SceneResult>();
+		}
 		break;
 
 	case TRANSITION_OUT_SETTING:
@@ -188,8 +298,30 @@ void SceneGame::Update(float elapsed_time)
 		break;
 
 	case SCENE_CHANGE:
-		next_scene		= std::make_unique<SceneResult>();
-		scene_loading	= std::make_unique<SceneLoading>(next_scene.release());
+		if(pausing_game)
+		{
+			switch (selecting_pause_menu_num)
+			{
+			case 0:
+				break;
+			case 1:
+				retry_scene = std::make_unique<SceneGame>();
+				scene_loading = std::make_unique<SceneLoading>(retry_scene.release());
+				break;
+			case 2:
+				give_up_scene = std::make_unique<SceneMainManu>();
+				scene_loading = std::make_unique<SceneLoading>(give_up_scene.release());
+				break;
+			default:
+				break;
+			}
+		}
+		else
+		{
+			next_scene = std::make_unique<SceneResult>();
+			scene_loading = std::make_unique<SceneLoading>(next_scene.release());
+		}
+
 		director->GetSceneManager()->ChangeScene(scene_loading.release());
 		break;
 
@@ -201,13 +333,57 @@ void SceneGame::Update(float elapsed_time)
 	game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->Update(elapsed_time);
 	game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->UIUpdate(elapsed_time);
 
+	if (!playing_game)
+	{
+		GamesystemInput* input = GamesystemInput::GetInstance();
+		const GamePad* PAD = input->GetGamePad();
+
+		if ((PAD->GetButtonDown() & BTN_UP) && selecting_mode_num > 0)
+		{
+			selecting_mode_num--;
+			sprite_move_time = -1.0f;
+			game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->ChangeBoardColorFromGameMode(game_mode_list[selecting_mode_num]);
+			audio_manager->PlaySE(EnumSEBank::LEVEL_UP);
+		}
+
+		if ((PAD->GetButtonDown() & BTN_DOWN) && selecting_mode_num < game_mode_list.size() - 1)
+		{
+			selecting_mode_num++;
+			sprite_move_time = 1.0f;
+			game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->ChangeBoardColorFromGameMode(game_mode_list[selecting_mode_num]);
+			audio_manager->PlaySE(EnumSEBank::LEVEL_UP);
+		}
+
+		if ((PAD->GetButtonDown() & BTN_START))
+		{
+			game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->GameStart(SCast(int, game_mode_list.at(selecting_mode_num)));
+			playing_game = true;
+			audio_manager->PlaySE(EnumSEBank::STAND);
+		}
+	}
+
 	// パーティクル更新
 	background_particle->Update(elapsed_time);
-	if (game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->GetBoardState().state == EnumBoardState::RESULT
-		&& scene_state == EnumSceneState::SCENE_MAIN)
+
+	if (sprite_move_time > 0.0f)
 	{
-		scene_state = EnumSceneState::TRANSITION_OUT_SETTING;
-		director->SaveGameData(game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->GetGameData());
+		sprite_move_time -= elapsed_time;
+		if (sprite_move_time < 0.0f)
+		{
+			sprite_move_time = 0.0f;
+		}
+		move_easing_rate = Easing::In(EnumEasingType::QUINT, sprite_move_time);
+		sprite_move = move_easing_rate * MENU_DISTANCE;
+	}
+	else if (sprite_move_time < 0.0f)
+	{
+		sprite_move_time += elapsed_time;
+		if (sprite_move_time > 0.0f)
+		{
+			sprite_move_time = 0.0f;
+		}
+		move_easing_rate = Easing::In(EnumEasingType::QUINT, -sprite_move_time);
+		sprite_move = move_easing_rate * -MENU_DISTANCE;
 	}
 
 	scene_time += elapsed_time;
@@ -241,6 +417,9 @@ void SceneGame::Render()
 	FramebufferManager* framebuffer_manager	= GamesystemDirector::GetInstance()->GetFramebufferManager();
 	GamesystemInput*	input				= GamesystemInput::GetInstance();
 
+	GamePad*	game_pad		= input->GetGamePad();
+	const int	INPUT_DEVICE_ID = SCast(int, game_pad->GetInputDevice());
+
 	ParticleSystem::CbParticleEmitter& emitter = background_particle->GetCbParticleEmitter();
 
 	// フレームバッファに描画(適用範囲を見やすくするため中かっこを使用)
@@ -273,7 +452,7 @@ void SceneGame::Render()
 			graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
 			game_board.at(SCast(size_t, EnumPlayerID::PLAYER_1))->EmissiveRender();
 
-			//// パーティクル描画
+			// パーティクル描画
 			graphics->SetDepthStencilState(EnumDepthState::ZT_ON_ZW_OFF);
 			graphics->SetRasterizerState(EnumRasterizerState::PARTICLE);
 			background_particle->Render();
@@ -299,24 +478,142 @@ void SceneGame::Render()
 		graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
 		game_board.at(SCast(size_t, EnumPlayerID::PLAYER_1))->UIRender();
 
-		// 操作説明描画
-		switch (input->GetInputDevice())
+		// モード選択画面
+		if (!playing_game)
 		{
-			using enum EnumInputDevice;
-		case XBOX:
-			config_move_pad->Render(CONFIG_MOVE_POS, config_move_pad->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
-			config_rotate_pad->Render(CONFIG_ROTATE_POS, config_rotate_pad->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
-			break;
+			float width		= SCast(float, graphics->GetScreenWidth());
+			float height	= SCast(float, graphics->GetScreenHeight());
+			float spr_wdt	= game_mode_sprite[selecting_mode_num]->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).x;
+			float spr_hgt	= game_mode_sprite[selecting_mode_num]->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).y;
 
-		case KEYBOARD:
-			config_move_keyboard->Render(CONFIG_MOVE_POS, config_move_keyboard->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
-			config_rotate_keyboard->Render(CONFIG_ROTATE_POS, config_rotate_keyboard->GetSpriteSizeWithScaling({ 0.2f,0.2f }));
-			break;
+			// 選択中のモード
+			game_mode_sprite[selecting_mode_num]->Render(
+				{ (width - spr_wdt) * 0.5f, (height - spr_hgt) * 0.5f + sprite_move },
+				{ spr_wdt, spr_hgt }
+			);
 
-		default:
-			break;
+			float spr_wdt_select = mode_select->GetSpriteSizeWithScaling({ 0.4f, 0.4f }).x;
+			float spr_hgt_select = mode_select->GetSpriteSizeWithScaling({ 0.4f, 0.4f }).y;
+
+			mode_select->Render(
+				{ MOVE_FACTOR, (height - spr_hgt_select) * 0.5f },
+				{ spr_wdt_select, spr_hgt_select }
+			);
+
+			float spr_wdt_arrow = mode_arrow_d_sprite->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).x;
+			float spr_hgt_arrow = mode_arrow_d_sprite->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).y;
+
+			if (selecting_mode_num > 0)
+			{
+				DirectX::XMFLOAT4 arrow_color;
+				arrow_color.x = BOARD_COLOR_SET[SCast(int, game_mode_list[selecting_mode_num - 1])].x;
+				arrow_color.y = BOARD_COLOR_SET[SCast(int, game_mode_list[selecting_mode_num - 1])].y;
+				arrow_color.z = BOARD_COLOR_SET[SCast(int, game_mode_list[selecting_mode_num - 1])].z;
+				arrow_color.w = 1.0f;
+
+				mode_arrow_u_sprite->Render(
+					{ (width - spr_wdt) * 0.5f, (height - spr_hgt) * 0.5f - spr_hgt_arrow + sprite_move },
+					{ spr_wdt_arrow, spr_hgt_arrow },
+					arrow_color
+					);
+
+				mode_arrow_u_sprite->Render(
+					{ (width + spr_wdt) * 0.5f - spr_wdt_arrow, (height - spr_hgt) * 0.5f - spr_hgt_arrow + sprite_move },
+					{ spr_wdt_arrow, spr_hgt_arrow },
+					arrow_color
+					);
+			}
+
+			if (selecting_mode_num < game_mode_list.size() - 1)
+			{
+				DirectX::XMFLOAT4 arrow_color;
+				arrow_color.x = BOARD_COLOR_SET[SCast(int, game_mode_list[selecting_mode_num + 1])].x;
+				arrow_color.y = BOARD_COLOR_SET[SCast(int, game_mode_list[selecting_mode_num + 1])].y;
+				arrow_color.z = BOARD_COLOR_SET[SCast(int, game_mode_list[selecting_mode_num + 1])].z;
+				arrow_color.w = 1.0f;
+
+				mode_arrow_d_sprite->Render(
+					{ (width - spr_wdt) * 0.5f, (height + spr_hgt_arrow) * 0.5f + sprite_move },
+					{ spr_wdt_arrow, spr_hgt_arrow },
+					arrow_color
+					);
+				
+				mode_arrow_d_sprite->Render(
+					{ (width + spr_wdt) * 0.5f - spr_wdt_arrow, (height + spr_hgt_arrow) * 0.5f + sprite_move },
+					{ spr_wdt_arrow, spr_hgt_arrow },
+					arrow_color
+					);
+			}
+
+			float spr_wdt_detail = game_mode_detail[selecting_mode_num]->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).x;
+			float spr_hgt_detail = game_mode_detail[selecting_mode_num]->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).y;
+
+			// 選択中のモードの詳細
+			game_mode_detail[selecting_mode_num]->Render(
+				{ (width - spr_wdt_detail) - MOVE_FACTOR - fabsf(sprite_move), (height - spr_hgt_detail) * 0.5f },
+				{ spr_wdt_detail, spr_hgt_detail },
+				{ 1.0f, 1.0f, 1.0f, (1.0f - move_easing_rate) }
+			);
+
+
+			float spr_wdt_small = game_mode_sprite[selecting_mode_num]->GetSpriteSizeWithScaling({ 0.2f, 0.2f }).x;
+			float spr_hgt_small = game_mode_sprite[selecting_mode_num]->GetSpriteSizeWithScaling({ 0.2f, 0.2f }).y;
+
+			for (int i = 1; selecting_mode_num - i >= 0; i++)
+			{
+				game_mode_sprite[selecting_mode_num - i]->Render(
+					{ (width - spr_wdt_small) * 0.5f, (height - spr_hgt_small) * 0.5f - MENU_DISTANCE * i + sprite_move },
+					{ spr_wdt_small, spr_hgt_small }
+				);
+			}
+
+			for (int i = 1; selecting_mode_num + i <= game_mode_list.size() - 1; i++)
+			{
+				game_mode_sprite[selecting_mode_num + i]->Render(
+					{ (width - spr_wdt_small) * 0.5f, (height - spr_hgt_small) * 0.5f + MENU_DISTANCE * i + sprite_move },
+					{ spr_wdt_small, spr_hgt_small }
+				);
+			}
+
+			float spr_wdt_start = start_key[INPUT_DEVICE_ID]->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).x;
+			float spr_hgt_start = start_key[INPUT_DEVICE_ID]->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).y;
+
+			start_key[INPUT_DEVICE_ID]->Render(
+				{ MARGIN_S, height - spr_hgt_start - MARGIN_S },
+				{ spr_wdt_start, spr_hgt_start }
+			);
 		}
 
+		if (game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->IsPausing())
+		{
+			float width		= SCast(float, graphics->GetScreenWidth());
+			float height	= SCast(float, graphics->GetScreenHeight());
+			float spr_wdt	= pause_sprite->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).x;
+			float spr_hgt	= pause_sprite->GetSpriteSizeWithScaling({ 0.5f, 0.5f }).y;
+
+			pause_sprite->Render(
+				{ (width - spr_wdt) * 0.5f, 20.0f },
+				{ spr_wdt, spr_hgt }
+			);
+
+			for (int i = 0; i < 3; i++)
+			{
+				float spr_wdt_menu = pause_menu[i]->GetSpriteSizeWithScaling({ 0.4f, 0.4f }).x;
+				float spr_hgt_menu = pause_menu[i]->GetSpriteSizeWithScaling({ 0.4f, 0.4f }).y;
+
+				float color_factor = (i == selecting_pause_menu_num) 
+					? 0.5f + (1.0f - move_easing_rate) * 0.5f 
+					: (i == before_pause_menu_num) 
+						? 0.5f + move_easing_rate * 0.5f
+						: 0.5f;
+
+				pause_menu[i]->Render(
+					{ (width - spr_wdt_menu) * 0.5f, (height - spr_hgt_menu) * 0.5f + MENU_DISTANCE * (i - 1)},
+					{ spr_wdt_menu, spr_hgt_menu },
+					{ color_factor, color_factor, color_factor, 1.0f}
+				);
+			}
+		}
 	}
 	framebuffer_manager->Deactivate("main");
 

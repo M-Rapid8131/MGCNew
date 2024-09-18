@@ -40,6 +40,10 @@ enum class EnumBlockFlags
 	STANDING,			// 硬直中かどうか
 	RECORD_TRAIL,
 	FIRING_PARTICLE,
+	SPLASHED_PARTICLE,
+	ERASE,
+	ERASING,
+	BLACK_OUT,
 };
 
 
@@ -209,15 +213,15 @@ public:
 	void	UpdatePutState(float);
 
 	// public:ゲッター関数
-	//bool			GetFlag(EnumBlockFlags item);
-	const int					GetBlockColorNum()		{ return static_cast<int>(this->block_color); }
-	const float					GetBlockTopPosition()	{ return this->translation.y - BLOCK_SIZE * 0.5f; }
-	DirectX::XMFLOAT4X4			GetParticleTransform() const;
-	EnumBlockColor				GetBlockColor()			{ return block_color; }
-	GameModel*					GetModel() override		{ return model.get(); }
-	BlockCell&					GetBlockCell()			{ return block_cell; }
-	BlockCell&					GetGhostCell()			{ return ghost_cell; }	// 回転をゴーストに反映させるために使用
-	BlockState&					GetBlockState()			{ return block_state; }
+	bool						GetErase()						{ return flag_system.GetFlag(EnumBlockFlags::ERASE); };
+	bool						GetErasing()						{ return flag_system.GetFlag(EnumBlockFlags::ERASING); };
+	const int					GetBlockColorNum()				{ return SCast(int, block_color); }
+	const float					GetBlockTopPosition()			{ return this->translation.y - BLOCK_SIZE * 0.5f; }
+	EnumBlockColor				GetBlockColor()					{ return block_color; }
+	GameModel*					GetModel() override				{ return model.get(); }
+	BlockCell&					GetBlockCell()					{ return block_cell; }
+	BlockCell&					GetGhostCell()					{ return ghost_cell; }	// 回転をゴーストに反映させるために使用
+	BlockState&					GetBlockState()					{ return block_state; }
 
 	// 座標チェック用
 
@@ -225,6 +229,13 @@ public:
 	FlagSystem<Enum>&			GetFlagSystem()			{ return flag_system; }
 
 	// public:セッター関数
+	void				EraseRegist() { flag_system.SetFlag(EnumBlockFlags::ERASE, true); }
+	void				EraseConfirm() 
+	{ 
+		flag_system.SetFlag(EnumBlockFlags::ERASE, false);
+		flag_system.SetFlag(EnumBlockFlags::ERASING, true);
+	}
+	
 	void				SetStanding() 
 	{ 
 		if(block_state.state != EnumBlockState::STAND)
@@ -238,12 +249,14 @@ public:
 	}
 
 	void				SetDropping();
-	void				DropBlock(float speed);
+	void				SetColorUndefine() { block_color = EnumBlockColor::UNDEFINE; }
+	bool				DropBlock(float speed);
 
 private:
 	// private:変数
 	// ブロックの色関係
 	float								blink_time;
+	float								drop_speed = 0.0f;
 	EnumBlockColor						block_color		= EnumBlockColor::UNDEFINE;		// blockの色
 	DirectX::XMFLOAT3					block_color_factor;
 	DirectX::XMFLOAT3					ghost_translation = {0.0f, 1.0f, 0.0f};

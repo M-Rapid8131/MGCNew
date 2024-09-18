@@ -78,7 +78,6 @@ void SceneLoading::Render()
 			float spr_y = (height * 0.5f) - (spr_half_size.y * 0.5f);
 
 			float easing_scale = 0.0f;
-			float easing_direction = 0;
 
 			float easing_value = easing_loop + SCast(float, i) * 0.1f;
 			if (easing_value > EASING_LOOP_TIME)	easing_value -= EASING_LOOP_TIME;

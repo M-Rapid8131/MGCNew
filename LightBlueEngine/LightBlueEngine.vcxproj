@@ -105,6 +105,8 @@
     <ClInclude Include="sources\audio\audio.h" />
     <ClInclude Include="sources\audio\audio_manager.h" />
     <ClInclude Include="sources\audio\audio_source.h" />
+    <ClInclude Include="sources\component\component_base.h" />
+    <ClInclude Include="sources\component\component_presets.h" />
     <ClInclude Include="sources\easing.h" />
     <ClInclude Include="sources\engine_utility.h" />
     <ClInclude Include="sources\game_object\game_object.h" />

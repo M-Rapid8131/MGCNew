@@ -67,17 +67,26 @@ float3 CalcFlockParticle(uint index)
 void ShaderMain(uint3 dtid : SV_DispatchThreadID)
 {
 	uint index = dtid.x;
+	Particle particle = particle_buffer[index];
 	
 	float3 random_f3 = GetNoiseFactor(index + noise_gap);
-	float3 hover = float3(0.0f, 0.5f, 0.0f);
-	if (index <= emit_amounts)
+	if (index < emit_amounts)
 	{
-		Particle particle = particle_buffer[index];
+		if(particle.life < 0.0f)
+		{
+			particle.life = 0.0f;
+			particle.size = 0.0f;
+			particle_buffer[index] = particle;
+			return;
+		}
+		
 		particle.life -= delta_time;
 		particle.normal = normalize(camera_position - particle.position);
 		
 		if(particle.size > 0.0f)
 			particle.size -= delta_time * 0.3f;
+		else
+			particle.size = 0.0f;
 		
 		//particle.acceleration = particle.normal + CONVERT_TO_SNORM(random_f3);
 		
@@ -90,6 +99,12 @@ void ShaderMain(uint3 dtid : SV_DispatchThreadID)
 			particle.acceleration = 0.0f;
 			particle.velocity = normalize(particle.velocity) * MAX_SPEED;
 		}
+		particle_buffer[index] = particle;
+	}
+	else
+	{
+		particle.color.rgba = 0.0f;
+		particle.size = 0.0f;
 		particle_buffer[index] = particle;
 	}
 }

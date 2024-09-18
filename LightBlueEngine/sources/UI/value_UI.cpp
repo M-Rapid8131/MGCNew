@@ -26,14 +26,14 @@ void ValueUI::DebugGUI()
 }
 
 // •`‰æˆ—
-void ValueUI::Render()
+void ValueUI::Render(EnumNumberAlignment alignment, float alpha, DirectX::XMFLOAT3 color, std::string command)
 {
 	NumberRenderer* number_renderer = GamesystemDirector::GetInstance()->GetNumberRenderer();
 	DirectX::XMFLOAT2 shaked_position = XMFloatCalclation::XMFloat2Add(position, shake_position);
 
 	DirectX::XMFLOAT4 flash_color;
 	flash_color.x = 1.0f;
-	flash_color.w = 1.0f;
+	flash_color.w = alpha;
 
 	flash_color.y = 1.0f - (flash_time * 0.5f);
 	flash_color.z = 1.0f - (flash_time * 0.5f);
@@ -48,6 +48,9 @@ void ValueUI::Render()
 		const int VALUE = value.ivalue.at(value_index);
 		const DirectX::XMFLOAT2 VALUE_POSITION = value_position.ivalue_position.at(value_index);
 		DirectX::XMFLOAT2 shaked_value_position = XMFloatCalclation::XMFloat2Add(VALUE_POSITION, shaked_position);
-		number_renderer->RenderInt(VALUE, shaked_value_position, TEXT_SIZE, EnumNumberAlignment::RIGHT_ALIGNMENT);
+
+		const DirectX::XMFLOAT4 NUMBER_COLOR = {color.x, color.y, color.z, alpha};
+
+		number_renderer->RenderInt(VALUE, shaked_value_position, TEXT_SIZE, alignment, NUMBER_COLOR, command);
 	}
 }

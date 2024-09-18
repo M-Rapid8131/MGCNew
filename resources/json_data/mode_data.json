@@ -2,10 +2,10 @@
     "NORMAL": {
         "InitLevel": 1,
         "MaxLevel": 100,
-        "StartSpeed": 0.01,
-        "SpeedIncrease": 0.01,
-        "SIRank": 1.0,
-        "StandDecrease": 0.0,
+        "StartSpeed": 2.0,
+        "SpeedIncrease": 1.5,
+        "SIRank": 25.0,
+        "StandDecrease": 0.003,
         "SpeedRank" : [
             1,
             30,
@@ -19,12 +19,12 @@
         "InitLevel": 1,
         "MaxLevel": 30,
         "StartSpeed": 0.5,
-        "SpeedIncrease": 0.05,
+        "SpeedIncrease": 1.0,
         "SIRank": 0.0,
         "StandDecrease": 0.0,
         "SpeedRank" : [
             1,
-            -1,
+            20,
             -1,
             -1,
             -1,
@@ -50,9 +50,9 @@
     "IMPACT": {
         "InitLevel": 1,
         "MaxLevel": 130,
-        "StartSpeed": 5.0,
-        "SpeedIncrease": 0.01,
-        "SIRank": 2.0,
+        "StartSpeed": 100.0,
+        "SpeedIncrease": 10.0,
+        "SIRank": 100.0,
         "StandDecrease": 0.005,
         "SpeedRank" : [
             -1,
@@ -65,10 +65,10 @@
     },
     "ENDLESS": {
         "InitLevel": 1,
-        "MaxLevel": 10000,
-        "StartSpeed": 0.1,
-        "SpeedIncrease": 0.005,
-        "SIRank": 0.0,
+        "MaxLevel": 999,
+        "StartSpeed": 2.0,
+        "SpeedIncrease": 1.0,
+        "SIRank": 10.0,
         "StandDecrease": 0.00,
         "SpeedRank" : [
             1,
@@ -76,15 +76,39 @@
             100,
             150,
             200,
-            250
+            999
         ]
     },
     "BONUS": {
         "InitLevel": 0,
         "MaxLevel": 0,
-        "StartSpeed": 10.0,
+        "StartSpeed": 0.0,
         "SpeedIncrease": 0.0,
         "SIRank": 0.0,
         "StandDecrease": 0.00
+    },
+    "EASY_BONUS": {
+        "InitLevel": 0,
+        "MaxLevel": 0,
+        "StartSpeed": 100.0,
+        "SpeedIncrease": 0.0,
+        "SIRank": 0.0,
+        "StandDecrease": 0.00
+    },
+    "TEMPEST": {
+        "InitLevel": 1,
+        "MaxLevel": 50,
+        "StartSpeed": 4000.0,
+        "SpeedIncrease": 0.0,
+        "SIRank": 0.0,
+        "StandDecrease": 0.01,
+        "SpeedRank" : [
+            -1,
+            -1,
+            -1,
+            -1,
+            1,
+            25
+        ]
     }
 }

@@ -1,11 +1,12 @@
 // <>インクルード
-#include <time.h>
+#include <ctime>
 
 // ""インクルード
 // LightBlueEngine
 #include "graphics/graphics.h"
 #include "game_system/gamesystem_director.h"
 #include "game_system/gamesystem_timer.h"
+#include "engine_utility.h"
 
 // ゲームソースファイル
 #include "framework.h"
@@ -38,6 +39,10 @@ int Framework::Run()
 		{
 			timer->TimerUpdate();
 			CalculateFrameStats();
+
+			// スワップチェーン
+			const UINT SYNC_INTERVAL = 1;
+			Graphics::GetInstance()->SwapChainPresent(SYNC_INTERVAL, 0);
 
 			Update(timer->GetDeltaTime());
 			Render();
@@ -148,10 +153,6 @@ void Framework::Update(float elapsed_time)
 void Framework::Render()
 {
 	GamesystemDirector::GetInstance()->Render();
-
-	// スワップチェーン
-	const UINT SYNC_INTERVAL = 1;
-	Graphics::GetInstance()->SwapChainPresent(SYNC_INTERVAL, 0);
 }
 
 // 終了処理

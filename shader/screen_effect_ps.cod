@@ -83,7 +83,7 @@ dcl_temps 6
 //   o0.x <- <ShaderMain return value>.x; o0.y <- <ShaderMain return value>.y; o0.z <- <ShaderMain return value>.z; o0.w <- <ShaderMain return value>.w
 //
 #line 5 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\screen_effect_ps.hlsl"
-mov r0.x, l(0.003000)  // r0.x <- COLOR_GAP_FACTOR
+mov r0.x, l(0.002000)  // r0.x <- COLOR_GAP_FACTOR
 
 #line 6
 mov r0.yz, l(0,0.000260,0.000463,0)  // r0.y <- VIEWPORT_OFFSET.x; r0.z <- VIEWPORT_OFFSET.y
@@ -349,24 +349,24 @@ add r0.xyzw, r0.xyzw, r4.xyzw  // r0.x <- color.x; r0.y <- color.y; r0.z <- colo
 nop 
 mov r0.xyzw, r0.xyzw
 
-#line 131 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
+#line 132 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\common.hlsli"
 mov r0.xyzw, r0.xyzw  // r0.x <- new_color.x; r0.y <- new_color.y; r0.z <- new_color.z; r0.w <- new_color.w
 
-#line 132
+#line 133
 sample_indexable(texture2d)(float,float,float,float) r1.xyzw, v2.xyxx, t39.xyzw, s1  // r1.x <- sub_color.x; r1.y <- sub_color.y; r1.z <- sub_color.z; r1.w <- sub_color.w
 
-#line 134
+#line 135
 ine r2.x, l(0, 0, 0, 0), cb7[0].x
 if_nz r2.x
 
-#line 136
+#line 137
   sample_indexable(texture2d)(float,float,float,float) r2.x, v2.xyxx, t40.xyzw, s1  // r2.x <- mask_value
 
-#line 139
+#line 140
   ine r2.y, l(0, 0, 0, 0), cb7[0].z
   if_nz r2.y
 
-#line 141
+#line 142
     mov r2.y, -cb7[1].y
     add r2.y, r2.y, r2.x
     mov r2.y, -r2.y
@@ -381,10 +381,10 @@ if_nz r2.x
     mul r2.y, r2.y, r2.y
     mul r2.y, r2.y, r2.z  // r2.y <- ratio
 
-#line 142
+#line 143
   else 
 
-#line 145
+#line 146
     mov r2.z, -cb7[1].y
     add r2.z, r2.z, cb7[1].x
     mov r2.z, -r2.z
@@ -399,32 +399,32 @@ if_nz r2.x
     mul r2.x, r2.x, r2.x
     mul r2.y, r2.x, r2.z  // r2.y <- ratio
 
-#line 146
+#line 147
   endif 
 
-#line 147
+#line 148
   mul r3.xyzw, r0.xyzw, r2.yyyy  // r3.x <- new_color.x; r3.y <- new_color.y; r3.z <- new_color.z; r3.w <- new_color.w
 
-#line 148
+#line 149
   mov r2.x, -r2.y
   add r2.x, r2.x, l(1.000000)
   mul r2.xyzw, r1.xyzw, r2.xxxx  // r2.x <- sub_color.x; r2.y <- sub_color.y; r2.z <- sub_color.z; r2.w <- sub_color.w
 
-#line 149
+#line 150
 else   // Prior locations: r2.y <- chromatic_color.y; r2.z <- chromatic_color.z; r3.x <- bleach_bypass_color.x; r3.y <- bleach_bypass_color.y; r3.z <- bleach_bypass_color.z; r0.x <- new_color.x; r0.y <- new_color.y; r0.z <- new_color.z; r0.w <- new_color.w; r1.x <- sub_color.x; r1.y <- sub_color.y; r1.z <- sub_color.z; r1.w <- sub_color.w
 
-#line 152
+#line 153
   mul r3.xyzw, r0.xyzw, cb7[1].xxxx  // r3.x <- new_color.x; r3.y <- new_color.y; r3.z <- new_color.z; r3.w <- new_color.w
 
-#line 153
+#line 154
   mov r0.x, -cb7[1].x
   add r0.x, r0.x, l(1.000000)
   mul r2.xyzw, r0.xxxx, r1.xyzw  // r2.x <- sub_color.x; r2.y <- sub_color.y; r2.z <- sub_color.z; r2.w <- sub_color.w
 
-#line 154
+#line 155
 endif 
 
-#line 156
+#line 157
 add r0.xyzw, r2.xyzw, r3.xyzw  // r0.x <- <ApplyTransition return value>.x; r0.y <- <ApplyTransition return value>.y; r0.z <- <ApplyTransition return value>.z; r0.w <- <ApplyTransition return value>.w
 
 #line 54 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\2D\screen_effect_ps.hlsl"

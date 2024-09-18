@@ -310,8 +310,6 @@ void JSONEditor::DebugGUI()
 // 指定したオブジェクトを操作
 void JSONEditor::EditObject()
 {
-	Graphics* graphics = Graphics::GetInstance();
-
 	if (ImGui::Begin("Editting Object", (bool*)0, ImGuiWindowFlags_NoResize))
 	{
 		// パラメータの設定
@@ -520,8 +518,6 @@ void JSONEditor::EditObject()
 // 指定した配列を操作
 void JSONEditor::EditArray()
 {
-	Graphics* graphics = Graphics::GetInstance();
-
 	if (ImGui::Begin("Editting Array", (bool*)0, ImGuiWindowFlags_NoResize))
 	{
 		// パラメータの設定

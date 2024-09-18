@@ -1,15 +1,16 @@
 {
     "BGM": [
-        "./resources/audio/BGM/bgm_01.wav",
-        "./resources/audio/BGM/bgm_02.wav",
-        "./resources/audio/BGM/bgm_03.wav",
-        "./resources/audio/BGM/bgm_04.wav",
-        "./resources/audio/BGM/bgm_05.wav",
-        "./resources/audio/BGM/bgm_06.wav",
-        "./resources/audio/BGM/bgm_standby.wav",
-        "./resources/audio/BGM/bgm_bonus_time.wav",
-        "./resources/audio/BGM/bgm_easy_bonus_time.wav",
-        "./resources/audio/BGM/bgm_result.wav"
+        "./resources/audio/BGM/bgm_01.mp3",
+        "./resources/audio/BGM/bgm_02.mp3",
+        "./resources/audio/BGM/bgm_03.mp3",
+        "./resources/audio/BGM/bgm_04.mp3",
+        "./resources/audio/BGM/bgm_05.mp3",
+        "./resources/audio/BGM/bgm_06.mp3",
+        "./resources/audio/BGM/bgm_standby.mp3",
+        "./resources/audio/BGM/bgm_bonus_time.mp3",
+        "./resources/audio/BGM/bgm_easy_bonus_time.mp3",
+        "./resources/audio/BGM/bgm_result.mp3",
+        "./resources/audio/BGM/bgm_mode_select.mp3"
     ],
     "SE": [
 		"./resources/audio/SE/se_count_down.wav",

@@ -2,7 +2,7 @@
 #include "2d_header.hlsli"
 
 // íËêî
-static const float COLOR_GAP_FACTOR = 0.003f;
+static const float COLOR_GAP_FACTOR = 0.002f;
 static const float2 VIEWPORT_OFFSET 
 	= float2(0.5f, 0.5f) / float2(float(SCREEN_WIDTH), float(SCREEN_HEIGHT));
 
