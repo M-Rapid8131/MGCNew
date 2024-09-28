@@ -282,7 +282,6 @@ protected:
 	DirectX::XMFLOAT3					shake_position			= {0.0f,0.0f,0.0f};	// 元の位置からの移動距離
 	DirectX::XMFLOAT3					shake_speed				= {0.0f,0.0f,0.0f}; // 元の位置から移動させるための速度
 	DirectX::XMFLOAT3					board_color				= {1.0f,1.0f,1.0f}; // 元の位置から移動させるための速度
-	std::unique_ptr<GameModel>			board_model;								// 盤面のモデル
 	std::vector<EraseParticleData>		erase_block_particle;						// ブロック消去演出パーティクル
 
 	// スピード関係

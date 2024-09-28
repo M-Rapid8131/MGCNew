@@ -506,7 +506,7 @@ void ObjectBoard::BoardState::TransitionStartState(int game_mode_id)
 	
 	if (obj->game_mode != EnumGameMode::BONUS)
 	{
-		obj->board_model->GetDisolveFactor() = 0.0f;
+		obj->model->GetDisolveFactor() = 0.0f;
 
 		audio_manager->StopBGM();
 
@@ -698,7 +698,7 @@ void ObjectBoard::UpdateStartState(float elapsed_time)
 
 	count_down_time -= elapsed_time;
 	count_down_se_time += elapsed_time;
-	float& dissolve = board_model->GetDisolveFactor();
+	float& dissolve = model->GetDisolveFactor();
 	dissolve = Easing::Out(EnumEasingType::QUAD, EnumEasingMode::RATE, 0.0f, COUNT_DOWN, COUNT_DOWN - count_down_time);
 
 	ui_alpha = dissolve;
@@ -873,7 +873,7 @@ void ObjectBoard::UpdateGameOverState(float elapsed_time)
 	}
 	else
 	{
-		float& disolve_factor = board_model->GetDisolveFactor();
+		float& disolve_factor = model->GetDisolveFactor();
 		disolve_factor -= 0.02f;
 
 		if (game_over_time > 5.0f)
@@ -950,8 +950,8 @@ ObjectBoard::ObjectBoard(UINT player_id)
 {
 	translation = { 0.0f,0.0f,0.0f };
 	rotation.y = DirectX::XM_PIDIV2;
-	board_model = std::make_unique<GameModel>("resources/model/board/board.gltf");
-	board_model->SetMaskTexture(L"resources/sprite/mask_texture.png");
+	model = std::make_unique<GameModel>("resources/model/board/board.gltf");
+	model->SetMaskTexture(L"resources/sprite/mask_texture.png");
 
 	existing_matrix.resize(MAX_ROW);
 	for (int x = 0; x < MAX_ROW; x++)
@@ -1137,7 +1137,7 @@ void ObjectBoard::Update(float elapsed_time)
 
 	UIUpdate(elapsed_time);
 
-	board_model->InstanceUpdate();
+	model->InstanceUpdate();
 
 	int count = 0;
 	for (auto& erase_particle_data : erase_block_particle)
@@ -1239,7 +1239,7 @@ void ObjectBoard::Render()
 	graphics->SetRasterizerState(EnumRasterizerState::SOLID);
 	graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
 
-	board_model->Render(false, transform, board_color);
+	model->Render(false, transform, board_color);
 
 	if(!pause)
 	{
@@ -1273,7 +1273,7 @@ void ObjectBoard::EmissiveRender()
 
 	if(!pause)
 	{
-		board_model->Render(false, transform, board_color, graphics->GetPixelShader(EnumPixelShader::EXTRACT_EMISSIVE).Get());
+		model->Render(false, transform, board_color, graphics->GetPixelShader(EnumPixelShader::EXTRACT_EMISSIVE).Get());
 
 		for (UPtrVector<ObjectBlock>::const_reference block : block_list)
 			block->EmissiveRender();
