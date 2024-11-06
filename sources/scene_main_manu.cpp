@@ -19,7 +19,7 @@ const float				HSV_MAX						= 360.0f;
 const float				HSV_MAX_TIME				= 90.0f;
 const float				DEFAULT_CAMERA_DISTANCE		= 80.0f;
 const DirectX::XMFLOAT3 DEFAULT_CAMERA_TARGET		= { 0.0f,0.0f,50.0f };
-const DirectX::XMFLOAT4 DEFAULT_CAMERA_DIRECTION	= { 0.0f,0.0f,-1.0f, 0.0f };
+const DirectX::XMFLOAT3 DEFAULT_CAMERA_ANGLE		= { 0.0f,0.0f, 0.0f };
 
 const ParticleSystem::CbParticleEmitter DEFAULT_EMITTER_SETTING = {
 	100000,								// emit_amounts
@@ -142,14 +142,14 @@ void SceneMainManu::Initialize()
 	if (tpv)
 	{
 		tpv->tpv_target		= DEFAULT_CAMERA_TARGET;
-		tpv->tpv_direction	= DEFAULT_CAMERA_DIRECTION;
+		tpv->tpv_angle		= DEFAULT_CAMERA_ANGLE;
 		tpv->tpv_distance	= DEFAULT_CAMERA_DISTANCE;
 	}
 	else
 	{
 		Camera::TPVData tpv_init = {};
 		tpv_init.tpv_target		= DEFAULT_CAMERA_TARGET;
-		tpv_init.tpv_direction	= DEFAULT_CAMERA_DIRECTION;
+		tpv_init.tpv_angle		= DEFAULT_CAMERA_ANGLE;
 		tpv_init.tpv_distance	= DEFAULT_CAMERA_DISTANCE;
 
 		camera->AddTPVCamera(&tpv_init);
@@ -264,26 +264,41 @@ void SceneMainManu::Update(float elapsed_time)
 	float				angle			= DirectX::XMVectorGetX(DirectX::XMVector3Length(v_camera_rot));
 	DirectX::XMVECTOR	nv_camera_rot	= DirectX::XMVector3Normalize(v_camera_rot);
 
-	DirectX::XMFLOAT3 n_camera_rot;
-	DirectX::XMStoreFloat3(&n_camera_rot, nv_camera_rot);
+	//DirectX::XMFLOAT3 n_camera_rot;
+	//DirectX::XMStoreFloat3(&n_camera_rot, nv_camera_rot);
 
-	DirectX::XMVECTOR q_rotation = DirectX::XMVectorSet(
-		n_camera_rot.x * sin(angle * 0.5f),
-		n_camera_rot.y * sin(angle * 0.5f),
-		n_camera_rot.z * sin(angle * 0.5f),
-		cos(angle * 0.5f)
-	);
+	//DirectX::XMVECTOR q_rotation = DirectX::XMVectorSet(
+	//	n_camera_rot.x * sin(angle * 0.5f),
+	//	n_camera_rot.y * sin(angle * 0.5f),
+	//	n_camera_rot.z * sin(angle * 0.5f),
+	//	cos(angle * 0.5f)
+	//);
 
-	q_rotation = DirectX::XMQuaternionNormalize(q_rotation);
+	//q_rotation = DirectX::XMQuaternionNormalize(q_rotation);
 
 	// ƒJƒƒ‰‚ÌŒü‚«
-	DirectX::XMVECTOR v_direction = DirectX::XMLoadFloat4(&tpv->tpv_direction);
-	v_direction = DirectX::XMVector3Rotate(v_direction, q_rotation);
-	DirectX::XMStoreFloat4(&tpv->tpv_direction, v_direction);
+	//DirectX::XMVECTOR v_direction = DirectX::XMLoadFloat4(&tpv->tpv_direction);
+	//v_direction = DirectX::XMVector3Rotate(v_direction, q_rotation);
+	//DirectX::XMStoreFloat4(&tpv->tpv_direction, v_direction);
+	tpv->tpv_angle.y += ROT_SPEED;
 
 	// ƒ‰ƒCƒg‚ÌŒü‚«
 	DirectX::XMFLOAT3& light_direction = light->GetLightConstants().directional_light_direction;
-	DirectX::XMStoreFloat3(&light_direction, v_direction);
+
+	DirectX::XMFLOAT3 rad_angle = {};
+	rad_angle.x = DirectX::XMConvertToRadians(tpv->tpv_angle.x);
+	rad_angle.y = DirectX::XMConvertToRadians(tpv->tpv_angle.y);
+	rad_angle.z = DirectX::XMConvertToRadians(tpv->lock_z_rotate ? 0.0f : tpv->tpv_angle.z);
+
+	DirectX::XMMATRIX m_matrix =
+		DirectX::XMMatrixRotationRollPitchYawFromVector(DirectX::XMLoadFloat3(&rad_angle));
+
+	DirectX::XMFLOAT4X4 matrix;
+	DirectX::XMStoreFloat4x4(&matrix, m_matrix);
+
+	DirectX::XMVECTOR v_forward = { matrix._31, matrix._32, matrix._33 };
+
+	DirectX::XMStoreFloat3(&light_direction, v_forward);
 
 	float hsv_rate = fmodf(scene_time, HSV_MAX_TIME) / HSV_MAX_TIME;
 	hsv_color.x = std::lerp(0.0f, HSV_MAX, hsv_rate);

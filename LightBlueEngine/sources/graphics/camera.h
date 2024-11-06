@@ -9,6 +9,7 @@
 
 // ""インクルード
 #include "json_editor.h"
+#include "xmfloat_calclation.h"
 
 // enum class
 enum class EnumCameraMode
@@ -30,10 +31,10 @@ using Microsoft::WRL::ComPtr;
 
 // 定数
 static const DirectX::XMFLOAT3	DEFAULT_FPV_POSITION	= { 0.0f, 0.0f, 0.0f };	
-static const DirectX::XMFLOAT4	DEFAULT_FPV_DIRECTION	= { 0.0f, 0.0f, 1.0f, 0.0f };
+static const DirectX::XMFLOAT3	DEFAULT_FPV_ANGLE		= { 0.0f, 0.0f, 0.0f };
 
 static const DirectX::XMFLOAT3	DEFAULT_TPV_TARGET		= { 0.0f, 0.0f, 0.0f };
-static const DirectX::XMFLOAT4	DEFAULT_TPV_DIRECTION	= { 0.0f, 0.0f, 1.0f, 0.0f };
+static const DirectX::XMFLOAT3	DEFAULT_TPV_ANGLE		= { 0.0f, 0.0f, 0.0f };
 static const float				DEFAULT_TPV_DISTANCE	= 1.0f;
 
 // class >> [Camera]
@@ -66,14 +67,16 @@ public:
 	// public:構造体
 	struct FPVData
 	{
+		bool				lock_z_rotate	= false;
 		DirectX::XMFLOAT3	fpv_position	= DEFAULT_FPV_POSITION;
-		DirectX::XMFLOAT4	fpv_direction	= DEFAULT_FPV_DIRECTION;
+		DirectX::XMFLOAT3	fpv_angle		= DEFAULT_FPV_ANGLE;
 	};
 
 	struct TPVData
 	{
+		bool				lock_z_rotate = false;
 		DirectX::XMFLOAT3	tpv_target		= DEFAULT_TPV_TARGET;
-		DirectX::XMFLOAT4	tpv_direction	= DEFAULT_TPV_DIRECTION;
+		DirectX::XMFLOAT3	tpv_angle		= DEFAULT_TPV_ANGLE;
 		float				tpv_distance	= DEFAULT_TPV_DISTANCE;
 	};
 
@@ -90,8 +93,8 @@ public:
 	DirectX::XMFLOAT4X4&	GetProjection()		{ return projection; }
 	ComPtr<ID3D11Buffer>&	GetSceneCBuffer()	{ return scene_cbuffer; }	// shadow_map用
 	CbScene&				GetSceneConstants() { return scene_constants; }	// shadow_map用
-	FPVData*				GetFPVCamera(size_t channel = 0) { return channel < fpv_data.size() ? &fpv_data[channel] : nullptr; }
-	TPVData*				GetTPVCamera(size_t channel = 0) { return channel < tpv_data.size() ? &tpv_data[channel] : nullptr; }
+	FPVData*				GetFPVCamera(int channel = -1) { return (channel > -1) && (channel < fpv_data.size()) ? &fpv_data[channel] : &fpv_data[fpv_channel]; }
+	TPVData*				GetTPVCamera(int channel = -1) { return (channel > -1) && (channel < tpv_data.size()) ? &tpv_data[channel] : &tpv_data[fpv_channel]; }
 
 	// public:セッター関数
 	void SetView(const DirectX::XMFLOAT4X4 fm_view) { view = fm_view; }
@@ -106,9 +109,9 @@ public:
 		DirectX::XMStoreFloat4x4(&projection, m_projection);
 	}
 
-	void AddFPVCamera(FPVData* = nullptr);
-	void AddTPVCamera(TPVData* = nullptr);
-	void SetCameraShift(const DirectX::XMFLOAT3 shift)	{ camera_shift = shift; }
+	FPVData& AddFPVCamera(FPVData* = nullptr);
+	TPVData& AddTPVCamera(TPVData* = nullptr);
+	void SetCameraShift(const DirectX::XMFLOAT3 shift)	{ camera_shift = XMFloat3Add(camera_shift, shift); }
 	void RadialBlur()									{ scene_constants.blur_size = BLUR_SIZE; }
 	void SetFPVChannel(size_t channel)					
 	{
@@ -136,12 +139,6 @@ private:
 	DirectX::XMFLOAT3		camera_position = { 0.0f, 0.0f, 0.0f };
 	DirectX::XMFLOAT3		camera_focus	= { 0.0f, 0.0f, 1.0f };
 	DirectX::XMFLOAT3		camera_shift	= { 0.0f, 0.0f, 0.0f };
-	DirectX::XMFLOAT3		up				= { 0.0f, -1.0f, 0.0f };
-	DirectX::XMFLOAT3		front			= { 0.0f, 0.0f, 1.0f };
-	DirectX::XMFLOAT3		right			= { 1.0f, 0.0f, 0.0f };
-	DirectX::XMFLOAT4X4		scale			= {};
-	DirectX::XMFLOAT4X4		rotation		= {};
-	DirectX::XMFLOAT4X4		translation		= {};
 
 	DirectX::XMFLOAT4X4	view = {
 		1,0,0,0,
@@ -156,6 +153,7 @@ private:
 		0,0,1,0,
 		0,0,0,1,
 	};
+
 	ComPtr<ID3D11Buffer>	scene_cbuffer;
 	CbScene					scene_constants = {};
 	EnumCameraMode			camera_mode		= EnumCameraMode::FIRST_PERSON_VIEW;

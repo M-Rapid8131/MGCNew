@@ -1,5 +1,6 @@
 // <>インクルード
 #include <imgui.h>
+#include <algorithm>
 
 // ""インクルード
 // LightBlueEngine
@@ -603,11 +604,13 @@ void ObjectBoard::BoardState::TransitionLandingState()
 	obj->standing_time = 0.0f;
 	obj->current_speed = 0.0f;
 
+	// 縦チェック
 	for (UINT row = 1; row <= MAX_ROW; row++)
 	{
 		obj->VerticalLineCheck(row);
 	}
 
+	// 横・斜めチェック
 	for (UINT column = 1; column <= MAX_COLUMN + DIAGONAL_ADJUST; column++)
 	{
 		if(column <= MAX_COLUMN)
@@ -619,8 +622,10 @@ void ObjectBoard::BoardState::TransitionLandingState()
 
 	obj->flag_system.SetFlag(EnumBoardFlags::RESULT, obj->MoveToDeletedBlockList());
 
+	// ブロックの最大高度を更新
 	obj->UpdateStandCollisionHeight();
 
+	// ブロック消去パーティクルを生成
 	if(obj->flag_system.GetFlag(EnumBoardFlags::RESULT))
 	{
 		ParticleSystem::CbParticleEmitter	cb_emitter;
@@ -1459,32 +1464,17 @@ void ObjectBoard::CameraMove(float elapsed_time)
 			0.0f
 		};
 
-		DirectX::XMVECTOR	v_camera_rot = DirectX::XMVectorScale(DirectX::XMLoadFloat3(&camera_rot), elapsed_time);
-		float				angle = DirectX::XMVectorGetX(DirectX::XMVector3Length(v_camera_rot));
-		DirectX::XMVECTOR	nv_camera_rot = DirectX::XMVector3Normalize(v_camera_rot);
+		tpv->tpv_angle = XMFloat3Add(tpv->tpv_angle, camera_rot);
 
-		DirectX::XMFLOAT3 n_camera_rot;
-		DirectX::XMStoreFloat3(&n_camera_rot, nv_camera_rot);
+		constexpr float angle_limit = DirectX::XMConvertToDegrees(DirectX::XM_PIDIV2) * 0.5f;
 
-		DirectX::XMVECTOR q_rotation = DirectX::XMVectorSet(
-			n_camera_rot.x * sin(angle * 0.5f),
-			n_camera_rot.y * sin(angle * 0.5f),
-			n_camera_rot.z * sin(angle * 0.5f),
-			cos(angle * 0.5f)
-		);
-
-		q_rotation = DirectX::XMQuaternionNormalize(q_rotation);
-		DirectX::XMVECTOR v_direction = DirectX::XMLoadFloat4(&tpv->tpv_direction);
-		DirectX::XMVECTOR v_base_direction = DirectX::XMLoadFloat4(&DEFAULT_DIRECTION);
-		v_base_direction = DirectX::XMVectorScale(v_base_direction, -1);
-
-		v_direction = DirectX::XMVector3Rotate(v_direction, q_rotation);
-		DirectX::XMStoreFloat4(&tpv->tpv_direction, v_direction);
+		tpv->tpv_angle.x = std::clamp(tpv->tpv_angle.x, -angle_limit, angle_limit);
+		tpv->tpv_angle.y = std::clamp(tpv->tpv_angle.y, DEFAULT_ANGLE.y - angle_limit, DEFAULT_ANGLE.y + angle_limit);
 	}
 
 	if (game_pad->GetButtonDown() & BTN_RIGHT_THUMB)
 	{
-		tpv->tpv_direction = DEFAULT_DIRECTION;
+		tpv->tpv_angle = DEFAULT_ANGLE;
 	}
 }
 
@@ -1744,10 +1734,7 @@ void ObjectBoard::DiagonalLineCheckLD(const UINT column)
 	// 判定開始、左から開始
 	for (UINT check_row = MIN_CELL; check_row <= MAX_ROW; check_row++)
 	{
-		// チェックするブロックのイテレータを取得
-		//UPtrVector<ObjectBlock>::iterator	block_itr;
-		//block_itr = GetBlockFromCell(BlockCell(check_row, column_line));
-
+		// 指定したセルの色を取得
 		const UINT column_line = column - (MAX_ROW - check_row);
 		const EnumBlockColor& block_color = GetBlockColorFromMatrix(BlockCell(check_row, column_line));
 
@@ -1838,7 +1825,7 @@ void ObjectBoard::GameStart(int game_mode_id)
 
 	game_mode			= SCast(EnumGameMode, game_mode_id);
 	before_game_mode	= SCast(EnumGameMode, game_mode_id);
-	board_color = BOARD_COLOR_SET[game_mode_id];
+	board_color			= BOARD_COLOR_SET[game_mode_id];
 
 	std::filesystem::path json_path("resources/json_data/mode_data.json");
 	json_editor->ImportJSON(json_path, &mode_params);
@@ -1846,7 +1833,7 @@ void ObjectBoard::GameStart(int game_mode_id)
 
 	game_data.init_level	= SCast(UINT, *(GET_PARAMETER_IN_PARAMPTR("InitLevel", int, mode_setting_params)));
 	game_data.max_level		= SCast(UINT, *(GET_PARAMETER_IN_PARAMPTR("MaxLevel", int, mode_setting_params)));
-	level_speed				= *(GET_PARAMETER_IN_PARAMPTR("StartSpeed", float, mode_setting_params));
+	start_speed				= *(GET_PARAMETER_IN_PARAMPTR("StartSpeed", float, mode_setting_params));
 	speed_increase_factor	= *(GET_PARAMETER_IN_PARAMPTR("SpeedIncrease", float, mode_setting_params));
 	si_rank_bonus			= *(GET_PARAMETER_IN_PARAMPTR("SIRank", float, mode_setting_params));
 	stand_decrease_factor	= *(GET_PARAMETER_IN_PARAMPTR("StandDecrease", float, mode_setting_params));
@@ -1871,6 +1858,7 @@ void ObjectBoard::GameStart(int game_mode_id)
 	else if (game_mode == EnumGameMode::IMPACT)
 		waiting_time_limit = IMPACT_WAIT_TIME;
 
+	level_speed = start_speed + (game_data.speed_level - 1) * speed_increase_factor;
 	current_speed = 0.0f;
 
 	value_ui.at(SCast(size_t, EnumValueUIIndex::SPEED_LEVEL))->SetIntValue(0, 1, 0.0f);
@@ -1968,17 +1956,20 @@ void ObjectBoard::LevelUp()
 		{
 			game_data.speed_level++;
 			game_data.level_up_block += LV_UP_BLOCK_COUNT;
-			level_speed += speed_increase_factor;
+			level_speed = start_speed + (game_data.speed_level - 1) * speed_increase_factor;
 			standing_time_limit -= stand_decrease_factor;
 
 			if ((current_rank < 5) && (SCast(int, game_data.speed_level) >= speed_rank[current_rank + 1]))	// スピードランクごとのレベル到達でBGM変化
 			{
-				current_rank++;
-				level_speed += si_rank_bonus;
+				if(speed_rank[current_rank + 1] != -1)
+				{
+					current_rank++;
+					level_speed += si_rank_bonus;
 
-				audio_manager->PlaySE(EnumSEBank::RANK_UP);
-				audio_manager->StopBGM();
-				audio_manager->PlayBGM(SCast(EnumBGMBank, current_rank), true);
+					audio_manager->PlaySE(EnumSEBank::RANK_UP);
+					audio_manager->StopBGM();
+					audio_manager->PlayBGM(SCast(EnumBGMBank, current_rank), true);
+				}
 			}
 
 			else if (game_data.speed_level % 10 == 0)

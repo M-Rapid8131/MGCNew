@@ -31,9 +31,9 @@ const DirectX::XMFLOAT2 CONFIG_ROTATE_POS	= {
 	Graphics::GetInstance()->GetScreenHeight() * 0.25f
 };
 
-const float				DEFAULT_CAMERA_DISTANCE		= 50.0f;
-const DirectX::XMFLOAT3 DEFAULT_CAMERA_TARGET		= { 0.0f,0.0f,0.0f };
-const DirectX::XMFLOAT4 DEFAULT_CAMERA_DIRECTION	= { 0.0f,0.0f,-1.0f, 0.0f };
+const float				DEFAULT_CAMERA_DISTANCE	= 50.0f;
+const DirectX::XMFLOAT3 DEFAULT_CAMERA_TARGET	= { 0.0f,0.0f,0.0f };
+const DirectX::XMFLOAT3 DEFAULT_CAMERA_ANGLE	= { 0.0f, 180.0f, 0.0f };
 
 const ParticleSystem::CbParticleEmitter DEFAULT_EMITTER_SETTING = {
 	50000,							// emit_amounts
@@ -101,15 +101,15 @@ void SceneGame::Initialize()
 	if (tpv)
 	{
 		tpv->tpv_target		= DEFAULT_CAMERA_TARGET;
-		tpv->tpv_direction	= DEFAULT_CAMERA_DIRECTION;
+		tpv->tpv_angle		= DEFAULT_CAMERA_ANGLE;
 		tpv->tpv_distance	= DEFAULT_CAMERA_DISTANCE;
 	}
 	else
 	{
 		Camera::TPVData tpv_init = {};
-		tpv_init.tpv_target		= DEFAULT_CAMERA_TARGET;
-		tpv_init.tpv_direction	= DEFAULT_CAMERA_DIRECTION;
-		tpv_init.tpv_distance	= DEFAULT_CAMERA_DISTANCE;
+		tpv_init.tpv_target = DEFAULT_CAMERA_TARGET;
+		tpv_init.tpv_angle = DEFAULT_CAMERA_ANGLE;
+		tpv_init.tpv_distance = DEFAULT_CAMERA_DISTANCE;
 
 		camera->AddTPVCamera(&tpv_init);
 	}

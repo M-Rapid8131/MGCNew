@@ -116,7 +116,7 @@ protected:
 	static constexpr float				TEMPEST_WAIT_TIME	= 0.1f;
 	static constexpr float				IMPACT_WAIT_TIME	= 0.3f;
 	static constexpr DirectX::XMFLOAT3	ROOT_POSITION		= { -9.0f, 17.5f, 0.0f };
-	static constexpr DirectX::XMFLOAT4	DEFAULT_DIRECTION	= { 0.0f, 0.0f, -1.0f, 0.0f };
+	static constexpr DirectX::XMFLOAT3	DEFAULT_ANGLE		= { 0.0f, 180.0f, 0.0f };
 	
 
 	// protected:構造体
@@ -286,6 +286,7 @@ protected:
 
 	// スピード関係
 	float								level_speed				= 0.0f;		// 現在のレベルのブロック落下スピード
+	float								start_speed				= 0.0f;		// Levelが1の時のブロック落下スピード
 	float								current_speed			= 0.0f;		// 現在のブロック落下スピード
 	float								speed_increase_factor	= 0.0f;		// ブロック落下スピードの増加量
 	float								si_rank_bonus			= 0.0f;		// スピードランク上昇時の落下スピード増加量

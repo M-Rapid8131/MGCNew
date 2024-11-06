@@ -4,7 +4,7 @@
         "MaxLevel": 100,
         "StartSpeed": 2.0,
         "SpeedIncrease": 1.5,
-        "SIRank": 25.0,
+        "SIRank": 20.0,
         "StandDecrease": 0.003,
         "SpeedRank" : [
             1,
@@ -16,7 +16,7 @@
         ]
     },
     "EASY": {
-        "InitLevel": 1,
+        "InitLevel": 25,
         "MaxLevel": 30,
         "StartSpeed": 0.5,
         "SpeedIncrease": 1.0,
@@ -26,22 +26,6 @@
             1,
             20,
             -1,
-            -1,
-            -1,
-            -1
-        ]
-    },
-    "NORMAL_DEMO": {
-        "InitLevel": 1,
-        "MaxLevel": 30,
-        "StartSpeed": 1.0,
-        "SpeedIncrease": 0.1,
-        "SIRank": 2.0,
-        "StandDecrease": 0.0,
-        "SpeedRank" : [
-            1,
-            10,
-            20,
             -1,
             -1,
             -1

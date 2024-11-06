@@ -48,7 +48,7 @@ struct GameData
 {
 	bool	cleared = false;
 	UINT	speed_level = 1;			// 現在のスピードレベル
-	UINT	init_level = 1;				// 初期レベル
+	UINT	init_level;				// 初期レベル
 	UINT	max_level = 50;				// クリアに必要なレベル
 	UINT	deleted_block_count = 0;	// 消したブロックの数
 	UINT	level_up_block = 0;			// レベルアップに必要なブロック数
