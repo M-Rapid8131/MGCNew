@@ -100,23 +100,6 @@ void GamesystemDirector::DebugGUI()
 			if (using_class_flag.GetFlag(EnumUsingClass::RANDOM_NOISE))
 				random_noise->DebugGUI();
 			GamesystemInput::GetInstance()->DebugGUI();
-
-#if 1
-			if (ImPlot::BeginPlot("easing_graph"))
-			{
-				float x_data[1001];
-				float y_data[1001];
-
-				for (int i = 0; i <= 1000; i++)
-				{
-					x_data[i] = (float)i * 0.001f;
-					y_data[i] = Easing::In(EnumEasingType::BOUNCE, x_data[i]);
-				}
-
-				ImPlot::PlotLine("Ease Line", x_data, y_data, 1001);
-				ImPlot::EndPlot();
-			}
-#endif
 		}
 		ImGui::End();
 	}

@@ -84,11 +84,9 @@ void ShaderMain(uint3 dtid : SV_DispatchThreadID)
 		particle.normal = normalize(camera_position - particle.position);
 		
 		if(particle.size > 0.0f)
-			particle.size -= delta_time * 0.3f;
+			particle.size -= delta_time * 0.5f;
 		else
 			particle.size = 0.0f;
-		
-		//particle.acceleration = particle.normal + CONVERT_TO_SNORM(random_f3);
 		
 		// acceleration‚ğvelocity‚É‰ÁZ‚µAvelocity‚ğposition‚É‰ÁZ
 		particle.velocity += (particle.normal + CONVERT_TO_SNORM(random_f3)) * delta_time;

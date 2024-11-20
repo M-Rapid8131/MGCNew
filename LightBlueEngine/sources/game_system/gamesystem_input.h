@@ -3,6 +3,8 @@
 
 // <>インクルード
 #include <memory>
+#include <map>
+#include <string>
 #include <magic_enum.hpp>
 
 // ""インクルード
@@ -27,6 +29,8 @@ enum class EnumBlockRotation
 	LEFT,
 	TOP,
 };
+
+using InputEventBinding = std::map<std::string, std::map<EnumInputDevice, int>>;
 
 // class >> [GamesystemInput] 継承：Input、Singleton<GamesystemInput>
 // Inputを拡張した、ゲーム用の入力クラス。
@@ -68,6 +72,7 @@ public:
 	bool MachDrop(UINT id)				{ return game_pad[id]->GetButtonDown() & BTN_UP; }
 
 	// public:ゲッター関数
+	bool				InputEvent();
 	GamePadButton		GetGamePadButton(UINT id)		{ return game_pad[id]->GetButton(); }
 	GamePadButton		GetGamePadButtonUp(UINT id)		{ return game_pad[id]->GetButtonUp(); }
 	GamePadButton		GetGamePadButtonDown(UINT id)	{ return game_pad[id]->GetButtonDown(); }
@@ -86,9 +91,13 @@ public:
 		}
 	}
 
+	// public:セッター関数
+	void SetInputKeyBind(std::string name, EnumInputDevice input_device, int key_bind);
+
 private:
 	// private:変数
 	std::array<GameController, MAX_PLAYER> controllers;
+	InputEventBinding input_event_binding;
 };
 
 #endif // __GAMESYSTEM_INPUT_H__

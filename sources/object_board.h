@@ -99,6 +99,7 @@ protected:
 	static const UINT DEFAULT_START_LEVEL		= 1;
 	static const UINT LV_UP_BLOCK_COUNT			= 5;
 	static const UINT SCORE_BASE				= 10;
+	static const UINT BLOCK_COLOR				= 5;
 	static const UINT DIAGONAL_ADJUST			= MAX_ROW;
 
 	static constexpr float				SPEED_FACTOR		= ObjectBlock::BLOCK_SIZE;
@@ -115,6 +116,7 @@ protected:
 	static constexpr float				DEFAULT_WAIT_TIME	= 0.5f;
 	static constexpr float				TEMPEST_WAIT_TIME	= 0.1f;
 	static constexpr float				IMPACT_WAIT_TIME	= 0.3f;
+	static constexpr float				GAME_OVER_ERASE_TIME = 0.1f;
 	static constexpr DirectX::XMFLOAT3	ROOT_POSITION		= { -9.0f, 17.5f, 0.0f };
 	static constexpr DirectX::XMFLOAT3	DEFAULT_ANGLE		= { 0.0f, 180.0f, 0.0f };
 	
@@ -218,14 +220,12 @@ public:
 	void	SortInList(UPtrVector<ObjectBlock>&);
 	void	GameStart(int);
 	void	BonusStart(bool);
-	void	AccumulateBoardParticle();
 	void	LevelUp();
-	void	FlexLevelUp(UINT);
+	void	SmoothLevelUp(UINT);
 	void	UpdateStandCollisionHeight();
 
 	bool	MoveToDeletedBlockList();
 	bool	CheckGameOver();
-	bool	JudgeSameColor(EnumCheckDirection);
 
 	UINT	CalcScore(UINT, UINT);
 
@@ -281,7 +281,7 @@ protected:
 	// モデル関係
 	DirectX::XMFLOAT3					shake_position			= {0.0f,0.0f,0.0f};	// 元の位置からの移動距離
 	DirectX::XMFLOAT3					shake_speed				= {0.0f,0.0f,0.0f}; // 元の位置から移動させるための速度
-	DirectX::XMFLOAT3					board_color				= {1.0f,1.0f,1.0f}; // 元の位置から移動させるための速度
+	DirectX::XMFLOAT3					board_color				= {1.0f,1.0f,1.0f}; // 盤面の色。モードによって変化
 	std::vector<EraseParticleData>		erase_block_particle;						// ブロック消去演出パーティクル
 
 	// スピード関係
@@ -301,39 +301,40 @@ protected:
 	float								waiting_time_limit		= 0.5f;		// 全ブロック接地から次の処理をするまでの時間
 	UINT								root_block_column = 0;
 
-	std::array<UINT, MAX_ROW>			stand_collision_heignt;
+	std::array<UINT, MAX_ROW>			stand_collision_heignt;				// ブロックの接地高度
 
 	// UI関係
-	float								ui_alpha = 1.0f;
-	DirectX::XMFLOAT3					ui_color = { 1.0f, 1.0f, 1.0f };
-	UPtrVector<ValueUI>					value_ui;
-	UPtrVector<SpriteUI>				sprite_ui;
+	float								ui_alpha = 1.0f;					// UIのアルファ値。フェードインさせるのに使用
+	DirectX::XMFLOAT3					ui_color = { 1.0f, 1.0f, 1.0f };	// UIの色。
+	UPtrVector<ValueUI>					value_ui;							// 数値を表示するUI
+	UPtrVector<SpriteUI>				sprite_ui;							// スプライトを表示するUI
 
 	// ブロック関係
-	NextBlock							next_block;
-	DeleteBlockSorter					delete_block_sorter;
-	UPtrVector<ObjectBlock>				block_list;
-	UPtrVector<ObjectBlock>				erased_block_list;
+	UINT								erased_line				= MAX_COLUMN; // ゲームオーバー演出用。
+	NextBlock							next_block;							// 次のブロック
+	UPtrVector<ObjectBlock>				block_list;							// 盤面にあるブロック
+	UPtrVector<ObjectBlock>				erased_block_list;					// 消したブロックをまとめておく場所
 
 	std::vector<std::vector<bool>>				existing_matrix;					// ブロックが存在しているかしていないかだけを記録している変数
 	std::vector<std::vector<EnumBlockColor>>	block_color_matrix;					// ブロックの色を記録する変数
 
 	// ゲームシステム関係
-	bool								pause					= false;
-	float								count_down_time			= COUNT_DOWN;
-	float								count_down_se_time		= 1.0f;
-	float								count_down_se_span		= 1.0f;
-	float								game_over_time			= 0.0f;
-	float								fade_time				= 0.0f;
-	float								fade_time_limit			= 1.0f;
-	DirectX::XMFLOAT3					camera_rot				= {0.0f, 0.0f, 0.0f };
-	UINT								chain					= 0;		// 連鎖数
-	UINT								player_id				= 0;		// プレイヤー番号
-	EnumGameMode						game_mode				= EnumGameMode::UNDEFINE;
-	EnumGameMode						before_game_mode		= EnumGameMode::UNDEFINE;
-	BoardState							board_state;						// 盤面の状態
-	GameData							game_data;
-	StateUpdate							state_update;						// 状態ごとの処理を格納する関数ポインタ
+	bool								pause					= false;					// ポーズ中
+	float								count_down_time			= COUNT_DOWN;				// カウント時間
+	float								count_down_se_time		= 1.0f;						// カウントダウンの音を鳴らす時間
+	float								count_down_se_span		= 1.0f;						// カウントダウンの音を鳴らす時間の間隔
+	float								game_over_time			= 0.0f;						// ゲームオーバー時にしばらく停止しておく時間
+	float								game_over_erase_time	= GAME_OVER_ERASE_TIME;		// ゲームオーバー時にブロックを下から消す際に使用
+	float								fade_time				= 0.0f;						// スタート時にフェードインする時間
+	float								fade_time_limit			= 1.0f;						// スタート時にフェードインする時間の最大値
+	DirectX::XMFLOAT3					camera_rot				= {0.0f, 0.0f, 0.0f };		// カメラの回転
+	UINT								chain					= 0;						// 連鎖数
+	UINT								player_id				= 0;						// プレイヤー番号
+	EnumGameMode						game_mode				= EnumGameMode::UNDEFINE;	// 現在のゲームモード
+	EnumGameMode						before_game_mode		= EnumGameMode::UNDEFINE;	// ボーナスに入る前のゲームモード
+	BoardState							board_state;										// 盤面の状態
+	GameData							game_data;											// ゲームのデータ
+	StateUpdate							state_update;										// 状態ごとの処理を格納する関数ポインタ
 };
 
 #endif // __OBJECT_BOARD_H__

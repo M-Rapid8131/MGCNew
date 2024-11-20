@@ -1322,14 +1322,6 @@ mov r16.y, r16.y  // r16.y <- <CalcPBR return value>.w
 #line 48 "C:\General\GR4GA_NISHIOKA\MAGIC COLOR STONE\MGCNew\LightBlueEngine\HLSL\3D\3d_base_ps.hlsl"
 mov r16.xyzw, r16.xyzw  // r16.x <- color.x; r16.y <- color.w; r16.z <- color.y; r16.w <- color.z
 
-#line 49
-lt r0.x, r16.y, l(0.010000)
-if_nz r0.x
-
-#line 50
-  discard_nz l(-1)
-endif 
-
 #line 53
 mov r0.xyz, cb2[0].xyzx
 mov r0.w, r16.y
@@ -1350,4 +1342,4 @@ mul r0.w, r0.w, r1.x
 mov o0.xyz, r0.xyzx
 mov o0.w, r0.w
 ret 
-// Approximately 554 instruction slots used
+// Approximately 550 instruction slots used

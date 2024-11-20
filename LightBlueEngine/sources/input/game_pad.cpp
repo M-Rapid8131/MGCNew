@@ -153,19 +153,13 @@ void GamePad::Update()
 	if (GetAsyncKeyState('J') & 0x8000)			rx = -1.0f;
 	if (GetAsyncKeyState('K') & 0x8000)			ry = -1.0f;
 	if (GetAsyncKeyState('L') & 0x8000)			rx = 1.0f;
-	if (GetAsyncKeyState('Z') & 0x8000)			new_button_state |= BTN_A;
-	if (GetAsyncKeyState('X') & 0x8000)			new_button_state |= BTN_B;
-	if (GetAsyncKeyState('C') & 0x8000)			new_button_state |= BTN_X;
-	if (GetAsyncKeyState('V') & 0x8000)			new_button_state |= BTN_Y;
-	if (GetAsyncKeyState('Q') & 0x8000)			new_button_state |= BTN_LEFT_SHOULDER;
-	if (GetAsyncKeyState('E') & 0x8000)			new_button_state |= BTN_RIGHT_SHOULDER;
-	if (GetAsyncKeyState(VK_UP) & 0x8000)		new_button_state |= BTN_UP;
-	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)	new_button_state |= BTN_RIGHT;
-	if (GetAsyncKeyState(VK_DOWN) & 0x8000)		new_button_state |= BTN_DOWN;
-	if (GetAsyncKeyState(VK_LEFT) & 0x8000)		new_button_state |= BTN_LEFT;
 
-    if (GetAsyncKeyState(VK_RETURN) & 0x8000)	new_button_state |= BTN_START;
-	if (GetAsyncKeyState(VK_BACK) & 0x8000)		new_button_state |= BTN_BACK;
+	// キーマッピングに基づいた入力処理
+	for (auto& [key, button] : key_binding)
+	{
+		if (GetAsyncKeyState(key) & 0x8000)
+			new_button_state |= button;
+	}
 
 	if (tentative_device == EnumInputDevice::UNDEFINE)
 		tentative_device = EnumInputDevice::KEYBOARD;

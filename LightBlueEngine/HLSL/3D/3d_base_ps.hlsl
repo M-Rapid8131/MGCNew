@@ -46,8 +46,8 @@ float4 ShaderMain(VS_OUT_3D pin) : SV_TARGET
 	}
 	
 	float4 color = CalcPBR(material_data, light_vec, view_vec, norm_vec, projection_vec, object_color);
-	if (color.a < 0.01f)
-		discard;
+	//if (color.a < 0.01f)
+	//	discard;
 	
 	// ‰ñ“]Ž²‚ÌƒuƒƒbƒN‚Å‚ ‚é‚±‚Æ‚ðŽ¦‚·‚½‚ß‚ÉF‚ð‰ÁŽZ
 	color += float4(object_color, color.a) * blink_factor;

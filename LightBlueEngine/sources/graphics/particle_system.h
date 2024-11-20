@@ -141,7 +141,7 @@ private:
 	ComPtr<ID3D11ComputeShader>			initializer_compute_shader;
 
 	// シェーダー系以外
-	UINT								max_groups;
+	UINT								max_groups = 1;
 	ComPtr<ID3D11Buffer>				particle_cbuffer;
 	ComPtr<ID3D11Buffer>				particle_emitter_cbuffer;
 	ComPtr<ID3D11Buffer>				particle_flock_cbuffer;

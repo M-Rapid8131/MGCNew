@@ -309,9 +309,6 @@ void ParticleSystem::Update(float elapsed_time, ID3D11ComputeShader* replaced_cs
 	DirectX::XMStoreFloat3(&particle_emitter_constants.emit_direction,
 		v_emit_direction);
 
-	// UAVをセット
-	device_context->CSSetUnorderedAccessViews(0, 1, unordered_access_view.GetAddressOf(), nullptr);
-
 	// コンスタントバッファ
 	device_context->UpdateSubresource(particle_cbuffer.Get(), 0, 0, &particle_constants, 0, 0);
 	device_context->UpdateSubresource(particle_emitter_cbuffer.Get(), 0, 0, &particle_emitter_constants, 0, 0);
@@ -323,6 +320,9 @@ void ParticleSystem::Update(float elapsed_time, ID3D11ComputeShader* replaced_cs
 	device_context->CSSetShader(replaced_cs ? replaced_cs : compute_shader.Get(), NULL, 0);
 
 	UINT num_threads = Align(particle_emitter_constants.emit_amounts, 512);
+
+	// UAVをセット
+	device_context->CSSetUnorderedAccessViews(0, 1, unordered_access_view.GetAddressOf(), nullptr);
 
 	// 計算シェーダー実行
 	device_context->Dispatch(num_threads / 512, 1, 1);

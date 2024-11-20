@@ -19,6 +19,15 @@ void GamesystemInput::Initialize(HWND, UINT set_players)
 	{
 		AddGamePad(id);
 		controllers[id].block_rotation = EnumBlockRotation::RIGHT;
+		
+		game_pad[0]->SetKeyBind(VK_UP, BTN_UP);
+		game_pad[0]->SetKeyBind(VK_DOWN, BTN_DOWN);
+		game_pad[0]->SetKeyBind(VK_LEFT, BTN_LEFT);
+		game_pad[0]->SetKeyBind(VK_RIGHT, BTN_RIGHT);
+		game_pad[0]->SetKeyBind('Z', BTN_A);
+		game_pad[0]->SetKeyBind(VK_RETURN, BTN_A);
+		game_pad[0]->SetKeyBind('X', BTN_B);
+		game_pad[0]->SetKeyBind(VK_BACK, BTN_START);
 	}
 }
 
@@ -101,6 +110,24 @@ bool GamesystemInput::BlockFlip(UINT id)
 		return true;
 	}
 	return false;
+}
+
+void GamesystemInput::SetInputKeyBind(std::string name, EnumInputDevice	input_device, int key_bind)
+{
+	auto itr = input_event_binding.find(name);
+	if (itr != std::end(input_event_binding))
+	{
+		if (itr->second.contains(input_device))
+			itr->second[input_device] = key_bind;
+		else
+			itr->second.insert({ input_device, key_bind });
+	}
+	else
+	{
+		std::map<EnumInputDevice, int> bind_setter;
+		bind_setter.insert({ input_device, key_bind });
+		input_event_binding.insert({ name, bind_setter});
+	}
 }
 
 // ƒuƒƒbƒN‰ñ“]

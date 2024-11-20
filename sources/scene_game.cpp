@@ -250,7 +250,7 @@ void SceneGame::Update(float elapsed_time)
 				audio_manager->PlaySE(EnumSEBank::LEVEL_UP);
 			}
 
-			if ((PAD->GetButtonDown() & BTN_START))
+			if ((PAD->GetButtonDown() & BTN_A))
 			{
 				audio_manager->PlaySE(EnumSEBank::STAND);
 
@@ -303,12 +303,15 @@ void SceneGame::Update(float elapsed_time)
 			switch (selecting_pause_menu_num)
 			{
 			case 0:
+				pause = false;
 				break;
 			case 1:
+				audio_manager->StopBGM();
 				retry_scene = std::make_unique<SceneGame>();
 				scene_loading = std::make_unique<SceneLoading>(retry_scene.release());
 				break;
 			case 2:
+				audio_manager->StopBGM();
 				give_up_scene = std::make_unique<SceneMainManu>();
 				scene_loading = std::make_unique<SceneLoading>(give_up_scene.release());
 				break;
@@ -333,6 +336,7 @@ void SceneGame::Update(float elapsed_time)
 	game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->Update(elapsed_time);
 	game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->UIUpdate(elapsed_time);
 
+	// モード選択
 	if (!playing_game)
 	{
 		GamesystemInput* input = GamesystemInput::GetInstance();
@@ -354,7 +358,7 @@ void SceneGame::Update(float elapsed_time)
 			audio_manager->PlaySE(EnumSEBank::LEVEL_UP);
 		}
 
-		if ((PAD->GetButtonDown() & BTN_START))
+		if ((PAD->GetButtonDown() & BTN_A))
 		{
 			game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->GameStart(SCast(int, game_mode_list.at(selecting_mode_num)));
 			playing_game = true;
@@ -446,7 +450,7 @@ void SceneGame::Render()
 		// Emissiveのみ描画シーン
 		framebuffer_manager->Activate("emissive_renderer");
 		{
-			//// 盤面描画
+			// 盤面描画
 			graphics->SetDepthStencilState(EnumDepthState::ZT_ON_ZW_ON);
 			graphics->SetRasterizerState(EnumRasterizerState::SOLID);
 			graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
@@ -584,6 +588,7 @@ void SceneGame::Render()
 			);
 		}
 
+		// ポーズ画面
 		if (game_board[SCast(UINT, EnumPlayerID::PLAYER_1)]->IsPausing())
 		{
 			float width		= SCast(float, graphics->GetScreenWidth());

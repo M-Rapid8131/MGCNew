@@ -313,7 +313,7 @@ void SceneMainManu::Update(float elapsed_time)
 
 	if(!viewing_rule)
 	{
-		if (game_pad->GetButtonDown() & BTN_START)
+		if (game_pad->GetButtonDown() & BTN_A)
 		{
 			switch (selecting_menu)
 			{
@@ -329,7 +329,7 @@ void SceneMainManu::Update(float elapsed_time)
 				break;
 			}
 		}
-		else if (game_pad->GetButtonDown() & BTN_A)
+		else if (game_pad->GetButtonDown() & BTN_START)
 		{
 			viewing_rule = true;
 			director->GetAudioManager()->PlaySE(EnumSEBank::STAND);
@@ -337,7 +337,7 @@ void SceneMainManu::Update(float elapsed_time)
 	}
 	else
 	{
-		if (game_pad->GetButtonDown() & BTN_START)
+		if (game_pad->GetButtonDown() & BTN_A)
 		{
 			viewing_rule = false;
 			director->GetAudioManager()->PlaySE(EnumSEBank::STAND);

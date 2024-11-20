@@ -1,6 +1,6 @@
 {
     "NORMAL": {
-        "InitLevel": 1,
+        "InitLevel": 97,
         "MaxLevel": 100,
         "StartSpeed": 2.0,
         "SpeedIncrease": 1.5,
@@ -16,7 +16,7 @@
         ]
     },
     "EASY": {
-        "InitLevel": 25,
+        "InitLevel": 1,
         "MaxLevel": 30,
         "StartSpeed": 0.5,
         "SpeedIncrease": 1.0,

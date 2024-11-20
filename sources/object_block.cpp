@@ -120,9 +120,6 @@ void ObjectBlock::BlockState::TransitionEraseState()
 {
 	state = EnumBlockState::ERASE;
 
-	GamesystemDirector::GetInstance()->SetRadialBlur();
-	GamesystemDirector::GetInstance()->GetAudioManager()->PlaySE(EnumSEBank::ERASE);
-
 	obj->SetColorUndefine();
 	obj->EraseConfirm();
 
@@ -323,7 +320,7 @@ void ObjectBlock::Render()
 
 	graphics->SetDepthStencilState(EnumDepthState::ZT_ON_ZW_ON);
 	graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
-	graphics->SetRasterizerState(EnumRasterizerState::SOLID);
+	graphics->SetRasterizerState(EnumRasterizerState::CULL_NONE);
 
 	if((block_state.state == EnumBlockState::MOVE)
 		|| (block_state.state == EnumBlockState::STAND))
@@ -343,12 +340,15 @@ void ObjectBlock::Render()
 	if(!flag_system.GetFlag(EnumBlockFlags::BLACK_OUT))
 		model->Render(false, transform, block_color_factor);
 
-	graphics->SetDepthStencilState(EnumDepthState::ZT_ON_ZW_OFF);
-	graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
-	graphics->SetRasterizerState(EnumRasterizerState::CULL_NONE);
+	if(parent_board.GetBoardState().state != EnumBoardState::GAME_OVER)
+	{
+		graphics->SetDepthStencilState(EnumDepthState::ZT_ON_ZW_OFF);
+		graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
+		graphics->SetRasterizerState(EnumRasterizerState::CULL_NONE);
 
-	// ブロックの軌跡の描画
-	block_particle->Render();
+		// ブロックの軌跡の描画
+		block_particle->Render();
+	}
 }
 
 // エミッシブ成分のみ描画
@@ -365,7 +365,10 @@ void ObjectBlock::EmissiveRender()
 	
 	model->Render(false, transform, block_color_factor, graphics->GetPixelShader(EnumPixelShader::EXTRACT_EMISSIVE).Get());
 	
-	block_particle->Render();
+	if (parent_board.GetBoardState().state != EnumBoardState::GAME_OVER)
+	{
+		block_particle->Render();
+	}
 }
 
 // ブロック位置からセル位置を補正

@@ -3,6 +3,7 @@
 
 // <>インクルード
 #include <Windows.h>
+#include <unordered_map>
 
 // ""インクルード
 // LightBlueEngine
@@ -75,6 +76,10 @@ public:
 
 	// public:セッター関数
 	void SetSlot(UINT i_slot)			{ slot = i_slot; }
+	void SetKeyBind(int key, GamePadButton pad_button) 
+	{
+		key_binding.insert({ key, pad_button });
+	}
 
 private:
 	// private:変数
@@ -91,6 +96,7 @@ private:
 	GamePadButton	button_up		= 0;
 	EnumInputDevice input_device	= EnumInputDevice::UNDEFINE;
 
+	std::unordered_map<int, GamePadButton> key_binding;
 	GamePadButton	button_state[2] = { 0,0 };
 };
 

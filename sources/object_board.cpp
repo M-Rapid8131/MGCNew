@@ -546,17 +546,7 @@ void ObjectBoard::BoardState::TransitionDropStartState()
 	
 	obj->ClearDeleteBlockList();
 
-	int count = 0;
-	for(auto& erase_particle_data : obj->erase_block_particle)
-	{
-		if (erase_particle_data.second < 0.0f)
-		{
-			obj->erase_block_particle.erase(obj->erase_block_particle.begin() + count);
-			obj->erase_block_particle.shrink_to_fit();
-		}
-		else
-			count++;
-	}
+	std::erase_if(obj->erase_block_particle, [](const EraseParticleData& data) { return data.second < 0.0f; });
 
 	obj->state_update = nullptr;
 	obj->standing_time = 0.0f;
@@ -664,13 +654,6 @@ void ObjectBoard::BoardState::TransitionGameOverState(bool cleared)
 		if(cleared)		audio_manarger->PlaySE(EnumSEBank::GAME_CLEAR);
 	}
 
-	for (const auto& block : obj->block_list)
-	{
-		block->EraseRegist();
-	}
-
-	obj->MoveToDeletedBlockList();
-
 	for (int row = 0; row < MAX_ROW; row++)
 	{
 		for (int column = MAX_COLUMN - 1; column >= 0; column--)
@@ -680,6 +663,8 @@ void ObjectBoard::BoardState::TransitionGameOverState(bool cleared)
 	}
 
 	obj->game_data.cleared = cleared;
+
+	obj->erased_line = MAX_COLUMN;
 
 	obj->flag_system.SetFlag(EnumBoardFlags::PLAYING, false);
 }
@@ -701,6 +686,7 @@ void ObjectBoard::UpdateStartState(float elapsed_time)
 	Camera*				camera			= GamesystemDirector::GetInstance()->GetCamera();
 	Camera::TPVData*	tpv				= camera->GetTPVCamera(SCast(size_t, EnumCameraChannel::GAME));
 
+	// スタート前演出
 	count_down_time -= elapsed_time;
 	count_down_se_time += elapsed_time;
 	float& dissolve = model->GetDisolveFactor();
@@ -862,7 +848,53 @@ void ObjectBoard::UpdateGameOverState(float elapsed_time)
 		audio_manager->StopBGM();
 
 	game_over_time += elapsed_time;
+	game_over_erase_time -= elapsed_time;
 
+	// 下から順番にブロックを消していく処理。クリアした時のみパーティクルを追加。
+	// TGMシリーズを参考にした。
+	if (erased_line > 0 && game_over_erase_time < 0.0f)
+	{
+		for (const auto& block : block_list)
+		{
+			if (block->GetBlockCell().column != erased_line)
+				continue;
+
+			block->EraseRegist();
+		}
+
+		if (game_data.cleared)
+		{
+			std::erase_if(erase_block_particle, [](const EraseParticleData& data) { return data.second < 0.0f; });
+
+			ParticleSystem::CbParticleEmitter	cb_emitter;
+			cb_emitter.emit_amounts = 50000;
+			cb_emitter.emit_speed = 1.0f;
+			cb_emitter.life_time = 0.3f;
+			cb_emitter.emit_size = 0.1f;
+			cb_emitter.emit_radius = 0.3f;
+
+			EraseParticleData& erase_particle_data = erase_block_particle.emplace_back();
+
+			erase_particle_data.first = std::make_unique<ParticleSystem>(cb_emitter, true, "accumulate_particle_ps.cso");
+
+			auto call_back = [&](ID3D11PixelShader* accumulate_ps) {
+				for (const auto& erased_block : erased_block_list)
+				{
+					erased_block->AccumulateBlockParticle(accumulate_ps);
+				}
+				};
+			erase_particle_data.first->AccumulateParticles(call_back);
+
+			erase_particle_data.second = 0.3f;
+		}
+
+		MoveToDeletedBlockList();
+
+		game_over_erase_time = GAME_OVER_ERASE_TIME;
+		erased_line--;
+	}
+
+	// クリアしたかどうかで分岐
 	if(game_data.cleared)
 	{
 		if (game_over_time > 3.0f)
@@ -909,7 +941,7 @@ void ObjectBoard::SignalMove(GamePadButton input)
 
 	const BlockCell&	RIGHT_CELL_R	= BlockCell(next_block.moving_block.RIGHT_BLOCK->GetBlockCell().row + 1,
 											next_block.moving_block.RIGHT_BLOCK->GetBlockCell().column + shift_factor);
-
+	// 回転
 	if (input & BTN_LEFT)
 	{
 		switch (gamesystem_input->GetBlockRotation(player_id))
@@ -942,6 +974,8 @@ void ObjectBoard::SignalMove(GamePadButton input)
 			break;
 		}
 	}
+
+	// 回転後の位置補正
 	if (result)
 	{
 		next_block.moving_block.LEFT_BLOCK->MoveBlock(input);
@@ -958,12 +992,14 @@ ObjectBoard::ObjectBoard(UINT player_id)
 	model = std::make_unique<GameModel>("resources/model/board/board.gltf");
 	model->SetMaskTexture(L"resources/sprite/mask_texture.png");
 
+	// ブロックのマトリックスの初期化(ブロックの有無)
 	existing_matrix.resize(MAX_ROW);
 	for (int x = 0; x < MAX_ROW; x++)
 	{
 		existing_matrix.at(x).resize(MAX_COLUMN);
 	}
 
+	// ブロックのマトリックスの初期化(ブロックの色)
 	for (UINT r = 0; r < MAX_ROW; r++)
 	{
 		std::vector<EnumBlockColor>& block_color_line = block_color_matrix.emplace_back();
@@ -974,9 +1010,9 @@ ObjectBoard::ObjectBoard(UINT player_id)
 	}
 
 	board_state.obj = this;
-
 	next_block.obj = this;
 
+	// UI初期設定
 	auto& ui_next_block = sprite_ui.emplace_back(std::make_unique<SpriteUI>());
 	ui_next_block->Initialize(L"resources/sprite/UI/UI_base_next.png", L"NEXT_BLOCK", { UI_LEFT_X, UI_NEXT_BLOCK_Y });
 	ui_next_block->PushIndexValue(0);
@@ -1045,8 +1081,6 @@ ObjectBoard::ObjectBoard(UINT player_id)
 	ui_erased_blocks->PushIntValue(game_data.deleted_block_count, TEXT_LEFT_ALIGN_POS);
 	ui_erased_blocks->SetUIScale(DEFAULT_UI_SCALE);
 
-	delete_block_sorter.color_block.resize(6);
-
 	board_state.TransitionStandbyState();
 }
 
@@ -1064,7 +1098,7 @@ void ObjectBoard::Update(float elapsed_time)
 
 	if (pause)
 	{
-		if (gamesystem_input->GetGamePadButtonDown(player_id) & BTN_START)
+		if (gamesystem_input->GetGamePadButtonDown(player_id) & BTN_A)
 		{
 			pause = false;
 		}
@@ -1132,6 +1166,7 @@ void ObjectBoard::Update(float elapsed_time)
 		next_block.Update(elapsed_time);
 	}
 
+	// ボーナスモード時は時間停止
 	if (game_mode != EnumGameMode::BONUS)
 	{
 		int game_decimal = SCast(int, object_time * 100.0f) - SCast(int, object_time) * 100;
@@ -1144,6 +1179,7 @@ void ObjectBoard::Update(float elapsed_time)
 
 	model->InstanceUpdate();
 
+	// ブロックの消去演出パーティクル
 	int count = 0;
 	for (auto& erase_particle_data : erase_block_particle)
 	{
@@ -1176,14 +1212,6 @@ void ObjectBoard::DebugGUI()
 {
 	if (ImGui::CollapsingHeader("ObjectBoard"))
 	{
-		for (int i = 0; i < 6; i++)
-		{
-			int erasing_block_count = SCast(int, delete_block_sorter.color_block[i].size());
-			ImGui::InputInt("erasing_block##1", &erasing_block_count);
-		}
-
-		ImGui::Separator();
-
 		int e_size = SCast(int, erase_block_particle.size());
 		ImGui::InputInt("Erase_particle Size", &e_size);
 		ImGui::InputFloat("Object Time", &object_time);
@@ -1217,13 +1245,6 @@ void ObjectBoard::DebugGUI()
 
 		int id = SCast(int, player_id);
 		ImGui::InputInt("Player Id", &id);
-
-		for (int i = 0; i < delete_block_sorter.color_block.size(); i++)
-		{
-			size_t		size	= delete_block_sorter.color_block[i].size();
-			std::string str_id	= "Sorter" + std::to_string(i);
-			ImGui::InputInt(str_id.c_str(), &id);
-		}
 
 		int erased = SCast(int, game_data.deleted_block_count);
 		ImGui::InputInt("deleted_block_count", &erased);
@@ -1406,6 +1427,9 @@ bool ObjectBoard::MoveToDeletedBlockList()
 		game_data.score += CalcScore(pop_count, chain);
 		value_ui.at(SCast(size_t, SCORE))->SetIntValue(0, game_data.score);
 		value_ui.at(SCast(size_t, DELETED_BLOCKS))->SetIntValue(0, game_data.deleted_block_count);
+
+		GamesystemDirector::GetInstance()->SetRadialBlur();
+		GamesystemDirector::GetInstance()->GetAudioManager()->PlaySE(EnumSEBank::ERASE);
 
 		if (chain >= 2)
 		{
@@ -1903,20 +1927,6 @@ void ObjectBoard::BonusStart(bool easy_mode)
 	board_state.TransitionStartState(SCast(int, EnumGameMode::BONUS));
 }
 
-void ObjectBoard::AccumulateBoardParticle()
-{
-	Graphics* graphics = Graphics::GetInstance();
-	ID3D11DeviceContext* device_context = graphics->GetDeviceContext().Get();
-
-	graphics->SetDepthStencilState(EnumDepthState::ZT_ON_ZW_OFF);
-	graphics->SetRasterizerState(EnumRasterizerState::CULL_NONE);
-	graphics->SetBlendState(EnumBlendState::ALPHA, nullptr, 0xFFFFFFFF);
-
-	DirectX::XMFLOAT4X4 particle_transform;
-	DirectX::XMStoreFloat4x4(&particle_transform,
-		DirectX::XMLoadFloat4x4(&transform) * DirectX::XMMatrixTranslation(+1, 0, 0));
-}
-
 // 天井に到達したかをチェックする関数
 bool ObjectBoard::CheckGameOver()
 {
@@ -1933,6 +1943,7 @@ bool ObjectBoard::CheckGameOver()
 	return game_over;
 }
 
+// レベルアップ処理
 void ObjectBoard::LevelUp()
 {
 	AudioManager* audio_manager = GamesystemDirector::GetInstance()->GetAudioManager();
@@ -1993,7 +2004,8 @@ void ObjectBoard::LevelUp()
 	}
 }
 
-void ObjectBoard::FlexLevelUp(UINT chain)
+// Smoothスタイル時のレベルアップ処理。
+void ObjectBoard::SmoothLevelUp(UINT chain)
 {
 	if (chain == 0)
 	{
@@ -2008,6 +2020,7 @@ void ObjectBoard::FlexLevelUp(UINT chain)
 	}
 }
 
+// ブロックの接地高度を更新
 void ObjectBoard::UpdateStandCollisionHeight()
 {
 	for (UINT row = 0; row < MAX_ROW; row++)
@@ -2068,6 +2081,7 @@ UPtrVector<ObjectBlock>::iterator ObjectBoard::GetBlockFromCell(const BlockCell 
 	return end;
 }
 
+// 指定したセルから色を取得
 const EnumBlockColor ObjectBoard::GetBlockColorFromMatrix(const BlockCell cell)
 {
 	if (cell.row < 1 || cell.row > MAX_ROW)					return EnumBlockColor::UNDEFINE;
