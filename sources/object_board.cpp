@@ -864,6 +864,7 @@ void ObjectBoard::UpdateGameOverState(float elapsed_time)
 
 		if (game_data.cleared)
 		{
+			// 使用期限が切れたパーティクルを消去
 			std::erase_if(erase_block_particle, [](const EraseParticleData& data) { return data.second < 0.0f; });
 
 			ParticleSystem::CbParticleEmitter	cb_emitter;
@@ -885,7 +886,7 @@ void ObjectBoard::UpdateGameOverState(float elapsed_time)
 				};
 			erase_particle_data.first->AccumulateParticles(call_back);
 
-			erase_particle_data.second = 0.3f;
+			erase_particle_data.second = GAME_OVER_ERASE_TIME;
 		}
 
 		MoveToDeletedBlockList();
@@ -1012,12 +1013,16 @@ ObjectBoard::ObjectBoard(UINT player_id)
 	board_state.obj = this;
 	next_block.obj = this;
 
+	next_block.SetNewBlock();
+	next_block.SetNewBlock();
+	next_block.SetNewBlock();
+
 	// UI初期設定
 	auto& ui_next_block = sprite_ui.emplace_back(std::make_unique<SpriteUI>());
 	ui_next_block->Initialize(L"resources/sprite/UI/UI_base_next.png", L"NEXT_BLOCK", { UI_LEFT_X, UI_NEXT_BLOCK_Y });
-	ui_next_block->PushIndexValue(0);
-	ui_next_block->PushIndexValue(0);
-
+	ui_next_block->PushIndexValue(SCast(size_t, next_block.next_block.front().LEFT_BLOCK->GetBlockColor()));
+	ui_next_block->PushIndexValue(SCast(size_t, next_block.next_block.front().RIGHT_BLOCK->GetBlockColor()));
+	
 	const wchar_t* w_next_block_filename[] = {
 		L"resources/sprite/next_block/red.png",
 		L"resources/sprite/next_block/blue.png",
@@ -1034,10 +1039,6 @@ ObjectBoard::ObjectBoard(UINT player_id)
 	ui_next_block->PushImagePosition(XMFloatCalclation::XMFloat2Subtract(UI_SPRITE_CENTER_POS, { UI_SPRITE_SIZE.x * 0.5f, 0.0f }));
 	ui_next_block->PushImagePosition(XMFloatCalclation::XMFloat2Add(UI_SPRITE_CENTER_POS, { UI_SPRITE_SIZE.x * 0.5f, 0.0f }));
 	ui_next_block->SetUIScale(SPRITE_UI_SCALE);
-
-	next_block.SetNewBlock();
-	next_block.SetNewBlock();
-	next_block.SetNewBlock();
 
 	auto& ui_game_mode = sprite_ui.emplace_back(std::make_unique<SpriteUI>());
 	ui_game_mode->Initialize(L"", L"GAME_MODE", { UI_RIGHT_X, UI_TOP_Y });

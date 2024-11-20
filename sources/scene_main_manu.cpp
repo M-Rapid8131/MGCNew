@@ -227,6 +227,22 @@ void SceneMainManu::Update(float elapsed_time)
 		break;
 
 	case SCENE_MAIN:
+		if (game_pad->GetButtonDown() & BTN_A)
+		{
+			switch (selecting_menu)
+			{
+			case 0:
+				director->GetAudioManager()->PlaySE(EnumSEBank::ENTER_GAME);
+				scene_state = EnumSceneState::TRANSITION_OUT_SETTING;
+				break;
+			case 1:
+				viewing_rule = true;
+				rule_page = 0;
+				break;
+			default:
+				break;
+			}
+		}
 		break;
 
 	case TRANSITION_OUT_SETTING:
@@ -313,23 +329,7 @@ void SceneMainManu::Update(float elapsed_time)
 
 	if(!viewing_rule)
 	{
-		if (game_pad->GetButtonDown() & BTN_A)
-		{
-			switch (selecting_menu)
-			{
-			case 0:
-				director->GetAudioManager()->PlaySE(EnumSEBank::ENTER_GAME);
-				scene_state = EnumSceneState::TRANSITION_OUT_SETTING;
-				break;
-			case 1:
-				viewing_rule = true;
-				rule_page = 0;
-				break;
-			default:
-				break;
-			}
-		}
-		else if (game_pad->GetButtonDown() & BTN_START)
+		if (game_pad->GetButtonDown() & BTN_START)
 		{
 			viewing_rule = true;
 			director->GetAudioManager()->PlaySE(EnumSEBank::STAND);
